@@ -1,0 +1,90 @@
+[
+  {
+    "orig": "REPO DUMP",
+    "dest": "data/misc/REPO DUMP.md"
+  },
+  {
+    "orig": "README.md",
+    "dest": "README.md"
+  },
+  {
+    "orig": "WONDER ORCHARDS DATABASE & WORKFLOW MANUAL",
+    "dest": "data/docs/WONDER ORCHARDS DATABASE & WORKFLOW MANUAL.md"
+  },
+  {
+    "orig": "dump_repo.sh",
+    "dest": "scripts/dump_repo.sh"
+  },
+  {
+    "orig": "data/accounts.md",
+    "dest": "data/accounts.md"
+  },
+  {
+    "orig": "data/database-growth.md",
+    "dest": "data/database-growth.md"
+  },
+  {
+    "orig": "data/dna.md",
+    "dest": "data/dna.md"
+  },
+  {
+    "orig": "data/vision.md",
+    "dest": "data/vision.md"
+  },
+  {
+    "orig": "data/workflows.md",
+    "dest": "data/workflows.md"
+  },
+  {
+    "orig": "data/The Wonder Nursery/explorations",
+    "dest": "data/nursery/explorations.md"
+  },
+  {
+    "orig": "dev/Micro thread header",
+    "dest": "dev/Micro thread header.md"
+  },
+  {
+    "orig": "dev/thread-header.md",
+    "dest": "dev/thread-header.md"
+  },
+  {
+    "orig": "dev/usage-instructions.md",
+    "dest": "dev/usage-instructions.md"
+  },
+  {
+    "orig": "scripts/README.md",
+    "dest": "scripts/README.md"
+  },
+  {
+    "orig": "scripts/dump_repo.sh",
+    "dest": "scripts/dump_repo.sh"
+  },
+  {
+    "orig": "tasks/backlog.md",
+    "dest": "tasks/backlog.md"
+  },
+  {
+    "orig": "tasks/completed.md",
+    "dest": "tasks/completed.md"
+  },
+  {
+    "orig": "tasks/in-progress.md",
+    "dest": "tasks/in-progress.md"
+  },
+  {
+    "orig": "templates/document.md",
+    "dest": "templates/document.md"
+  },
+  {
+    "orig": "templates/task.md",
+    "dest": "templates/task.md"
+  },
+  {
+    "orig": "versions/alpha-v2.1.md",
+    "dest": "versions/alpha-v2.1.md"
+  },
+  {
+    "orig": "versions/history.md",
+    "dest": "versions/history.md"
+  }
+]
