@@ -76,7 +76,7 @@ To organize and store the early **structure, workflow, and planning documents** 
 
 ---
 
-## 🚀 Next Steps
+## Next Steps
 
 - Continue building content: **vision, workflows, DNA**.  
 - Track database growth in [data/database-growth.md](data/database-growth.md).  
