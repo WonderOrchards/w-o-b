@@ -1,0 +1,2859 @@
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>Wonder Orchards - Enhanced Particles</title>
+
+
+
+    <!-- Three.js + extras -->
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/libs/stats.min.js"></script>
+
+
+
+    <style>
+
+        :root {
+
+            --bg-primary: #1a1a1a;
+
+            --bg-secondary: #2d2d2d;
+
+            --bg-accent: #3d3d3d;
+
+            --text-primary: #f0f0f0;
+
+            --text-secondary: #b0b0b0;
+
+            --accent: #687100;
+
+            --accent-hover: #7a8300;
+
+            --border: #404040;
+
+            --shadow: rgba(0, 0, 0, 0.5);
+
+            --title-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+
+            --body-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+
+        }
+
+
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+
+
+        body {
+
+            font-family: var(--body-font);
+
+            color: var(--text-primary);
+
+            line-height: 1.6;
+
+            background-color: var(--bg-primary);
+
+            height: 100vh;
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+
+
+        #canvasContainer {
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            z-index: -1;
+
+            pointer-events: none;
+
+        }
+
+
+
+        /* When in orbit mode, let canvas receive events */
+
+        body.orbit-mode #canvasContainer {
+
+            pointer-events: auto;
+
+            z-index: 1;
+
+        }
+
+
+
+        body.orbit-mode .content,
+
+        body.orbit-mode .topbar,
+
+        body.orbit-mode .sidebar,
+
+        body.orbit-mode .dev-menu-btn {
+
+            pointer-events: none;
+
+        }
+
+
+
+        /* Topbar */
+
+        .topbar {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 1rem;
+
+            background-color: var(--bg-secondary);
+
+            border-bottom: 1px solid var(--border);
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 1000;
+
+        }
+
+        .topbar h1 { font-size: 1.2rem; font-weight: 600; font-family: var(--title-font); }
+
+
+
+        #menu-toggle {
+
+            background: none;
+
+            border: none;
+
+            color: var(--text-primary);
+
+            font-size: 1.5rem;
+
+            cursor: pointer;
+
+            display: none;
+
+        }
+
+
+
+        /* Sidebar */
+
+        .sidebar {
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            height: 100vh;
+
+            width: 280px;
+
+            background-color: var(--bg-secondary);
+
+            border-right: 1px solid var(--border);
+
+            overflow-y: auto;
+
+            padding: 1.5rem 1rem;
+
+            z-index: 999;
+
+            transform: translateX(0);
+
+            /* Added padding at bottom for mobile */
+
+            padding-bottom: 80px;
+
+        }
+
+        .sidebar h2 { font-size: 1.1rem; margin-bottom: 1rem; padding-bottom: .5rem; border-bottom: 1px solid var(--border); color: var(--accent); font-family: var(--title-font); }
+
+        .sidebar ul { list-style: none; }
+
+        .sidebar li { margin-bottom: 0.5rem; }
+
+        .sidebar a { color: var(--text-secondary); text-decoration: none; display: block; padding: .5rem; border-radius: 4px; transition: all .2s ease; }
+
+        .sidebar a:hover { color: var(--text-primary); background-color: var(--bg-accent); }
+
+        .sidebar a.active { color: var(--accent); font-weight: 500; background-color: var(--bg-accent); }
+
+
+
+        .content { 
+
+            flex: 1; 
+
+            padding: 2rem; 
+
+            margin-left: 280px; 
+
+            transition: margin-left .3s ease; 
+
+            max-width: calc(100% - 280px); 
+
+            overflow-y: auto;
+
+        }
+
+        #file-content { max-width: 800px; }
+
+
+
+        /* Dev menu btn */
+
+        .dev-menu-btn {
+
+            position: fixed;
+
+            bottom: 20px;
+
+            right: 20px;
+
+            background-color: var(--bg-secondary);
+
+            color: var(--text-secondary);
+
+            border: 1px solid var(--border);
+
+            border-radius: 50%;
+
+            width: 44px;
+
+            height: 44px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            cursor: pointer;
+
+            z-index: 1001;
+
+            font-size: 18px;
+
+            transition: all .3s ease;
+
+        }
+
+        .dev-menu-btn:hover { background-color: var(--accent); color: var(--text-primary); }
+
+
+
+        /* Dev menu panel - 20% narrower */
+
+        .dev-menu {
+
+            position: fixed;
+
+            bottom: 80px;
+
+            right: 20px;
+
+            width: 288px; /* 20% narrower (from 360px) */
+
+            max-width: calc(100% - 40px);
+
+            background-color: var(--bg-secondary);
+
+            border: 1px solid var(--border);
+
+            border-radius: 8px;
+
+            padding: 0.8rem;
+
+            box-shadow: 0 4px 12px var(--shadow);
+
+            z-index: 1000;
+
+            display: none;
+
+            flex-direction: column;
+
+            gap: 0.6rem;
+
+            font-size: 0.70rem;
+
+            line-height: 1.35;
+
+            max-height: 68vh;
+
+            overflow-y: auto;
+
+        }
+
+        .dev-menu.active { display: flex; }
+
+        .dev-menu h3 { margin-bottom: .4rem; color: var(--accent); font-family: var(--title-font); font-size: 0.92rem; }
+
+
+
+        .color-picker { display: flex; align-items: center; gap: 0.5rem; }
+
+        .color-picker label { min-width: 95px; font-size: 0.85em; }
+
+        .color-picker input[type="color"] { width: 30px; height: 24px; border: none; border-radius: 4px; cursor: pointer; background: none; }
+
+
+
+        .font-selector { display: flex; flex-direction: column; gap: 0.4rem; }
+
+        .font-selector select { padding: 0.35rem; border-radius: 4px; background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border); font-size: 0.9em; }
+
+
+
+        .dev-menu-buttons { display: flex; gap: .4rem; justify-content: flex-end; }
+
+        .dev-menu-buttons button {
+
+            padding: 0.35rem 0.6rem;
+
+            border-radius: 4px;
+
+            border: 1px solid var(--border);
+
+            background-color: var(--bg-accent);
+
+            color: var(--text-primary);
+
+            cursor: pointer;
+
+            transition: background-color .2s ease;
+
+            font-size: 0.9em;
+
+            min-height: 36px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+        }
+
+        .dev-menu-buttons button:hover { background-color: var(--accent); }
+
+
+
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--accent); color: white; padding: .7rem 1.2rem; border-radius: 4px; z-index: 1002; opacity: 0; transition: opacity .25s ease; }
+
+        .toast.show { opacity: 1; }
+
+
+
+        /* Control styles */
+
+        .control-group { margin-bottom: .6rem; }
+
+        .control-group label { display: block; margin-bottom: .25rem; font-size: 0.9em; }
+
+        .control-group input[type="range"] { width: 100%; height: 26px; }
+
+
+
+        /* Toggle switch */
+
+        .toggle-switch {
+
+            position: relative;
+
+            display: inline-block;
+
+            width: 50px;
+
+            height: 24px;
+
+            margin-left: 10px;
+
+        }
+
+
+
+        .toggle-switch input { 
+
+            opacity: 0;
+
+            width: 0;
+
+            height: 0;
+
+        }
+
+
+
+        .toggle-slider {
+
+            position: absolute;
+
+            cursor: pointer;
+
+            top: 0;
+
+            left: 0;
+
+            right: 0;
+
+            bottom: 0;
+
+            background-color: var(--bg-accent);
+
+            transition: .4s;
+
+            border-radius: 24px;
+
+        }
+
+
+
+        .toggle-slider:before {
+
+            position: absolute;
+
+            content: "";
+
+            height: 16px;
+
+            width: 16px;
+
+            left: 4px;
+
+            bottom: 4px;
+
+            background-color: white;
+
+            transition: .4s;
+
+            border-radius: 50%;
+
+        }
+
+
+
+        input:checked + .toggle-slider {
+
+            background-color: var(--accent);
+
+        }
+
+
+
+        input:checked + .toggle-slider:before {
+
+            transform: translateX(26px);
+
+        }
+
+
+
+        /* Stats panel */
+
+        .stats-panel {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 0.5rem;
+
+            padding: 0.15rem 0;
+
+        }
+
+        .stats-panel .stats-container {
+
+            transform: scale(0.60);
+
+            transform-origin: left top;
+
+            margin: 0;
+
+        }
+
+
+
+        /* 3D Control Button */
+
+        .orbit-control-btn {
+
+            padding: 0.5rem 0.75rem;
+
+            border-radius: 4px;
+
+            border: 1px solid var(--border);
+
+            background-color: var(--bg-accent);
+
+            color: var(--text-primary);
+
+            cursor: pointer;
+
+            transition: background-color .2s ease;
+
+            font-size: 0.9em;
+
+            width: 100%;
+
+            margin-bottom: 0.5rem;
+
+        }
+
+        
+
+        .orbit-control-btn:hover {
+
+            background-color: var(--accent);
+
+        }
+
+        
+
+        .orbit-control-btn.active {
+
+            background-color: var(--accent);
+
+            color: white;
+
+        }
+
+
+
+        @media (max-width: 768px) {
+
+            .sidebar {
+
+                transform: translateX(-100%);
+
+                transition: transform 0.3s ease;
+
+                padding-bottom: 100px; /* More padding at bottom for mobile */
+
+            }
+
+            .sidebar.active { transform: translateX(0); }
+
+            
+
+            #menu-toggle {
+
+                display: block;
+
+            }
+
+            
+
+            .content {
+
+                margin-left: 0;
+
+                max-width: 100%;
+
+            }
+
+            
+
+            .dev-menu {
+
+                right: 10px;
+
+                left: 10px;
+
+                bottom: 100px;
+
+                width: 85%; /* 20% narrower on mobile */
+
+                max-height: 60vh;
+
+                padding: 0.6rem;
+
+            }
+
+            .dev-menu h3 { font-size: 0.88rem; }
+
+            .color-picker label { min-width: 80px; }
+
+            .dev-menu-buttons button { min-height: 40px; }
+
+        }
+
+
+
+        @media (max-width: 420px) {
+
+            .dev-menu { 
+
+                max-height: 55vh; 
+
+                padding: 0.5rem; 
+
+                width: 85%; /* Keep narrower on small mobile */
+
+            }
+
+            .color-picker label { min-width: 72px; font-size: 0.85rem; }
+
+            .dev-menu-buttons button { padding: 0.3rem 0.5rem; font-size: 0.85rem; min-height: 40px; }
+
+        }
+
+
+
+        /* Markdown content styling */
+
+        #file-content h1, #file-content h2, #file-content h3, #file-content h4 {
+
+            margin-top: 1.5em;
+
+            margin-bottom: 0.5em;
+
+            color: var(--accent);
+
+            font-family: var(--title-font);
+
+        }
+
+
+
+        #file-content p {
+
+            margin-bottom: 1em;
+
+        }
+
+
+
+        #file-content ul, #file-content ol {
+
+            margin-bottom: 1em;
+
+            padding-left: 2em;
+
+        }
+
+
+
+        #file-content li {
+
+            margin-bottom: 0.5em;
+
+        }
+
+
+
+        #file-content code {
+
+            background-color: var(--bg-accent);
+
+            padding: 0.2em 0.4em;
+
+            border-radius: 3px;
+
+            font-family: monospace;
+
+        }
+
+
+
+        #file-content pre {
+
+            background-color: var(--bg-secondary);
+
+            padding: 1em;
+
+            border-radius: 5px;
+
+            overflow: auto;
+
+            margin-bottom: 1.5em;
+
+        }
+
+
+
+        #file-content pre code {
+
+            background: none;
+
+            padding: 0;
+
+        }
+
+
+
+        #file-content table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            margin-bottom: 1.5em;
+
+        }
+
+
+
+        #file-content th, #file-content td {
+
+            padding: 0.75em;
+
+            border: 1px solid var(--border);
+
+        }
+
+
+
+        #file-content th {
+
+            background-color: var(--bg-accent);
+
+            text-align: left;
+
+        }
+
+
+
+        #file-content blockquote {
+
+            border-left: 4px solid var(--accent);
+
+            padding-left: 1em;
+
+            margin-left: 0;
+
+            margin-bottom: 1.5em;
+
+            color: var(--text-secondary);
+
+        }
+
+
+
+        /* loading indicator */
+
+        #loading { text-align: center; padding: 2rem; color: var(--text-secondary); }
+
+        #error { color: #e36; }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Topbar -->
+
+    <header class="topbar">
+
+        <h1>Wonder Orchards</h1>
+
+        <div>
+
+            <button id="menu-toggle" aria-label="Toggle menu">☰</button>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- Sidebar -->
+
+    <nav class="sidebar" id="sidebar">
+
+        <h2>Database Navigation</h2>
+
+        <ul id="nav-list"><li id="loading-nav">Loading file structure...</li></ul>
+
+    </nav>
+
+
+
+    <!-- Three.js/Particle container -->
+
+    <div id="canvasContainer"></div>
+
+
+
+    <!-- Main content -->
+
+    <main class="content">
+
+        <div id="file-content">
+
+            <div id="loading">Loading content...</div>
+
+        </div>
+
+    </main>
+
+
+
+    <!-- Dev menu button -->
+
+    <div class="dev-menu-btn" id="dev-menu-btn">⚙️</div>
+
+
+
+    <!-- Dev menu (now contains particle controls, colors, fonts, and stats) -->
+
+    <div class="dev-menu" id="dev-menu" aria-hidden="true">
+
+        <h3>Developer Settings</h3>
+
+
+
+        <!-- Performance Controls -->
+
+        <h3>Performance Controls</h3>
+
+        <div class="control-group">
+
+            <label for="disable-particles">
+
+                Disable 3D Particles
+
+                <div class="toggle-switch">
+
+                    <input type="checkbox" id="disable-particles">
+
+                    <span class="toggle-slider"></span>
+
+                </div>
+
+            </label>
+
+        </div>
+
+
+
+        <!-- 3D Controls -->
+
+        <h3>3D Controls</h3>
+
+        <button id="orbit-toggle-btn" class="orbit-control-btn">Enable 3D Control</button>
+
+
+
+        <div class="control-group">
+
+            <label for="simultaneous-mode">
+
+                Simultaneous Scrolling & 3D Control
+
+                <div class="toggle-switch">
+
+                    <input type="checkbox" id="simultaneous-mode">
+
+                    <span class="toggle-slider"></span>
+
+                </div>
+
+            </label>
+
+        </div>
+
+
+
+        <!-- Colors -->
+
+        <div class="color-picker">
+
+            <label for="bg-color">Background Color</label>
+
+            <input type="color" id="bg-color" value="#1a1a1a">
+
+        </div>
+
+
+
+        <div class="color-picker">
+
+            <label for="particle-color">Particle Color</label>
+
+            <input type="color" id="particle-color" value="#ffffff">
+
+        </div>
+
+
+
+        <div class="color-picker">
+
+            <label for="text-primary">Text Color</label>
+
+            <input type="color" id="text-primary" value="#f0f0f0">
+
+        </div>
+
+
+
+        <!-- Fonts -->
+
+        <div class="font-selector">
+
+            <label for="title-font">Title Font</label>
+
+            <select id="title-font">
+
+                <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif">System UI</option>
+
+                <option value="'Georgia', serif">Georgia</option>
+
+                <option value="'Arial', sans-serif">Arial</option>
+
+                <option value="'Courier New', monospace">Courier New</option>
+
+                <option value="'Times New Roman', serif">Times New Roman</option>
+
+            </select>
+
+        </div>
+
+
+
+        <div class="font-selector">
+
+            <label for="body-font">Body Font</label>
+
+            <select id="body-font">
+
+                <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif">System UI</option>
+
+                <option value="'Georgia', serif">Georgia</option>
+
+                <option value="'Arial', sans-serif">Arial</option>
+
+                <option value="'Courier New', monospace">Courier New</option>
+
+                <option value="'Times New Roman', serif">Times New Roman</option>
+
+            </select>
+
+        </div>
+
+
+
+        <!-- Particle Controls -->
+
+        <h3>Particle Controls</h3>
+
+
+
+        <div class="control-group">
+
+            <label for="particle-count">Particle Count: <span id="particle-count-value">640</span></label>
+
+            <input type="range" id="particle-count" min="50" max="2000" value="640">
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <label for="particle-size">Particle Size: <span id="particle-size-value">0.03</span></label>
+
+            <input type="range" id="particle-size" min="0.01" max="0.5" step="0.01" value="0.03">
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <label for="particle-speed">Particle Speed: <span id="particle-speed-value">0.001</span></label>
+
+            <input type="range" id="particle-speed" min="0.0002" max="0.02" step="0.0002" value="0.001">
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <label for="particle-randomness">Randomness: <span id="particle-randomness-value">0.06</span></label>
+
+            <input type="range" id="particle-randomness" min="0" max="1" step="0.01" value="0.06">
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <label for="particle-radius">Particle Radius (XY): <span id="particle-radius-value">185</span></label>
+
+            <input type="range" id="particle-radius" min="10" max="300" step="1" value="185">
+
+        </div>
+
+
+
+        <div class="control-group">
+
+            <label for="particle-depth">Particle Depth (Z): <span id="particle-depth-value">200</span></label>
+
+            <input type="range" id="particle-depth" min="0" max="300" step="1" value="200">
+
+        </div>
+
+
+
+        <!-- Stats panel -->
+
+        <div class="stats-panel" id="stats-panel" aria-hidden="false"></div>
+
+
+
+        <div class="dev-menu-buttons">
+
+            <button id="load-settings">Load Saved</button>
+
+            <button id="reset-settings">Reset</button>
+
+            <button id="save-settings">Save</button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Toast -->
+
+    <div class="toast" id="toast">Settings saved!</div>
+
+
+
+    <script>
+
+        // ---------- UI elements ----------
+
+        const menuToggle = document.getElementById('menu-toggle');
+
+        const sidebar = document.getElementById('sidebar');
+
+        const navList = document.getElementById('nav-list');
+
+        const fileContent = document.getElementById('file-content');
+
+        const devMenuBtn = document.getElementById('dev-menu-btn');
+
+        const devMenu = document.getElementById('dev-menu');
+
+        const saveSettingsBtn = document.getElementById('save-settings');
+
+        const resetSettingsBtn = document.getElementById('reset-settings');
+
+        const loadSettingsBtn = document.getElementById('load-settings');
+
+        const toast = document.getElementById('toast');
+
+        const disableParticlesCheckbox = document.getElementById('disable-particles');
+
+        const simultaneousModeCheckbox = document.getElementById('simultaneous-mode');
+
+        const orbitToggleBtn = document.getElementById('orbit-toggle-btn');
+
+
+
+        const bgColorPicker = document.getElementById('bg-color');
+
+        const particleColorPicker = document.getElementById('particle-color');
+
+        const textColorPicker = document.getElementById('text-primary');
+
+        const titleFontSelect = document.getElementById('title-font');
+
+        const bodyFontSelect = document.getElementById('body-font');
+
+
+
+        // particle inputs
+
+        const particleCountInput = document.getElementById('particle-count');
+
+        const particleSizeInput = document.getElementById('particle-size');
+
+        const particleSpeedInput = document.getElementById('particle-speed');
+
+        const particleRandomnessInput = document.getElementById('particle-randomness');
+
+        const particleRadiusInput = document.getElementById('particle-radius');
+
+        const particleDepthInput = document.getElementById('particle-depth');
+
+
+
+        // particle value displays
+
+        const particleCountValue = document.getElementById('particle-count-value');
+
+        const particleSizeValue = document.getElementById('particle-size-value');
+
+        const particleSpeedValue = document.getElementById('particle-speed-value');
+
+        const particleRandomnessValue = document.getElementById('particle-randomness-value');
+
+        const particleRadiusValue = document.getElementById('particle-radius-value');
+
+        const particleDepthValue = document.getElementById('particle-depth-value');
+
+
+
+        // stats panel DOM reference
+
+        const statsPanelEl = document.getElementById('stats-panel');
+
+
+
+        // ---------- Three.js / Particle variables ----------
+
+        let scene, camera, renderer, controls;
+
+        let particles = null;
+
+        let particleGeometry = null;
+
+        let particleMaterial = null;
+
+        let particlePositions = null;
+
+        let particleRandoms = null;
+
+        let stats = null;
+
+        let savedSettingsCache = null;
+
+        let animationId = null;
+
+        let particlesEnabled = true;
+
+        let simultaneousMode = false;
+
+        let orbitMode = false;
+
+
+
+        // Default particle params (updated values)
+
+        let particleParams = {
+
+            count: parseInt(particleCountInput.value, 10),
+
+            size: parseFloat(particleSizeInput.value),
+
+            speed: parseFloat(particleSpeedInput.value),
+
+            color: particleColorPicker.value,
+
+            randomness: parseFloat(particleRandomnessInput.value),
+
+            radius: parseFloat(particleRadiusInput.value),
+
+            depth: parseFloat(particleDepthInput.value)
+
+        };
+
+
+
+        // ---------- File structure ----------
+
+        const fileStructure = [
+
+            { name: "README", path: "README.md" },
+
+            { name: "Vision", path: "data/vision.md" },
+
+            { name: "DNA", path: "data/dna.md" },
+
+            { name: "Workflows", path: "data/workflows.md" },
+
+            { name: "Accounts", path: "data/accounts.md" },
+
+            { name: "Database Growth", path: "data/database-growth.md" },
+
+            { name: "Initial Log", path: "data/logs/2025-09-02-initial-log.md" },
+
+            { name: "Backlog", path: "tasks/backlog.md" },
+
+            { name: "In Progress", path: "tasks/in-progress.md" },
+
+            { name: "Completed", path: "tasks/completed.md" },
+
+            { name: "Thread Header", path: "dev/thread-header.md" },
+
+            { name: "Usage Instructions", path: "dev/usage-instructions.md" },
+
+            { name: "Scripts README", path: "scripts/README.md" },
+
+            { name: "Document Template", path: "templates/document.md" },
+
+            { name: "Task Template", path: "tasks/task.md" },
+
+            { name: "Alpha v2.1 Notes", path: "versions/alpha-v2.1.md" },
+
+            { name: "Version History", path: "versions/history.md" }
+
+        ];
+
+
+
+        // ---------- Helpers ----------
+
+        function showToast(message) {
+
+            toast.textContent = message;
+
+            toast.classList.add('show');
+
+            setTimeout(() => toast.classList.remove('show'), 1600);
+
+        }
+
+
+
+        function debounce(fn, wait) {
+
+            let t;
+
+            return function(...args) {
+
+                clearTimeout(t);
+
+                t = setTimeout(() => fn.apply(this, args), wait);
+
+            };
+
+        }
+
+
+
+        // ---------- Particle system ----------
+
+        function initThreeJS() {
+
+            scene = new THREE.Scene();
+
+            scene.background = new THREE.Color(bgColorPicker.value || '#1a1a1a');
+
+
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+
+            camera.position.set(0, 0, 120);
+
+
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            renderer.setPixelRatio(window.devicePixelRatio);
+
+            document.getElementById('canvasContainer').appendChild(renderer.domElement);
+
+
+
+            // Optional orbit controls
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+            controls.enableDamping = true;
+
+            controls.dampingFactor = 0.05;
+
+            controls.enabled = false; // Start with controls disabled
+
+
+
+            // Stats (append to dev menu)
+
+            stats = new Stats();
+
+            stats.dom.style.position = 'static';
+
+            stats.dom.style.margin = '0';
+
+            stats.dom.classList.add('stats-container');
+
+            if (statsPanelEl) statsPanelEl.appendChild(stats.dom);
+
+
+
+            // create particles with requested defaults
+
+            createParticles(particleParams.count);
+
+
+
+            // If user loaded settings before Three init, apply them
+
+            if (savedSettingsCache) applySavedSettingsAfterInit(savedSettingsCache);
+
+
+
+            window.addEventListener('resize', onWindowResize);
+
+
+
+            // save camera on controls change (debounced)
+
+            const saveCameraDebounced = debounce(() => updateCachedCameraToLocalStorage(), 750);
+
+            controls.addEventListener('change', saveCameraDebounced);
+
+        }
+
+
+
+        function createParticles(count) {
+
+            if (!particlesEnabled) return;
+
+            
+
+            // dispose old
+
+            if (particles) {
+
+                if (particleGeometry) {
+
+                    particleGeometry.dispose();
+
+                    particleGeometry = null;
+
+                }
+
+                if (particleMaterial) {
+
+                    particleMaterial.dispose();
+
+                    particleMaterial = null;
+
+                }
+
+                scene.remove(particles);
+
+                particles = null;
+
+            }
+
+
+
+            const c = Math.max(4, Math.floor(count));
+
+            particlePositions = new Float32Array(c * 3);
+
+            particleRandoms = new Float32Array(c);
+
+
+
+            // use particleParams.radius and particleParams.depth for bounds
+
+            const maxR = particleParams.radius || 185;
+
+            const depth = particleParams.depth || 200;
+
+
+
+            // initialize positions in a disc with slight z variation
+
+            for (let i = 0; i < c; i++) {
+
+                const angle = Math.random() * Math.PI * 2;
+
+                const radius = Math.random() * (maxR * 0.9) + (maxR * 0.05);
+
+                const x = Math.cos(angle) * radius * (0.6 + Math.random() * 0.8);
+
+                const y = Math.sin(angle) * radius * (0.6 + Math.random() * 0.8);
+
+                const z = (Math.random() - 0.5) * depth;
+
+                particlePositions[i * 3] = x;
+
+                particlePositions[i * 3 + 1] = y;
+
+                particlePositions[i * 3 + 2] = z;
+
+
+
+                // store a small per-particle random factor [-1,1]
+
+                particleRandoms[i] = Math.random() * 2 - 1;
+
+            }
+
+
+
+            particleGeometry = new THREE.BufferGeometry();
+
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+
+            // store random as a float attribute if needed in shaders later
+
+            particleGeometry.setAttribute('aRandom', new THREE.BufferAttribute(particleRandoms, 1));
+
+
+
+            particleMaterial = new THREE.PointsMaterial({
+
+                color: particleParams.color || '#ffffff',
+
+                size: particleParams.size * 10, // scaled for visibility
+
+                sizeAttenuation: true,
+
+                depthTest: true,
+
+                transparent: true,
+
+                opacity: 0.9
+
+            });
+
+
+
+            particles = new THREE.Points(particleGeometry, particleMaterial);
+
+            scene.add(particles);
+
+        }
+
+
+
+        // animate particles by rotating their XY coordinates and nudging Z by randomness
+
+        function updateParticles(delta) {
+
+            if (!particlesEnabled || !particles || !particleGeometry) return;
+
+
+
+            const positions = particleGeometry.attributes.position.array;
+
+            const rand = particleRandoms;
+
+            const count = positions.length / 3;
+
+            const t = performance.now() * 0.001;
+
+            const speedBase = particleParams.speed * 60; // scale so UI feels responsive
+
+            const randomness = particleParams.randomness;
+
+
+
+            for (let i = 0; i < count; i++) {
+
+                const ix = i * 3;
+
+                let x = positions[ix];
+
+                let y = positions[ix + 1];
+
+                let z = positions[ix + 2];
+
+
+
+                // polar coordinates
+
+                const angle = Math.atan2(y, x);
+
+                const radius = Math.sqrt(x * x + y * y) || 0.0001;
+
+
+
+                // rotate a bit each frame; rotation speed varies per-particle
+
+                const rot = speedBase * (1 + rand[i] * randomness) * delta;
+
+                const newAngle = angle + rot;
+
+
+
+                // gentle radial breathing
+
+                const breath = 1 + Math.sin(t * (0.3 + rand[i] * 0.1) + i) * 0.002 * (randomness * 10);
+
+
+
+                const nx = Math.cos(newAngle) * radius * breath;
+
+                const ny = Math.sin(newAngle) * radius * breath;
+
+                // slight z wobble
+
+                const nz = z + Math.sin(t * (0.5 + rand[i] * 0.5) + i) * 0.02 * randomness;
+
+
+
+                positions[ix] = nx;
+
+                positions[ix + 1] = ny;
+
+                positions[ix + 2] = nz;
+
+            }
+
+
+
+            particleGeometry.attributes.position.needsUpdate = true;
+
+        }
+
+
+
+        function onWindowResize() {
+
+            if (!camera || !renderer) return;
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+        }
+
+
+
+        let lastTime = performance.now();
+
+        function animate() {
+
+            animationId = requestAnimationFrame(animate);
+
+            const now = performance.now();
+
+            const delta = (now - lastTime) / 1000; // seconds
+
+            lastTime = now;
+
+
+
+            if (controls && controls.enabled) controls.update();
+
+            if (particlesEnabled) updateParticles(delta);
+
+            if (renderer && camera) renderer.render(scene, camera);
+
+            if (stats) stats.update();
+
+        }
+
+
+
+        function stopAnimation() {
+
+            if (animationId) {
+
+                cancelAnimationFrame(animationId);
+
+                animationId = null;
+
+            }
+
+        }
+
+
+
+        function toggleParticles(enabled) {
+
+            particlesEnabled = enabled;
+
+            
+
+            if (enabled) {
+
+                if (!particles) {
+
+                    createParticles(particleParams.count);
+
+                }
+
+                if (!animationId) {
+
+                    lastTime = performance.now();
+
+                    animate();
+
+                }
+
+                if (renderer && renderer.domElement) {
+
+                    renderer.domElement.style.display = 'block';
+
+                }
+
+            } else {
+
+                if (particles) {
+
+                    scene.remove(particles);
+
+                    particles = null;
+
+                }
+
+                if (renderer && renderer.domElement) {
+
+                    renderer.domElement.style.display = 'none';
+
+                }
+
+            }
+
+        }
+
+
+
+        function toggleOrbitMode() {
+
+            orbitMode = !orbitMode;
+
+            
+
+            if (controls) {
+
+                controls.enabled = orbitMode;
+
+                
+
+                if (orbitMode) {
+
+                    document.body.classList.add('orbit-mode');
+
+                    orbitToggleBtn.textContent = 'Exit 3D Control';
+
+                    orbitToggleBtn.classList.add('active');
+
+                    
+
+                    if (simultaneousMode) {
+
+                        document.body.classList.remove('orbit-mode');
+
+                    }
+
+                } else {
+
+                    document.body.classList.remove('orbit-mode');
+
+                    orbitToggleBtn.textContent = 'Enable 3D Control';
+
+                    orbitToggleBtn.classList.remove('active');
+
+                }
+
+            }
+
+        }
+
+
+
+        function toggleSimultaneousMode(enabled) {
+
+            simultaneousMode = enabled;
+
+            
+
+            if (orbitMode) {
+
+                if (enabled) {
+
+                    // Enable simultaneous mode - keep UI interactive
+
+                    document.body.classList.remove('orbit-mode');
+
+                } else {
+
+                    // Disable simultaneous mode - disable UI interaction
+
+                    document.body.classList.add('orbit-mode');
+
+                }
+
+            }
+
+        }
+
+
+
+        // ---------- Settings persistence ----------
+
+        const STORAGE_KEY = 'wonderOrchardsSettings';
+
+
+
+        function getSettingsFromForm() {
+
+            return {
+
+                bgPrimary: bgColorPicker.value,
+
+                textPrimary: textColorPicker.value,
+
+                particleColor: particleColorPicker.value,
+
+                titleFont: titleFontSelect.value,
+
+                bodyFont: bodyFontSelect.value,
+
+                particles: {
+
+                    count: parseInt(particleCountInput.value, 10),
+
+                    size: parseFloat(particleSizeInput.value),
+
+                    speed: parseFloat(particleSpeedInput.value),
+
+                    randomness: parseFloat(particleRandomnessInput.value),
+
+                    color: particleColorPicker.value,
+
+                    radius: parseFloat(particleRadiusInput.value),
+
+                    depth: parseFloat(particleDepthInput.value)
+
+                },
+
+                camera: (camera && controls) ? {
+
+                    position: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+
+                    target:   { x: controls.target.x, y: controls.target.y, z: controls.target.z }
+
+                } : null,
+
+                particlesEnabled: particlesEnabled,
+
+                orbitMode: orbitMode,
+
+                simultaneousMode: simultaneousMode
+
+            };
+
+        }
+
+
+
+        function saveAllSettingsToStorage() {
+
+            const settings = getSettingsFromForm();
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+
+            savedSettingsCache = settings;
+
+        }
+
+
+
+        function updateCachedCameraToLocalStorage() {
+
+            try {
+
+                const raw = localStorage.getItem(STORAGE_KEY);
+
+                let base = raw ? JSON.parse(raw) : {};
+
+                if (!base) base = {};
+
+                if (camera && controls) {
+
+                    base.camera = {
+
+                        position: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+
+                        target: { x: controls.target.x, y: controls.target.y, z: controls.target.z }
+
+                    };
+
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
+
+                    savedSettingsCache = base;
+
+                }
+
+            } catch (err) {
+
+                console.warn('Could not update camera to localStorage', err);
+
+            }
+
+        }
+
+
+
+        function loadSettings() {
+
+            const raw = localStorage.getItem(STORAGE_KEY);
+
+            if (!raw) {
+
+                // set UI displays from default inputs
+
+                particleCountValue.textContent = particleCountInput.value;
+
+                particleSizeValue.textContent = particleSizeInput.value;
+
+                particleSpeedValue.textContent = particleSpeedInput.value;
+
+                particleRandomnessValue.textContent = particleRandomnessInput.value;
+
+                particleRadiusValue.textContent = particleRadiusInput.value;
+
+                particleDepthValue.textContent = particleDepthInput.value;
+
+                return;
+
+            }
+
+
+
+            try {
+
+                const settings = JSON.parse(raw);
+
+                savedSettingsCache = settings;
+
+
+
+                bgColorPicker.value = settings.bgPrimary || '#1a1a1a';
+
+                particleColorPicker.value = (settings.particles && settings.particles.color) || settings.particleColor || '#ffffff';
+
+                textColorPicker.value = settings.textPrimary || '#f0f0f0';
+
+                titleFontSelect.value = settings.titleFont || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif";
+
+                bodyFontSelect.value = settings.bodyFont || "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif";
+
+
+
+                if (settings.particles) {
+
+                    particleCountInput.value = settings.particles.count || particleCountInput.value;
+
+                    particleSizeInput.value = settings.particles.size || particleSizeInput.value;
+
+                    particleSpeedInput.value = settings.particles.speed || particleSpeedInput.value;
+
+                    particleRandomnessInput.value = settings.particles.randomness || particleRandomnessInput.value;
+
+                    particleRadiusInput.value = settings.particles.radius || particleRadiusInput.value;
+
+                    particleDepthInput.value = settings.particles.depth || particleDepthInput.value;
+
+
+
+                    particleCountValue.textContent = particleCountInput.value;
+
+                    particleSizeValue.textContent = particleSizeInput.value;
+
+                    particleSpeedValue.textContent = particleSpeedInput.value;
+
+                    particleRandomnessValue.textContent = particleRandomnessInput.value;
+
+                    particleRadiusValue.textContent = particleRadiusInput.value;
+
+                    particleDepthValue.textContent = particleDepthInput.value;
+
+
+
+                    particleParams.count = parseInt(particleCountInput.value, 10);
+
+                    particleParams.size = parseFloat(particleSizeInput.value);
+
+                    particleParams.speed = parseFloat(particleSpeedInput.value);
+
+                    particleParams.randomness = parseFloat(particleRandomnessInput.value);
+
+                    particleParams.radius = parseFloat(particleRadiusInput.value);
+
+                    particleParams.depth = parseFloat(particleDepthInput.value);
+
+                    particleParams.color = particleColorPicker.value;
+
+                }
+
+
+
+                // Load particles enabled state
+
+                if (typeof settings.particlesEnabled !== 'undefined') {
+
+                    particlesEnabled = settings.particlesEnabled;
+
+                    disableParticlesCheckbox.checked = !particlesEnabled;
+
+                    toggleParticles(particlesEnabled);
+
+                }
+
+
+
+                // Load orbit mode state
+
+                if (typeof settings.orbitMode !== 'undefined') {
+
+                    orbitMode = settings.orbitMode;
+
+                    if (orbitMode) {
+
+                        orbitToggleBtn.textContent = 'Exit 3D Control';
+
+                        orbitToggleBtn.classList.add('active');
+
+                    } else {
+
+                        orbitToggleBtn.textContent = 'Enable 3D Control';
+
+                        orbitToggleBtn.classList.remove('active');
+
+                    }
+
+                    toggleOrbitMode();
+
+                }
+
+
+
+                // Load simultaneous mode state
+
+                if (typeof settings.simultaneousMode !== 'undefined') {
+
+                    simultaneousMode = settings.simultaneousMode;
+
+                    simultaneousModeCheckbox.checked = simultaneousMode;
+
+                    toggleSimultaneousMode(simultaneousMode);
+
+                }
+
+
+
+                // apply CSS variables
+
+                document.documentElement.style.setProperty('--bg-primary', bgColorPicker.value);
+
+                document.documentElement.style.setProperty('--text-primary', textColorPicker.value);
+
+                document.documentElement.style.setProperty('--title-font', titleFontSelect.value);
+
+                document.documentElement.style.setProperty('--body-font', bodyFontSelect.value);
+
+
+
+            } catch (err) {
+
+                console.error('Error parsing saved settings:', err);
+
+            }
+
+        }
+
+
+
+        function applySavedSettingsAfterInit(settings) {
+
+            try {
+
+                if (!settings) return;
+
+                if (settings.bgPrimary) scene.background = new THREE.Color(settings.bgPrimary);
+
+                if (settings.particles && settings.particles.color && particleMaterial) {
+
+                    particleMaterial.color.set(settings.particles.color);
+
+                }
+
+                if (settings.particles) {
+
+                    // recreate with saved count/size/radius/depth
+
+                    particleParams.count = settings.particles.count || particleParams.count;
+
+                    particleParams.size = settings.particles.size || particleParams.size;
+
+                    particleParams.speed = settings.particles.speed || particleParams.speed;
+
+                    particleParams.randomness = settings.particles.randomness || particleParams.randomness;
+
+                    particleParams.color = settings.particles.color || particleParams.color;
+
+                    particleParams.radius = settings.particles.radius || particleParams.radius;
+
+                    particleParams.depth = settings.particles.depth || particleParams.depth;
+
+
+
+                    createParticles(particleParams.count);
+
+                    if (particleMaterial) {
+
+                        particleMaterial.size = particleParams.size * 10;
+
+                        particleMaterial.color.set(particleParams.color);
+
+                    }
+
+                }
+
+
+
+                if (settings.camera && camera && controls) {
+
+                    const pos = settings.camera.position;
+
+                    const tgt = settings.camera.target;
+
+                    if (pos) camera.position.set(pos.x, pos.y, pos.z);
+
+                    if (tgt) controls.target.set(tgt.x, tgt.y, tgt.z);
+
+                    controls.update();
+
+                }
+
+            } catch (err) {
+
+                console.warn('applySavedSettingsAfterInit error:', err);
+
+            }
+
+        }
+
+
+
+        function resetToDefaults() {
+
+            const defaultBg = '#1a1a1a';
+
+            const defaultParticleColor = '#ffffff';
+
+            const defaultText = '#f0f0f0';
+
+            const defaultTitleFont = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif";
+
+            const defaultBodyFont = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif";
+
+            const defaultParticles = { count: 640, size: 0.03, speed: 0.001, randomness: 0.06, radius: 185, depth: 200 };
+
+
+
+            bgColorPicker.value = defaultBg;
+
+            particleColorPicker.value = defaultParticleColor;
+
+            textColorPicker.value = defaultText;
+
+            titleFontSelect.value = defaultTitleFont;
+
+            bodyFontSelect.value = defaultBodyFont;
+
+
+
+            particleCountInput.value = defaultParticles.count;
+
+            particleSizeInput.value = defaultParticles.size;
+
+            particleSpeedInput.value = defaultParticles.speed;
+
+            particleRandomnessInput.value = defaultParticles.randomness;
+
+            particleRadiusInput.value = defaultParticles.radius;
+
+            particleDepthInput.value = defaultParticles.depth;
+
+
+
+            particleCountValue.textContent = particleCountInput.value;
+
+            particleSizeValue.textContent = particleSizeInput.value;
+
+            particleSpeedValue.textContent = particleSpeedInput.value;
+
+            particleRandomnessValue.textContent = particleRandomnessInput.value;
+
+            particleRadiusValue.textContent = particleRadiusInput.value;
+
+            particleDepthValue.textContent = particleDepthInput.value;
+
+
+
+            document.documentElement.style.setProperty('--bg-primary', bgColorPicker.value);
+
+            document.documentElement.style.setProperty('--text-primary', textColorPicker.value);
+
+            document.documentElement.style.setProperty('--title-font', titleFontSelect.value);
+
+            document.documentElement.style.setProperty('--body-font', bodyFontSelect.value);
+
+
+
+            if (scene) scene.background = new THREE.Color(bgColorPicker.value);
+
+
+
+            particleParams.count = parseInt(particleCountInput.value, 10);
+
+            particleParams.size = parseFloat(particleSizeInput.value);
+
+            particleParams.speed = parseFloat(particleSpeedInput.value);
+
+            particleParams.randomness = parseFloat(particleRandomnessInput.value);
+
+            particleParams.radius = parseFloat(particleRadiusInput.value);
+
+            particleParams.depth = parseFloat(particleDepthInput.value);
+
+            particleParams.color = particleColorPicker.value;
+
+
+
+            // Reset toggles
+
+            disableParticlesCheckbox.checked = false;
+
+            simultaneousModeCheckbox.checked = false;
+
+            particlesEnabled = true;
+
+            simultaneousMode = false;
+
+            orbitMode = false;
+
+            toggleParticles(true);
+
+            toggleSimultaneousMode(false);
+
+            
+
+            orbitToggleBtn.textContent = 'Enable 3D Control';
+
+            orbitToggleBtn.classList.remove('active');
+
+
+
+            createParticles(particleParams.count);
+
+            if (particleMaterial) {
+
+                particleMaterial.size = particleParams.size * 10;
+
+                particleMaterial.color.set(particleParams.color);
+
+            }
+
+
+
+            localStorage.removeItem(STORAGE_KEY);
+
+            savedSettingsCache = null;
+
+        }
+
+
+
+        // ---------- UI event wiring ----------
+
+        function setupEventListeners() {
+
+            // Sidebar toggle (mobile)
+
+            menuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+
+
+
+            // Dev menu toggle
+
+            devMenuBtn.addEventListener('click', () => {
+
+                devMenu.classList.toggle('active');
+
+            });
+
+
+
+            // Disable particles toggle
+
+            disableParticlesCheckbox.addEventListener('change', (e) => {
+
+                toggleParticles(!e.target.checked);
+
+            });
+
+
+
+            // Orbit mode button
+
+            orbitToggleBtn.addEventListener('click', () => {
+
+                toggleOrbitMode();
+
+            });
+
+
+
+            // Simultaneous mode toggle
+
+            simultaneousModeCheckbox.addEventListener('change', (e) => {
+
+                toggleSimultaneousMode(e.target.checked);
+
+            });
+
+
+
+            // Escape key to exit orbit mode
+
+            document.addEventListener('keydown', (e) => {
+
+                if (e.key === 'Escape' && orbitMode) {
+
+                    toggleOrbitMode();
+
+                }
+
+            });
+
+
+
+            // click outside to close mobile sidebar and dev menu
+
+            document.addEventListener('click', (e) => {
+
+                if (window.innerWidth < 768 && sidebar.classList.contains('active') && !sidebar.contains(e.target) && e.target !== menuToggle) {
+
+                    sidebar.classList.remove('active');
+
+                }
+
+                if (devMenu.classList.contains('active') && !devMenu.contains(e.target) && e.target !== devMenuBtn) {
+
+                    devMenu.classList.remove('active');
+
+                }
+
+            });
+
+
+
+            // Save settings
+
+            saveSettingsBtn.addEventListener('click', () => {
+
+                document.documentElement.style.setProperty('--bg-primary', bgColorPicker.value);
+
+                document.documentElement.style.setProperty('--text-primary', textColorPicker.value);
+
+                document.documentElement.style.setProperty('--title-font', titleFontSelect.value);
+
+                document.documentElement.style.setProperty('--body-font', bodyFontSelect.value);
+
+
+
+                if (scene) scene.background = new THREE.Color(bgColorPicker.value);
+
+
+
+                // update particleParams and material
+
+                particleParams.count = parseInt(particleCountInput.value, 10);
+
+                particleParams.size = parseFloat(particleSizeInput.value);
+
+                particleParams.speed = parseFloat(particleSpeedInput.value);
+
+                particleParams.randomness = parseFloat(particleRandomnessInput.value);
+
+                particleParams.color = particleColorPicker.value;
+
+                particleParams.radius = parseFloat(particleRadiusInput.value);
+
+                particleParams.depth = parseFloat(particleDepthInput.value);
+
+
+
+                createParticles(particleParams.count);
+
+                if (particleMaterial) {
+
+                    particleMaterial.size = particleParams.size * 10;
+
+                    particleMaterial.color.set(particleParams.color);
+
+                }
+
+
+
+                saveAllSettingsToStorage();
+
+
+
+                showToast('Settings saved!');
+
+                setTimeout(() => devMenu.classList.remove('active'), 700);
+
+            });
+
+
+
+            // Reset button
+
+            resetSettingsBtn.addEventListener('click', () => {
+
+                resetToDefaults();
+
+                showToast('Settings reset to defaults!');
+
+            });
+
+
+
+            // Load saved (revert)
+
+            loadSettingsBtn.addEventListener('click', () => {
+
+                const raw = localStorage.getItem(STORAGE_KEY);
+
+                if (!raw) {
+
+                    showToast('No saved settings found.');
+
+                    return;
+
+                }
+
+                try {
+
+                    const settings = JSON.parse(raw);
+
+                    bgColorPicker.value = settings.bgPrimary || bgColorPicker.value;
+
+                    particleColorPicker.value = (settings.particles && settings.particles.color) || particleColorPicker.value;
+
+                    textColorPicker.value = settings.textPrimary || textColorPicker.value;
+
+                    titleFontSelect.value = settings.titleFont || titleFontSelect.value;
+
+                    bodyFontSelect.value = settings.bodyFont || bodyFontSelect.value;
+
+
+
+                    if (settings.particles) {
+
+                        particleCountInput.value = settings.particles.count;
+
+                        particleSizeInput.value = settings.particles.size;
+
+                        particleSpeedInput.value = settings.particles.speed;
+
+                        particleRandomnessInput.value = settings.particles.randomness;
+
+                        particleRadiusInput.value = settings.particles.radius;
+
+                        particleDepthInput.value = settings.particles.depth;
+
+
+
+                        particleCountValue.textContent = particleCountInput.value;
+
+                        particleSizeValue.textContent = particleSizeInput.value;
+
+                        particleSpeedValue.textContent = particleSpeedInput.value;
+
+                        particleRandomnessValue.textContent = particleRandomnessInput.value;
+
+                        particleRadiusValue.textContent = particleRadiusInput.value;
+
+                        particleDepthValue.textContent = particleDepthInput.value;
+
+
+
+                        particleParams.count = parseInt(particleCountInput.value, 10);
+
+                        particleParams.size = parseFloat(particleSizeInput.value);
+
+                        particleParams.speed = parseFloat(particleSpeedInput.value);
+
+                        particleParams.randomness = parseFloat(particleRandomnessInput.value);
+
+                        particleParams.radius = parseFloat(particleRadiusInput.value);
+
+                        particleParams.depth = parseFloat(particleDepthInput.value);
+
+                        particleParams.color = particleColorPicker.value;
+
+                    }
+
+
+
+                    // Load particles enabled state
+
+                    if (typeof settings.particlesEnabled !== 'undefined') {
+
+                        particlesEnabled = settings.particlesEnabled;
+
+                        disableParticlesCheckbox.checked = !particlesEnabled;
+
+                        toggleParticles(particlesEnabled);
+
+                    }
+
+
+
+                    // Load orbit mode state
+
+                    if (typeof settings.orbitMode !== 'undefined') {
+
+                        orbitMode = settings.orbitMode;
+
+                        if (orbitMode) {
+
+                            orbitToggleBtn.textContent = 'Exit 3D Control';
+
+                            orbitToggleBtn.classList.add('active');
+
+                        } else {
+
+                            orbitToggleBtn.textContent = 'Enable 3D Control';
+
+                            orbitToggleBtn.classList.remove('active');
+
+                        }
+
+                        toggleOrbitMode();
+
+                    }
+
+
+
+                    // Load simultaneous mode state
+
+                    if (typeof settings.simultaneousMode !== 'undefined') {
+
+                        simultaneousMode = settings.simultaneousMode;
+
+                        simultaneousModeCheckbox.checked = simultaneousMode;
+
+                        toggleSimultaneousMode(simultaneousMode);
+
+                    }
+
+
+
+                    if (scene) scene.background = new THREE.Color(bgColorPicker.value);
+
+                    createParticles(particleParams.count);
+
+                    if (particleMaterial) {
+
+                        particleMaterial.size = particleParams.size * 10;
+
+                        particleMaterial.color.set(particleParams.color);
+
+                    }
+
+
+
+                    if (settings.camera && camera && controls) {
+
+                        const p = settings.camera.position;
+
+                        const t = settings.camera.target;
+
+                        if (p) camera.position.set(p.x, p.y, p.z);
+
+                        if (t) controls.target.set(t.x, t.y, t.z);
+
+                        controls.update();
+
+                    }
+
+
+
+                    showToast('Saved settings applied.');
+
+                } catch (err) {
+
+                    console.error('Error loading saved settings:', err);
+
+                    showToast('Error loading saved settings.');
+
+                }
+
+            });
+
+
+
+            // Particle inputs update live
+
+            const recreateParticlesDebounced = debounce(() => createParticles(particleParams.count), 200);
+
+
+
+            particleCountInput.addEventListener('input', (e) => {
+
+                particleCountValue.textContent = e.target.value;
+
+                particleParams.count = parseInt(e.target.value, 10);
+
+                recreateParticlesDebounced();
+
+            });
+
+
+
+            particleSizeInput.addEventListener('input', (e) => {
+
+                particleSizeValue.textContent = e.target.value;
+
+                particleParams.size = parseFloat(e.target.value);
+
+                if (particleMaterial) {
+
+                    particleMaterial.size = particleParams.size * 10;
+
+                }
+
+            });
+
+
+
+            particleSpeedInput.addEventListener('input', (e) => {
+
+                particleSpeedValue.textContent = e.target.value;
+
+                particleParams.speed = parseFloat(e.target.value);
+
+            });
+
+
+
+            particleRandomnessInput.addEventListener('input', (e) => {
+
+                particleRandomnessValue.textContent = e.target.value;
+
+                particleParams.randomness = parseFloat(e.target.value);
+
+            });
+
+
+
+            particleRadiusInput.addEventListener('input', (e) => {
+
+                particleRadiusValue.textContent = e.target.value;
+
+                particleParams.radius = parseFloat(e.target.value);
+
+                recreateParticlesDebounced();
+
+            });
+
+
+
+            particleDepthInput.addEventListener('input', (e) => {
+
+                particleDepthValue.textContent = e.target.value;
+
+                particleParams.depth = parseFloat(e.target.value);
+
+                recreateParticlesDebounced();
+
+            });
+
+
+
+            particleColorPicker.addEventListener('input', (e) => {
+
+                particleParams.color = e.target.value;
+
+                if (particleMaterial) particleMaterial.color.set(particleParams.color);
+
+            });
+
+        }
+
+
+
+        // ---------- Navigation / file rendering ----------
+
+        function renderNavigation() {
+
+            navList.innerHTML = '';
+
+            fileStructure.forEach(file => {
+
+                const li = document.createElement('li');
+
+                const a = document.createElement('a');
+
+                a.href = '#';
+
+                a.textContent = file.name;
+
+                a.dataset.path = file.path;
+
+                a.addEventListener('click', (e) => {
+
+                    e.preventDefault();
+
+                    loadFile(file.path);
+
+                    document.querySelectorAll('#nav-list a').forEach(link => link.classList.remove('active'));
+
+                    a.classList.add('active');
+
+                    if (window.innerWidth < 768) sidebar.classList.remove('active');
+
+                });
+
+                li.appendChild(a);
+
+                navList.appendChild(li);
+
+            });
+
+        }
+
+
+
+        async function loadFile(filePath) {
+
+            fileContent.innerHTML = '<div id="loading">Loading file...</div>';
+
+            try {
+
+                const response = await fetch(filePath);
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                
+
+                let content = await response.text();
+
+                
+
+                // Remove YAML frontmatter if present
+
+                if (content.startsWith('---')) {
+
+                    const frontmatterEnd = content.indexOf('---', 3);
+
+                    if (frontmatterEnd !== -1) {
+
+                        content = content.substring(frontmatterEnd + 3).trim();
+
+                    }
+
+                }
+
+                
+
+                renderFile(content, filePath);
+
+            } catch (error) {
+
+                console.error('Error loading file:', error);
+
+                fileContent.innerHTML = `
+
+                    <div id="error">
+
+                        <h3>Error Loading File</h3>
+
+                        <p>Could not load ${filePath}. Please check if the file exists.</p>
+
+                        <p><small>${error.message}</small></p>
+
+                    </div>
+
+                `;
+
+            }
+
+        }
+
+
+
+        function renderFile(content, filePath) {
+
+            // Convert markdown to HTML (simple implementation for common elements)
+
+            const markdownToHtml = (text) => {
+
+                return text
+
+                    // Headers
+
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+
+                    .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
+
+                    // Bold
+
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+
+                    // Italic
+
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+
+                    // Links
+
+                    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+
+                    // Unordered lists
+
+                    .replace(/^- (.*$)/gim, '<li>$1</li>')
+
+                    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+
+                    // Ordered lists
+
+                    .replace(/^(\d+)\. (.*$)/gim, '<li>$2</li>')
+
+                    .replace(/(<li>.*<\/li>)/gs, '<ol>$1</ol>')
+
+                    // Code blocks
+
+                    .replace(/```(\w+)?\s([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+
+                    // Inline code
+
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+
+                    // Blockquotes
+
+                    .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+
+                    // Horizontal rules
+
+                    .replace(/^\-\-\-$/gim, '<hr />')
+
+                    // Paragraphs
+
+                    .replace(/^\s*(\n)?(.+)/gm, (m) => m.trim() === '' ? '' : `<p>${m.trim()}</p>`)
+
+                    // Fix nested paragraphs in lists
+
+                    .replace(/(<[ou]l>\s*)<p>(<li>.*<\/li>)<\/p>/g, '$1$2')
+
+                    .replace(/<\/li>\s*<p><li>/g, '</li><li>');
+
+            };
+
+            
+
+            const html = markdownToHtml(content);
+
+            fileContent.innerHTML = html;
+
+            
+
+            // Update browser history and URL
+
+            history.pushState({ path: filePath }, '', `#${filePath}`);
+
+        }
+
+
+
+        // ---------- App init ----------
+
+        function init() {
+
+            renderNavigation();
+
+
+
+            // load saved settings into form (may run before three is ready)
+
+            loadSettings();
+
+
+
+            // set up UI event listeners
+
+            setupEventListeners();
+
+
+
+            // initialize Three.js and particles
+
+            initThreeJS();
+
+
+
+            // start animation
+
+            animate();
+
+
+
+            // load initial file
+
+            if (fileStructure.length > 0) {
+
+                loadFile(fileStructure[0].path);
+
+                const firstLink = document.querySelector('#nav-list a');
+
+                if (firstLink) firstLink.classList.add('active');
+
+            }
+
+        }
+
+
+
+        // Start
+
+        init();
+
+    </script>
+
+</body>
+
+</html>
