@@ -1,109 +1,130 @@
+---
 title: Database Growth & Content Backlog
 version: alpha-v2.2
 status: active
 category: docs
 tags: [growth, backlog, questions, missing-info]
 last_updated: 2025-09-07
+---
 
-Database Growth & Content Backlog — Wonder Orchards
+# Database Growth & Content Backlog — Wonder Orchards (alpha-v2.2)
 
-This file tracks gaps, missing information, and content tasks to guide further building of the database. It now functions as a true backlog for documentation.
+## Overview
+This file tracks gaps, missing information, and content tasks to guide further building of the database.  
+It functions as a **backlog for documentation** and should be updated as items are resolved or moved into their permanent locations.
 
-🎯 Identity & DNA (Backlog Items)
+---
 
-Task: Write Wonder Orchards' origin story.
+## 🎯 Identity & DNA (Backlog Items)
 
-Status: Backlog
-Effort: 2d
-Notes: How did the idea form? Who was involved? What was the initial spark?
-Task: Define staff roles and responsibilities.
+**Task:** Write Wonder Orchards' origin story  
+- **Status:** Backlog  
+- **Effort:** 2d  
+- **Notes:** How did the idea form? Who was involved? What was the initial spark?  
 
-Status: Backlog
-Effort: 3d
-Notes: Outline potential early roles, even if not yet filled. Align with tree-inspired workflow stages.
-Task: Elaborate on principles or practices that distinguish us.
+**Task:** Define staff roles and responsibilities  
+- **Status:** Backlog  
+- **Effort:** 3d  
+- **Notes:** Outline potential early roles, even if not yet filled. Align with tree-inspired workflow stages.  
 
-Status: Backlog
-Effort: 2d
-Notes: Expand beyond the core DNA. How do we operate day-to-day? How do we make decisions?
-🎯 Vision (Backlog Items)
+**Task:** Elaborate on principles or practices that distinguish us  
+- **Status:** Backlog  
+- **Effort:** 2d  
+- **Notes:** Expand beyond the core DNA. How do we operate day-to-day? How do we make decisions?  
 
-Task: Define success metrics for 5 years and 20 years.
+---
 
-Status: Backlog
-Effort: 2d
-Notes: Quantitative (trees planted, orchards established) and qualitative (community impact) goals.
-Task: Develop concept for orchards in urban planning and rural communities.
+## 🎯 Vision (Backlog Items)
 
-Status: Backlog
-Effort: 3d
-Notes: Different challenges and opportunities for each setting.
-Task: Outline the educational role (schools, children, community workshops).
+**Task:** Define success metrics for 5 years and 20 years  
+- **Status:** Backlog  
+- **Effort:** 2d  
+- **Notes:** Quantitative (trees planted, orchards established) and qualitative (community impact) goals.  
 
-Status: Backlog
-Effort: 3d
-Notes: Curriculum ideas, workshop structures, engagement strategies.
-🎯 Workflows (Backlog Items)
+**Task:** Develop concept for orchards in urban planning and rural communities  
+- **Status:** Backlog  
+- **Effort:** 3d  
+- **Notes:** Different challenges and opportunities for each setting.  
 
-Task: Define the project approval workflow (Seeds → Roots → Trunk → etc.).
+**Task:** Outline the educational role (schools, children, community workshops)  
+- **Status:** Backlog  
+- **Effort:** 3d  
+- **Notes:** Curriculum ideas, workshop structures, engagement strategies.  
 
-Status: Backlog
-Effort: 3d
-Notes: Create a clear, visual flowchart and descriptive text for each stage.
-Task: Document examples of pilot projects (first Seeds).
+---
 
-Status: Backlog
-Effort: 2d
-Notes: Hypothetical or real ideas to illustrate the workflow.
-Task: Create a project failure/composting protocol.
+## 🎯 Workflows (Backlog Items)
 
-Status: Backlog
-Effort: 2d
-Notes: How do we learn from and document projects that don't succeed?
-🎯 Tasks & Operations (Backlog Items)
+**Task:** Define the project approval workflow (Seeds → Roots → Trunk → etc.)  
+- **Status:** Backlog  
+- **Effort:** 3d  
+- **Notes:** Create a clear, visual flowchart and descriptive text for each stage.  
 
-Task: Identify missing operational accounts to be created.
+**Task:** Document examples of pilot projects (first Seeds)  
+- **Status:** Backlog  
+- **Effort:** 2d  
+- **Notes:** Hypothetical or real ideas to illustrate the workflow.  
 
-Status: Backlog
-Effort: 1d
-Notes: e.g., Social media, accounting software, project management tools.
-Task: Research and timeline priority legal filings (timelines, costs).
+**Task:** Create a project failure/composting protocol  
+- **Status:** Backlog  
+- **Effort:** 2d  
+- **Notes:** How do we learn from and document projects that don't succeed?  
 
-Status: Backlog
-Effort: 3d
-Notes: Beyond initial setup. State registrations, annual reports, etc.
-Task: Design financial management system (accounting, payroll, transparency).
+---
 
-Status: Backlog
-Effort: 5d
-Notes: Tools, processes, and reporting for financial health and transparency.
-🎯 Logs & Decisions (Backlog Items)
+## 🎯 Tasks & Operations (Backlog Items)
 
-Task: Define log frequency and format (daily, weekly, milestones).
+**Task:** Identify missing operational accounts to be created  
+- **Status:** Backlog  
+- **Effort:** 1d  
+- **Notes:** e.g., Social media, accounting software, project management tools.  
 
-Status: Backlog
-Effort: 1d
-Notes: Decide on a standard template and cadence for logging.
-Task: Create a decision record template.
+**Task:** Research and timeline priority legal filings (timelines, costs)  
+- **Status:** Backlog  
+- **Effort:** 3d  
+- **Notes:** Beyond initial setup. State registrations, annual reports, etc.  
 
-Status: Backlog
-Effort: 1d
-Notes: Standardize how significant decisions are captured (context, options, outcome).
-🎯 Expansion (Backlog Items)
+**Task:** Design financial management system (accounting, payroll, transparency)  
+- **Status:** Backlog  
+- **Effort:** 5d  
+- **Notes:** Tools, processes, and reporting for financial health and transparency.  
 
-Task: Identify new doc categories (e.g., partnerships, funding models).
+---
 
-Status: Backlog
-Effort: 2d
-Notes: Brainstorm and create outlines for potential new documentation areas.
-Task: Plan for a /policies/ folder (HR, ethics, community guidelines).
+## 🎯 Logs & Decisions (Backlog Items)
 
-Status: Backlog
-Effort: 4d
-Notes: Essential for scaling operations. Start with core principles.
-Task: Document nursery planning (site layouts, species lists, protocols).
+**Task:** Define log frequency and format (daily, weekly, milestones)  
+- **Status:** Backlog  
+- **Effort:** 1d  
+- **Notes:** Decide on a standard template and cadence for logging.  
 
-Status: In Progress (see /nursery/ experiments)
-Effort: Ongoing
-Notes: Continue current experimentation and begin formalizing standard operating procedures.
-📌 Use this file as a prioritized backlog for content creation. Migrate resolved items into proper docs and update their status here.
+**Task:** Create a decision record template  
+- **Status:** Backlog  
+- **Effort:** 1d  
+- **Notes:** Standardize how significant decisions are captured (context, options, outcome).  
+
+---
+
+## 🎯 Expansion (Backlog Items)
+
+**Task:** Identify new doc categories (e.g., partnerships, funding models)  
+- **Status:** Backlog  
+- **Effort:** 2d  
+- **Notes:** Brainstorm and create outlines for potential new documentation areas.  
+
+**Task:** Plan for a `/policies/` folder (HR, ethics, community guidelines)  
+- **Status:** Backlog  
+- **Effort:** 4d  
+- **Notes:** Essential for scaling operations. Start with core principles.  
+
+**Task:** Document nursery planning (site layouts, species lists, protocols)  
+- **Status:** In Progress (see `/nursery/` experiments)  
+- **Effort:** Ongoing  
+- **Notes:** Continue current experimentation and begin formalizing standard operating procedures.  
+
+---
+
+## Usage
+- This file is to be used as a **prioritized backlog** for content creation.  
+- Resolved items should be migrated into their **permanent documentation folders**.  
+- Statuses and progress notes should be kept up to date for transparency.  
