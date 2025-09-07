@@ -316,6 +316,25 @@
             .dev-menu-buttons button { padding: 0.3rem 0.5rem; font-size: 0.85rem; min-height: 40px; }
         }
 
+            .color-code {
+    font-family: monospace;
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    min-width: 70px;
+    margin-left: 5px;
+    background: var(--bg-accent);
+    padding: 2px 5px;
+    border-radius: 3px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .color-code {
+        min-width: 60px;
+        font-size: 0.75em;
+    }
+}
+        
         /* Markdown content styling */
         #file-content h1, #file-content h2, #file-content h3, #file-content h4 {
             margin-top: 1.5em;
