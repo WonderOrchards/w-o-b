@@ -34,7 +34,7 @@ To organize and store the early **structure, workflow, and planning documents** 
 
 ---
 
-# Tasks
+## Tasks
 
 - [tasks/backlog.md](tasks/backlog.md) → Upcoming ideas & work (with priorities)  
 - [tasks/in-progress.md](tasks/in-progress.md) → Active work (with priorities)  
@@ -45,7 +45,6 @@ To organize and store the early **structure, workflow, and planning documents** 
 ## Dev
 
 - [dev/thread-header.md](dev/thread-header.md) → Standard thread header & full workflow instructions  
-- ~~dev/usage-instructions.md~~ → *(Removed; merged into thread-header.md)*  
 
 ---
 
@@ -70,7 +69,7 @@ To organize and store the early **structure, workflow, and planning documents** 
 
 ---
 
-## Frontend (temporary / placeholder)
+## Frontend (temporary)
 
 - [index.html](index.html) → Lightweight frontend (reads markdown files)  
 
