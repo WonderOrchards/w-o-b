@@ -24,10 +24,10 @@ Each experiment is logged separately but linked here for reference.
 ### Meyer Lemon Cuttings
 - **File:** [`propagation-tests/meyer-lemon-cuttings.md`](propagation-tests/meyer-lemon-cuttings.md)  
 - **Started:** August 2025  
-- **Methods:**  
-  - Semi-hardwood cuttings in pots  
-  - Softwood cuttings on sand  
-  - All dipped in rooting hormone  
+- **Methods:**
+- Semi-hardwood cuttings in pots  
+- Softwood cuttings on sand  
+- All dipped in rooting hormone  
 
 ---
 
