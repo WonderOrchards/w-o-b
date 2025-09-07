@@ -14,12 +14,12 @@ a nonprofit organization dedicated to planting orchards for everyone to enjoy an
 
 ---
 
-## 🌳 Purpose
+## Purpose
 To organize and store the early **structure, workflow, and planning documents** for Wonder Orchards in a simple, version-controlled format.
 
 ---
 
-## 📂 Contents
+## Contents
 ---
 
 ## Docs
