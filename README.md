@@ -34,8 +34,7 @@ To organize and store the early **structure, workflow, and planning documents** 
 
 ---
 
-## Tasks
----
+# Tasks
 
 - [tasks/backlog.md](tasks/backlog.md) → Upcoming ideas & work (with priorities)  
 - [tasks/in-progress.md](tasks/in-progress.md) → Active work (with priorities)  
