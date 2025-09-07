@@ -20,16 +20,6 @@ To organize and store the early **structure, workflow, and planning documents** 
 ---
 
 ## 📂 Contents
-
-- [Docs](#docs)
-- [Tasks](#tasks)
-- [Dev](#dev)
-- [Scripts](#scripts)
-- [Templates](#templates)
-- [Versions](#versions)
-- [Frontend](#frontend-temporary--placeholder)
-- [🚀 Next Steps](#-next-steps)
-
 ---
 
 ## Docs
