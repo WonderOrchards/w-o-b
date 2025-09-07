@@ -72,7 +72,7 @@ To organize and store the early **structure, workflow, and planning documents** 
 
 ## Frontend (temporary / placeholder)
 
-- [index.html](index.html) → Lightweight frontend (placeholder; reads markdown files)  
+- [index.html](index.html) → Lightweight frontend (reads markdown files)  
 
 ---
 
