@@ -51,6 +51,54 @@
     .color-input input{width:100%;height:100%;border:none;padding:0;cursor:pointer;background:transparent}
     @media (max-width:520px){.panel{width:92%;right:4%;bottom:80px}} .hidden{display:none} hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0}
     .panel-section-title{margin:12px 0 6px;font-weight:bold;font-size:14px}
+    
+    /* Markdown content styling */
+    .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    .markdown-content p {
+      margin-bottom: 1em;
+    }
+    .markdown-content ul, .markdown-content ol {
+      margin-bottom: 1em;
+      padding-left: 2em;
+    }
+    .markdown-content code {
+      background: rgba(0,0,0,0.1);
+      padding: 0.2em 0.4em;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    .markdown-content pre {
+      background: rgba(0,0,0,0.1);
+      padding: 1em;
+      border-radius: 5px;
+      overflow: auto;
+      margin-bottom: 1em;
+    }
+    .markdown-content pre code {
+      background: transparent;
+      padding: 0;
+    }
+    .markdown-content blockquote {
+      border-left: 4px solid rgba(255,255,255,0.2);
+      padding-left: 1em;
+      margin-left: 0;
+      margin-bottom: 1em;
+    }
+    .markdown-content table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 1em;
+    }
+    .markdown-content th, .markdown-content td {
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.5em;
+    }
+    .markdown-content th {
+      background: rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
@@ -58,7 +106,7 @@
 
   <main>
     <div style="height:40px"></div>
-    <div class="content">
+    <div class="content" id="markdown-container">
       <h1>Three.js Particle Field + Fixed Camera Orbit</h1>
       <p>This is an example page with enough content to scroll. The background is a particle field rendered with three.js and the camera will orbit as you scroll the page. Use the small cog in the lower-right to open the settings panel.</p>
 
@@ -218,9 +266,24 @@
     <div class="row" style="margin-top:10px">
       <button id="resetContentStyles" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Reset Content Styles</button>
     </div>
+    
+    <hr>
+    
+    <div class="panel-section-title">Markdown Content</div>
+    
+    <div class="row">
+      <label for="markdownUrl">Markdown File URL</label>
+    </div>
+    <input id="markdownUrl" type="text" placeholder="https://raw.githubusercontent.com/..." style="width:100%;padding:8px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);margin-bottom:8px">
+    
+    <div class="row">
+      <button id="loadMarkdown" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Load Markdown</button>
+    </div>
   </aside>
 
   <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
+  <!-- Marked.js for markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     const canvas = document.getElementById('bg');
     const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
@@ -319,6 +382,10 @@
     const h2ColorInput = document.getElementById('h2Color');
     const h3ColorInput = document.getElementById('h3Color');
     const resetContentStylesBtn = document.getElementById('resetContentStyles');
+    
+    // Markdown controls
+    const markdownUrlInput = document.getElementById('markdownUrl');
+    const loadMarkdownBtn = document.getElementById('loadMarkdown');
 
     // Update labels to reflect pan functionality
     document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";
@@ -498,6 +565,56 @@
 
     cogBtn.addEventListener('click', ()=>{ panel.classList.toggle('open'); });
     closePanel.addEventListener('click', ()=>{ panel.classList.remove('open'); });
+    
+    // Markdown loading functionality
+    loadMarkdownBtn.addEventListener('click', loadMarkdownFromUrl);
+    
+    function loadMarkdownFromUrl() {
+      const url = markdownUrlInput.value.trim();
+      if (!url) {
+        alert('Please enter a valid URL');
+        return;
+      }
+      
+      // Show loading state
+      const container = document.getElementById('markdown-container');
+      container.innerHTML = '<p>Loading markdown content...</p>';
+      
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then(text => {
+          // Strip YAML frontmatter if present
+          const contentWithoutFrontmatter = stripFrontmatter(text);
+          
+          // Parse markdown to HTML
+          const htmlContent = marked.parse(contentWithoutFrontmatter);
+          
+          // Inject into container with markdown-content class for styling
+          container.innerHTML = `<div class="markdown-content">${htmlContent}</div>`;
+        })
+        .catch(error => {
+          console.error('Error loading markdown:', error);
+          container.innerHTML = `<p>Error loading markdown: ${error.message}</p>`;
+        });
+    }
+    
+    function stripFrontmatter(text) {
+      // Check if the content starts with YAML frontmatter (---)
+      if (text.startsWith('---')) {
+        const endFrontmatter = text.indexOf('---', 3);
+        if (endFrontmatter !== -1) {
+          // Return content after the frontmatter
+          return text.substring(endFrontmatter + 3).trim();
+        }
+      }
+      // If no frontmatter found, return the original text
+      return text;
+    }
 
     window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
   </script>
