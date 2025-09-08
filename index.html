@@ -2,550 +2,516 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js Particle Field — Scroll Orbit + Dev Menu</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Swirling Particles + Dev Menu</title>
+
+  <!-- Google Fonts (a few clean choices) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Slab:wght@300;400;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+
   <style>
     :root{
       --bg:#0b1020;
-      --accent:#7bd389;
-      --muted:#c8d3e0;
-      --content:#c8d3e0;
-      --header-height:72px;
-      --root-font-size:16px;
+      --content:#ffffff;
+      --accent:#33c3ff;
+      --panel-bg: rgba(10,10,10,0.75);
+      --glass: rgba(255,255,255,0.04);
     }
-    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--content);font-size:var(--root-font-size)}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    body{background:var(--bg);color:var(--content);overflow-y:auto}
 
-    /* canvas sits behind everything */
-    canvas#bg{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;}
+    /* three.js canvas fills viewport and sits behind content */
+    #stage{position:fixed;inset:0;z-index:0}
 
-    /* header with slider */
-    header.header{position:fixed;left:0;right:0;top:0;height:var(--header-height);display:flex;align-items:center;gap:18px;padding:0 20px;background:linear-gradient(to bottom, rgba(11,16,32,0.45), rgba(11,16,32,0.08));backdrop-filter: blur(6px);z-index:30}
-    .brand{font-weight:700;color:var(--accent);letter-spacing:0.6px}
-    .controls{display:flex;align-items:center;gap:12px;margin-left:auto}
-    .controls label{font-size:13px;color:var(--muted)}
-    input[type=range]{width:200px}
+    /* content that scrolls over the stage */
+    .content{
+      position:relative;z-index:2;max-width:900px;margin:60px auto;padding:40px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(6px);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.4);
+    }
+    h1{font-size:3rem;margin:0 0 10px}
+    p{line-height:1.6;font-size:1.05rem}
+    .float-shape{width:120px;height:120px;border-radius:16px;background:var(--accent);display:inline-flex;align-items:center;justify-content:center;margin:20px}
 
-    /* main content scrollable, sits above canvas */
-    main{position:relative;z-index:20;padding-top:calc(var(--header-height) + 20px);}
-    section.content-section{min-height:100vh;padding:60px 12vw;display:flex;flex-direction:column;gap:18px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));padding:26px;border-radius:14px;box-shadow:0 6px 18px rgba(2,6,23,0.5);max-width:900px}
-    h1{margin:0;font-size:2rem;color:white}
-    p{margin:0;color:rgba(200,211,224,0.9);line-height:1.6}
+    /* Cog button */
+    .cog{
+      position:fixed;right:16px;bottom:16px;z-index:6;width:44px;height:44px;border-radius:999px;background:var(--panel-bg);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.5);
+    }
+    .cog svg{width:20px;height:20px;fill:var(--content)}
 
-    /* floating shapes/text in foreground */
-    .float{position:absolute;pointer-events:none;z-index:22;will-change:transform}
-    .float.shape{width:120px;height:120px;border-radius:14px;opacity:0.95;display:flex;align-items:center;justify-content:center}
-    .float.shape svg{width:72px;height:72px;display:block}
-
-    .float.one{left:8%;top:30vh}
-    .float.two{right:6%;top:60vh}
-    .float.three{left:22%;top:160vh}
-    .float.four{right:22%;top:260vh}
-
-    /* cog button */
-    button.cog{position:fixed;right:18px;bottom:18px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:none;background:rgba(255,255,255,0.06);backdrop-filter: blur(4px);z-index:50;cursor:pointer}
-    button.cog svg{width:20px;height:20px;transform-origin:center center}
-
-    /* dev menu */
-    .devmenu{position:fixed;right:18px;bottom:78px;width:380px;max-width:92vw;background:rgba(6,10,18,0.98);border-radius:12px;padding:14px;box-shadow:0 10px 40px rgba(2,6,23,0.6);z-index:60;color:var(--content);display:none}
-    .devmenu.open{display:block}
-    .devmenu h3{margin:0 0 8px 0;font-size:16px}
-    .row{display:flex;gap:8px;align-items:center;margin:8px 0}
-    .row label{min-width:120px;font-size:13px;color:var(--muted)}
-    .row input[type=text], .row select{flex:1;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--content)}
+    /* Dev menu panel */
+    .panel{position:fixed;right:20px;bottom:76px;width:360px;max-width:calc(100% - 48px);z-index:7;background:var(--panel-bg);border-radius:12px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,0.6);backdrop-filter:blur(8px);display:none}
+    .panel.open{display:block}
+    .panel h3{margin:0 0 8px}
+    .row{display:flex;align-items:center;gap:8px;margin:8px 0}
+    .row label{flex:1;min-width:120px;font-size:0.95rem}
     .row input[type=range]{flex:1}
-    .controls-block{max-height:58vh;overflow:auto;padding-right:6px}
-    .small{font-size:13px;color:rgba(200,211,224,0.7)}
-    .footer-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
-    .btn{padding:8px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.06);color:var(--content);cursor:pointer}
-    .btn.primary{background:var(--accent);color:#042014}
+    .row input[type=color]{width:48px;height:32px;border-radius:6px;border:0;padding:0}
+    .row input[type=number]{width:80px}
+    .small{font-size:0.85rem;color:#ccc}
+    .buttons{display:flex;gap:8px;margin-top:12px}
+    button{background:var(--accent);border:0;padding:8px 12px;border-radius:8px;color:#021;cursor:pointer;font-weight:600}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--content)}
 
-    @media (max-width:720px){
-      .devmenu{left:6px;right:6px;bottom:80px;width:auto}
-      input[type=range]{width:120px}
-      h1{font-size:1.4rem}
-    }
+    footer{margin-top:40px;font-size:0.85rem;color:#bdbdbd}
+
+    /* Simple responsive */
+    @media (max-width:420px){.panel{width:calc(100% - 32px);right:16px;left:16px}}
+
+    /* Floating content hints */
+    .floater{position:relative;display:flex;gap:20px;flex-wrap:wrap}
+
   </style>
 </head>
 <body>
-  <header class="header">
-    <div class="brand">Particle Page</div>
-    <div class="controls">
-      <label for="speedSlider">Rotation / scroll</label>
-      <input id="speedSlider" type="range" min="0" max="4" step="0.01" value="1" />
-      <div style="min-width:48px;text-align:right;font-weight:600;color:var(--muted)"><span id="speedLabel">1.00</span>x</div>
+
+  <canvas id="stage"></canvas>
+
+  <main class="content" id="pageContent">
+    <h1 id="title">Swirling Particles Demo</h1>
+    <p>Nice demonstration of a subtle three.js particle field in the background and scroll-driven camera orbit in the foreground. Use the gear (lower-right) to open the dev menu and tweak the experience. Keep scrolling to see how camera orbit reacts.</p>
+
+    <div class="floater">
+      <div class="float-shape">Box A</div>
+      <div class="float-shape">Box B</div>
+      <div class="float-shape">Box C</div>
     </div>
-  </header>
 
-  <!--DEFAULT_SETTINGS_START-->
-  <script>
-    // Default settings injected here (export will replace this block when saving defaults)
-    window.DEFAULT_SETTINGS = {
-      particleCount: 6000,
-      particleSize: 0.9,
-      particleColor: '#ffffff',
-      particleOpacity: 0.85,
-      particleStaticRotationSpeed: 0.03,
-      particleStaticRotationAxis: 'y',
-
-      cameraOrbitRadius: 60,
-      cameraBaseY: 18,
-
-      orbitRotationPerScroll: 1.0,
-      orbitOrientation: 'vertical', // 'vertical' or 'horizontal'
-
-      backgroundColor: '#0b1020',
-      accentColor: '#7bd389',
-      contentColor: '#c8d3e0',
-
-      globalFontSizePx: 16,
-      fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
-
-      parallaxEnabled: true,
-      reduceParticlesOnMobile: true
-    };
-  </script>
-  <!--DEFAULT_SETTINGS_END-->
-
-  <canvas id="bg"></canvas>
-
-  <!-- foreground floating DOM elements -->
-  <div class="float shape one" data-speed="0.6">
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <defs>
-        <linearGradient id="g1" x1="0" x2="1">
-          <stop offset="0" stop-color="#6fe7b7"/>
-          <stop offset="1" stop-color="#3bbef0"/>
-        </linearGradient>
-      </defs>
-      <rect x="5" y="5" width="90" height="90" rx="18" fill="url(#g1)" opacity="0.95"/>
-    </svg>
-  </div>
-
-  <div class="float shape two" data-speed="0.9">
-    <svg viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.06)" stroke="rgba(123,211,137,0.9)" stroke-width="4"/>
-    </svg>
-  </div>
-
-  <div class="float shape three" data-speed="0.45">
-    <svg viewBox="0 0 100 100">
-      <polygon points="50,10 90,90 10,90" fill="rgba(255,255,255,0.02)" stroke="#7bd389" stroke-width="3"/>
-    </svg>
-  </div>
-
-  <div class="float shape four" data-speed="1.2">
-    <svg viewBox="0 0 100 100">
-      <path d="M20 60 Q40 10 80 50 T100 50" fill="none" stroke="#7bd389" stroke-width="3"/>
-    </svg>
-  </div>
-
-  <main>
-    <section class="content-section">
-      <div class="card">
-        <h1>Welcome to the particle-backed page</h1>
-        <p>This demo places a Three.js particle field in the background and lets the camera orbit while you scroll. Use the slider in the header to control how much rotation happens per full-page scroll.</p>
-      </div>
+    <p style="margin-top:30vh">Long content placeholder — repeat sections to create scroll length.</p>
+    <section>
+      <h2>Section 1</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer id magna vitae mauris molestie volutpat. Suspendisse potenti.</p>
+    </section>
+    <section>
+      <h2>Section 2</h2>
+      <p>Phasellus dictum nibh sed libero placerat, nec sollicitudin arcu luctus. Ut non justo vitae tellus scelerisque ultrices.</p>
+    </section>
+    <section>
+      <h2>Section 3</h2>
+      <p>Sed tristique, odio vitae euismod iaculis, lectus massa placerat arcu, sit amet dictum ipsum massa id sapien. Aliquam erat volutpat.</p>
     </section>
 
-    <section class="content-section">
-      <div class="card">
-        <h1>About</h1>
-        <p>Camera orbit is mapped to the scroll progress across the document. Elements with the <code>data-speed</code> attribute will subtly parallax to create a layered feel — they live in the DOM (foreground) while the particle-field is rendered in WebGL behind everything.
-        </p>
-      </div>
-    </section>
-
-    <section class="content-section">
-      <div class="card">
-        <h1>More content</h1>
-        <p>Keep scrolling. The camera smoothly interpolates to its target orbit so motion feels natural and pleasant. The particle field is intentionally light-weight but scalable — tweak PARTICLE_COUNT in the script if you want more or fewer points.</p>
-      </div>
-    </section>
-
-    <section class="content-section">
-      <div class="card">
-        <h1>Final section</h1>
-        <p>That's it — a simple single-file demo. Save this HTML and open in a modern browser. Slider constraints let you slow things down to zero or crank up rotation-per-scroll for dramatic effect.</p>
-      </div>
-    </section>
+    <footer>End of demo content — use the panel to adjust settings. Settings persist locally.</footer>
   </main>
 
-  <button class="cog" id="cogBtn" aria-label="Open settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"></path>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.27 17.9l.06-.06c.39-.39.5-1 .33-1.82A1.65 1.65 0 0 0 2.25 14h-.09a2 2 0 0 1 0-4h.09c.72 0 1.31-.27 1.82-.66.59-.48.68-1.28.33-1.82L5.37 6.2A2 2 0 0 1 8.2 3.37l.06.06c.39.39 1 .5 1.82.33.74-.17 1.34-.03 1.82.33.39.39 1 .5 1.82.33H15a2 2 0 0 1 4 0h.09c.72 0 1.31.27 1.82.66.59.48.68 1.28.33 1.82l-.06.06c-.39.39-.5 1-.33 1.82.17.74.03 1.34-.33 1.82z"></path>
+  <div class="cog" id="cogBtn" title="Open settings" aria-label="Open settings">
+    <!-- simple gear icon -->
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7zm9.4-2.3l-1.7-.5a7.9 7.9 0 0 0-.6-1.4l.9-1.5a.5.5 0 0 0-.1-.6l-1.9-1.9a.5.5 0 0 0-.6-.1l-1.5.9c-.5-.3-1-.6-1.4-.6l-.5-1.7A.5.5 0 0 0 12.7 2h-1.4a.5.5 0 0 0-.5.4l-.5 1.7c-.4.1-1 .3-1.4.6l-1.5-.9a.5.5 0 0 0-.6.1L3.2 6.6a.5.5 0 0 0-.1.6l.9 1.5c-.3.4-.5.9-.6 1.4l-1.7.5A.5.5 0 0 0 0 11.6v1.4c0 .2.1.4.3.5l1.7.5c.1.6.3 1.1.6 1.4l-.9 1.5a.5.5 0 0 0 .1.6l1.9 1.9c.2.2.5.3.6.1l1.5-.9c.4.3.9.6 1.4.6l.5 1.7c.1.2.3.4.5.4h1.4c.2 0 .4-.2.5-.4l.5-1.7c.5-.1 1-.3 1.4-.6l1.5.9c.2.1.5 0 .6-.1l1.9-1.9a.5.5 0 0 0 .1-.6l-.9-1.5c.3-.4.5-.9.6-1.4l1.7-.5c.2-.1.3-.3.3-.5v-1.4c0-.2-.1-.4-.3-.5z"/>
     </svg>
-  </button>
-
-  <div class="devmenu" id="devmenu" role="dialog" aria-hidden="true">
-    <h3>Dev / Settings</h3>
-    <div class="controls-block" id="controlsBlock">
-      <!-- controls injected by script for clarity -->
-    </div>
-    <div class="footer-actions">
-      <button class="btn" id="resetBtn">Reset</button>
-      <button class="btn" id="saveBtn">Save</button>
-      <button class="btn primary" id="applyBtn">Apply</button>
-    </div>
-    <div class="small" style="margin-top:8px">Tip: long-press Save (4s) to export this page HTML with current settings embedded as defaults.</div>
   </div>
 
-  <script type="module">
-    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+  <aside class="panel" id="devPanel" role="dialog" aria-hidden="true">
+    <h3>Dev Menu</h3>
+    <div class="small">Adjust particle field, camera orbit, content and save/export settings.</div>
 
-    // --- helpers ---
-    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    const defaultSettings = window.DEFAULT_SETTINGS || {};
+    <div class="row">
+      <label>Particle count</label>
+      <input type="number" id="particleCount" min="100" max="20000" step="100" value="1500">
+    </div>
 
-    // load saved settings (local per device)
-    function loadSaved(){
+    <div class="row">
+      <label>Particle size</label>
+      <input type="range" id="particleSize" min="1" max="40" value="6">
+    </div>
+
+    <div class="row">
+      <label>Particle color</label>
+      <input type="color" id="particleColor" value="#ffffff">
+    </div>
+
+    <div class="row">
+      <label>Particle rotation speed</label>
+      <input type="range" id="particleRotSpeed" min="-2" max="2" step="0.01" value="0.06">
+    </div>
+
+    <div class="row">
+      <label>Rotation axis</label>
+      <select id="particleAxis">
+        <option value="y">Horizontal (Y)</option>
+        <option value="x">Vertical (X)</option>
+        <option value="z">Depth (Z)</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Orbit speed per scroll</label>
+      <input type="range" id="orbitSpeedPerScroll" min="0" max="4" step="0.01" value="1">
+    </div>
+
+    <div class="row">
+      <label>Orbit orientation</label>
+      <select id="orbitOrientation">
+        <option value="horizontal">Horizontal</option>
+        <option value="vertical">Vertical</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>Camera zoom (z)</label>
+      <input type="range" id="cameraZoom" min="200" max="1200" step="10" value="700">
+    </div>
+
+    <div class="row">
+      <label>Background color</label>
+      <input type="color" id="bgColor" value="#0b1020">
+    </div>
+
+    <div class="row">
+      <label>Content color</label>
+      <input type="color" id="contentColor" value="#ffffff">
+    </div>
+
+    <div class="row">
+      <label>Global text size</label>
+      <input type="range" id="textSize" min="12" max="28" value="16">
+    </div>
+
+    <div class="row">
+      <label>Font</label>
+      <select id="fontSelect">
+        <option value="Inter,system-ui">Inter (clean)</option>
+        <option value="Roboto Slab,serif">Roboto Slab (serif)</option>
+        <option value="Space Grotesk,system-ui">Space Grotesk (grotesk)</option>
+      </select>
+    </div>
+
+    <div class="buttons">
+      <button id="saveBtn">Save settings</button>
+      <button class="secondary" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="small" style="margin-top:10px">Tip: hold <strong>Save</strong> for 4 seconds to download the full page HTML with current settings embedded as defaults.</div>
+  </aside>
+
+  <!-- Three.js via CDN -->
+  <script src="https://unpkg.com/three@0.154.0/build/three.min.js"></script>
+
+  <script>
+  (function(){
+    // --- Utilities ---
+    const qs = s => document.querySelector(s);
+    const el = id => document.getElementById(id);
+
+    // Default settings
+    const defaults = {
+      particleCount:1500,
+      particleSize:6,
+      particleColor:'#ffffff',
+      particleRotSpeed:0.06,
+      particleAxis:'y',
+      orbitSpeedPerScroll:1,
+      orbitOrientation:'horizontal',
+      cameraZoom:700,
+      bgColor:'#0b1020',
+      contentColor:'#ffffff',
+      textSize:16,
+      font:'Inter,system-ui'
+    };
+
+    // load saved or defaults
+    const saveKey = 'particleDemoSettings_v1';
+    const loadSettings = ()=>{
       try{
-        const s = localStorage.getItem('particlePageSettings');
-        return s ? JSON.parse(s) : null;
-      }catch(e){return null}
+        const raw = localStorage.getItem(saveKey);
+        if(raw) return Object.assign({}, defaults, JSON.parse(raw));
+      }catch(e){console.warn(e)}
+      return Object.assign({}, defaults);
     }
-    function saveLocal(settings){
-      localStorage.setItem('particlePageSettings', JSON.stringify(settings));
+    let settings = loadSettings();
+
+    // Hook up UI elements
+    function setUIFromSettings(){
+      el('particleCount').value = settings.particleCount;
+      el('particleSize').value = settings.particleSize;
+      el('particleColor').value = settings.particleColor;
+      el('particleRotSpeed').value = settings.particleRotSpeed;
+      el('particleAxis').value = settings.particleAxis;
+      el('orbitSpeedPerScroll').value = settings.orbitSpeedPerScroll;
+      el('orbitOrientation').value = settings.orbitOrientation;
+      el('cameraZoom').value = settings.cameraZoom;
+      el('bgColor').value = settings.bgColor;
+      el('contentColor').value = settings.contentColor;
+      el('textSize').value = settings.textSize;
+      el('fontSelect').value = settings.font;
+
+      applyVisuals();
     }
 
-    // initial effective settings: saved overrides defaults
-    let settings = Object.assign({}, defaultSettings, loadSaved() || {});
+    function applyVisuals(){
+      document.documentElement.style.setProperty('--bg', settings.bgColor);
+      document.documentElement.style.setProperty('--content', settings.contentColor);
+      document.body.style.fontFamily = settings.font;
+      document.body.style.fontSize = settings.textSize + 'px';
+    }
 
-    // --- renderer / scene / camera ---
-    const canvas = document.getElementById('bg');
-    const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    // Save
+    function saveSettings(){
+      localStorage.setItem(saveKey, JSON.stringify(settings));
+    }
 
-    const scene = new THREE.Scene();
+    // Reset
+    function resetSettings(){ settings = Object.assign({}, defaults); saveSettings(); setUIFromSettings(); buildParticles(); }
 
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-    let ORBIT_RADIUS = settings.cameraOrbitRadius || 60;
-    camera.position.set(0, ORBIT_RADIUS, 0);
-    camera.lookAt(0,0,0);
+    // --- Three.js scene ---
+    let scene, camera, renderer, particles, positions, sizesAttr, colorsAttr;
+    const canvas = qs('#stage');
 
-    // points holder
-    let particlesGroup = new THREE.Group();
-    scene.add(particlesGroup);
-    let points = null;
+    function initThree(){
+      scene = new THREE.Scene();
 
-    function createParticles(count, size, color, opacity){
+      const W = innerWidth, H = innerHeight;
+      camera = new THREE.PerspectiveCamera(60, W/H, 1, 5000);
+      camera.position.set(0,0, settings.cameraZoom);
+
+      renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+      renderer.setSize(W, H);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      onWindowResize();
+      window.addEventListener('resize', onWindowResize);
+
+      // ambient (subtle)
+      const amb = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(amb);
+
+      buildParticles();
+
+      animate();
+    }
+
+    function buildParticles(){
       // remove old
-      if(points){
-        particlesGroup.remove(points);
-        if(points.geometry) points.geometry.dispose();
-        if(points.material) points.material.dispose();
-      }
+      if(particles) { scene.remove(particles); particles.geometry.dispose(); particles.material.dispose(); }
 
-      const PARTICLE_COUNT = Math.max(0, Math.floor(count));
-      const positions = new Float32Array(PARTICLE_COUNT * 3);
-      const sizes = new Float32Array(PARTICLE_COUNT);
-      for(let i=0;i<PARTICLE_COUNT;i++){
-        const r = THREE.MathUtils.randFloat(10, 180);
-        const theta = Math.random() * Math.PI * 2;
-        const phi = THREE.MathUtils.randFloat(0, Math.PI);
-        const x = r * Math.sin(phi) * Math.cos(theta) * THREE.MathUtils.randFloat(0.5,1.1);
-        const y = r * Math.cos(phi) * THREE.MathUtils.randFloat(0.2,0.8);
-        const z = r * Math.sin(phi) * Math.sin(theta) * THREE.MathUtils.randFloat(0.5,1.1);
-        positions[i*3]=x; positions[i*3+1]=y; positions[i*3+2]=z;
-        sizes[i]=THREE.MathUtils.randFloat(0.5, 2.5) * (size||1);
-      }
-
+      const count = Math.max(100, Number(settings.particleCount)||1500);
       const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+      positions = new Float32Array(count*3);
+      const colors = new Float32Array(count*3);
+      const sizes = new Float32Array(count);
 
-      const material = new THREE.PointsMaterial({
-        size: size || 0.9,
-        sizeAttenuation:true,
-        color: new THREE.Color(color || '#ffffff'),
-        opacity: opacity != null ? opacity : 0.85,
+      for(let i=0;i<count;i++){
+        const a = Math.random()*Math.PI*2;
+        const r = THREE.MathUtils.lerp(200, 1200, Math.random());
+        const x = Math.cos(a)*r;
+        const y = (Math.random()-0.5)*800;
+        const z = Math.sin(a)*r;
+        positions[i*3]=x; positions[i*3+1]=y; positions[i*3+2]=z;
+
+        const col = new THREE.Color(settings.particleColor);
+        colors[i*3]=col.r; colors[i*3+1]=col.g; colors[i*3+2]=col.b;
+
+        sizes[i] = Math.random()*settings.particleSize*0.8 + settings.particleSize*0.2;
+      }
+
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions,3));
+      geometry.setAttribute('aColor', new THREE.BufferAttribute(colors,3));
+      geometry.setAttribute('size', new THREE.BufferAttribute(sizes,1));
+
+      // Points material (using size attenuation)
+      const material = new THREE.ShaderMaterial({
         transparent:true,
-        depthWrite:false
+        depthWrite:false,
+        uniforms:{
+          uPixelRatio:{value: window.devicePixelRatio},
+          uBaseSize:{value: settings.particleSize}
+        },
+        vertexShader: `
+          attribute float size;
+          attribute vec3 aColor;
+          varying vec3 vColor;
+          uniform float uPixelRatio;
+          uniform float uBaseSize;
+          void main(){
+            vColor = aColor;
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = size * (uBaseSize*0.08) * (uPixelRatio) / -mvPosition.z;
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `,
+        fragmentShader: `
+          varying vec3 vColor;
+          void main(){
+            float d = length(gl_PointCoord - vec2(0.5));
+            if(d>0.5) discard;
+            float alpha = 1.0 - smoothstep(0.25, 0.5, d);
+            gl_FragColor = vec4(vColor, alpha);
+          }
+        `
       });
 
-      points = new THREE.Points(geometry, material);
-      particlesGroup.add(points);
+      particles = new THREE.Points(geometry, material);
+      scene.add(particles);
     }
 
-    // create initial particles
-    function initParticlesFromSettings(){
-      let cnt = settings.particleCount;
-      if(settings.reduceParticlesOnMobile && isMobile){ cnt = Math.max(512, Math.floor(cnt * 0.25)); }
-      createParticles(cnt, settings.particleSize, settings.particleColor, settings.particleOpacity);
+    function onWindowResize(){
+      const W = innerWidth, H = innerHeight;
+      camera.aspect = W/H; camera.updateProjectionMatrix();
+      renderer.setSize(W,H);
     }
 
-    initParticlesFromSettings();
+    let lastTime = performance.now();
+    function animate(t){
+      const dt = (t - lastTime)/1000; lastTime = t;
 
-    const light = new THREE.PointLight(0xffffff, 0.5);
-    light.position.set(0,50,50);
-    scene.add(light);
-
-    // --- UI wiring ---
-    const speedSlider = document.getElementById('speedSlider');
-    const speedLabel = document.getElementById('speedLabel');
-
-    function setHeaderSlider(v){
-      speedSlider.value = v;
-      speedLabel.textContent = parseFloat(v).toFixed(2);
-    }
-    setHeaderSlider(settings.orbitRotationPerScroll || 1.0);
-
-    // small helper to set CSS vars
-    function applyCSSColors(){
-      document.documentElement.style.setProperty('--bg', settings.backgroundColor);
-      document.documentElement.style.setProperty('--accent', settings.accentColor);
-      document.documentElement.style.setProperty('--content', settings.contentColor || settings.contentColor || '#c8d3e0');
-      document.documentElement.style.setProperty('--root-font-size', settings.globalFontSizePx + 'px');
-      document.body.style.fontFamily = settings.fontFamily;
-      renderer.setClearColor(new THREE.Color(settings.backgroundColor), 0);
-    }
-
-    applyCSSColors();
-
-    // camera orbit target
-    const cameraTarget = new THREE.Vector3().copy(camera.position);
-
-    function getScrollProgress(){
-      const doc = document.documentElement;
-      const scrollTop = window.scrollY || window.pageYOffset || doc.scrollTop;
-      const max = doc.scrollHeight - window.innerHeight;
-      return max > 0 ? Math.min(1, Math.max(0, scrollTop / max)) : 0;
-    }
-
-    const floats = Array.from(document.querySelectorAll('.float'));
-
-    function onScroll(){
-      const p = getScrollProgress();
-      const targetAngle = p * Math.PI * 2 * (settings.orbitRotationPerScroll || 1.0);
-      const OR = settings.cameraOrbitRadius || ORBIT_RADIUS;
-      const CENTER_Y = settings.cameraBaseY != null ? settings.cameraBaseY : (defaultSettings.cameraBaseY || 18);
-
-      if(settings.orbitOrientation === 'vertical'){
-        cameraTarget.x = Math.sin(targetAngle * 0.25) * 8;
-        cameraTarget.y = CENTER_Y + OR * Math.sin(targetAngle);
-        cameraTarget.z = OR * Math.cos(targetAngle);
-      }else{
-        cameraTarget.x = OR * Math.cos(targetAngle);
-        cameraTarget.z = OR * Math.sin(targetAngle);
-        cameraTarget.y = CENTER_Y + Math.sin(targetAngle * 0.7) * 8;
+      // rotate particle system
+      const speed = Number(settings.particleRotSpeed)||0.02;
+      const axis = settings.particleAxis || 'y';
+      if(particles){
+        if(axis==='x') particles.rotation.x += speed*dt*60;
+        if(axis==='y') particles.rotation.y += speed*dt*60;
+        if(axis==='z') particles.rotation.z += speed*dt*60;
       }
-
-      // dom parallax
-      const centerOffset = (p - 0.5);
-      if(settings.parallaxEnabled){
-        floats.forEach(el => {
-          const s = parseFloat(el.dataset.speed) || 0.6;
-          const xOff = centerOffset * 400 * (s * 0.6);
-          const yOff = Math.sin(p * Math.PI * 2 * s + el.className.length) * 8 * s;
-          el.style.transform = `translate3d(${xOff}px, ${yOff}px, 0)`;
-        });
-      }
-    }
-    window.addEventListener('scroll', ()=>requestAnimationFrame(onScroll), {passive:true});
-
-    // --- dev menu building ---
-    const devmenu = document.getElementById('devmenu');
-    const cogBtn = document.getElementById('cogBtn');
-    const controlsBlock = document.getElementById('controlsBlock');
-
-    const Controls = [
-      {id:'particleCount',label:'Particle count',type:'range',min:128,max:20000,step:1},
-      {id:'particleSize',label:'Particle size',type:'range',min:0.1,max:4,step:0.01},
-      {id:'particleColor',label:'Particle color',type:'color'},
-      {id:'particleOpacity',label:'Particle opacity',type:'range',min:0,step:0.01,max:1},
-      {id:'particleStaticRotationSpeed',label:'Particle static rotation speed',type:'range',min:0,step:0.001,max:0.5},
-      {id:'particleStaticRotationAxis',label:'Particles rotation axis',type:'select',options:['x','y','z']},
-
-      {id:'cameraOrbitRadius',label:'Camera orbit radius',type:'range',min:10,max:240,step:1},
-      {id:'cameraBaseY',label:'Camera base Y',type:'range',min:-40,max:120,step:1},
-
-      {id:'orbitRotationPerScroll',label:'Orbit rotation / scroll',type:'range',min:0,max:4,step:0.01},
-      {id:'orbitOrientation',label:'Orbit orientation',type:'select',options:['vertical','horizontal']},
-
-      {id:'backgroundColor',label:'Background color',type:'color'},
-      {id:'accentColor',label:'Accent color',type:'color'},
-      {id:'contentColor',label:'Content color',type:'color'},
-
-      {id:'globalFontSizePx',label:'Global text size (px)',type:'range',min:10,max:28,step:1},
-      {id:'fontFamily',label:'Font family',type:'select',options:[
-        'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
-        'Georgia, "Times New Roman", Times, serif',
-        'Roboto, system-ui, -apple-system, "Segoe UI", Arial',
-        '"Courier New", Courier, monospace'
-      ]},
-
-      {id:'parallaxEnabled',label:'Parallax floats',type:'checkbox'},
-      {id:'reduceParticlesOnMobile',label:'Reduce particles on mobile',type:'checkbox'}
-    ];
-
-    function makeControl(c){
-      const row = document.createElement('div'); row.className='row';
-      const label = document.createElement('label'); label.htmlFor = c.id; label.textContent = c.label;
-      row.appendChild(label);
-      let control;
-      if(c.type==='range' || c.type==='color' || c.type==='text'){
-        control = document.createElement('input'); control.type = c.type; control.id = c.id;
-        if(c.min!=null) control.min = c.min; if(c.max!=null) control.max = c.max; if(c.step!=null) control.step = c.step;
-      }else if(c.type==='select'){
-        control = document.createElement('select'); control.id = c.id;
-        c.options.forEach(o=>{ const opt=document.createElement('option'); opt.value=o; opt.textContent=o; control.appendChild(opt); });
-      }else if(c.type==='checkbox'){
-        control = document.createElement('input'); control.type='checkbox'; control.id=c.id;
-      }
-      if(!control) return null;
-
-      const wrap = document.createElement('div'); wrap.style.flex='1'; wrap.appendChild(control);
-      row.appendChild(wrap);
-
-      // live value display for ranges
-      if(c.type==='range'){
-        const val = document.createElement('div'); val.className='small'; val.style.minWidth='48px'; val.style.textAlign='right'; val.textContent = control.value;
-        row.appendChild(val);
-        control.addEventListener('input', ()=>{ val.textContent = control.value; });
-      }
-
-      return row;
-    }
-
-    Controls.forEach(c => { const el = makeControl(c); if(el) controlsBlock.appendChild(el); });
-
-    // wire UI controls to settings
-    function syncUIFromSettings(){
-      Controls.forEach(c=>{
-        const el = document.getElementById(c.id);
-        if(!el) return;
-        const v = settings[c.id];
-        if(c.type==='checkbox') el.checked = !!v;
-        else if(c.type==='select' || c.type==='text') el.value = v != null ? v : el.value;
-        else el.value = v != null ? v : el.value;
-        // update range value label if present
-        if(c.type==='range'){
-          const row = el.closest('.row');
-          if(row){ const small = row.querySelector('.small'); if(small) small.textContent = el.value; }
-        }
-      });
-    }
-
-    function applySettingsFromUI(saveLocalFlag=false){
-      Controls.forEach(c=>{
-        const el = document.getElementById(c.id);
-        if(!el) return;
-        let val;
-        if(c.type==='checkbox') val = el.checked;
-        else if(c.type==='range') val = parseFloat(el.value);
-        else val = el.value;
-        settings[c.id] = val;
-      });
-      // apply immediate visual changes
-      ORBIT_RADIUS = settings.cameraOrbitRadius;
-      setHeaderSlider(settings.orbitRotationPerScroll || 1.0);
-      applyCSSColors();
-      // rebuild particles if count/size/color changed
-      initParticlesFromSettings();
-      if(saveLocalFlag) saveLocal(settings);
-    }
-
-    // initial UI sync
-    syncUIFromSettings();
-
-    cogBtn.addEventListener('click', ()=>{
-      const open = devmenu.classList.toggle('open');
-      devmenu.setAttribute('aria-hidden', !open);
-    });
-
-    document.getElementById('applyBtn').addEventListener('click', ()=>{
-      applySettingsFromUI(false);
-    });
-
-    document.getElementById('resetBtn').addEventListener('click', ()=>{
-      settings = Object.assign({}, defaultSettings);
-      syncUIFromSettings();
-      applySettingsFromUI(true);
-    });
-
-    // save button with long-press export
-    const saveBtn = document.getElementById('saveBtn');
-    let longPressTimer = null;
-
-    saveBtn.addEventListener('click', ()=>{ applySettingsFromUI(true); alert('Settings saved locally. Long-press the Save button to export HTML with these defaults.'); });
-    function triggerExport(){
-      // Build HTML and replace default-settings block
-      const s = JSON.stringify(settings, null, 2);
-      const docHTML = '<!doctype html>
-' + document.documentElement.outerHTML;
-      const start = '<!--DEFAULT_SETTINGS_START-->';
-      const end = '<!--DEFAULT_SETTINGS_END-->';
-      const before = docHTML.split(start)[0];
-      const afterSplit = docHTML.split(end);
-      if(afterSplit.length < 2){ alert('Export failed: template markers missing.'); return; }
-      const after = afterSplit.slice(1).join(end);
-      const newSettingsBlock = start + '
-<script>
-window.DEFAULT_SETTINGS = ' + s + '
-</script>
-' + end;
-      const out = before + newSettingsBlock + after;
-      const blob = new Blob([out], {type:'text/html;charset=utf-8'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'particle_page_with_defaults.html';
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    }
-    // mouse
-    saveBtn.addEventListener('mousedown', ()=>{ longPressTimer = setTimeout(()=>{ triggerExport(); }, 4000); });
-    saveBtn.addEventListener('mouseup', ()=>{ clearTimeout(longPressTimer); });
-    saveBtn.addEventListener('mouseleave', ()=>{ clearTimeout(longPressTimer); });
-    // touch
-    saveBtn.addEventListener('touchstart', ()=>{ longPressTimer = setTimeout(()=>{ triggerExport(); }, 4000); });
-    saveBtn.addEventListener('touchend', ()=>{ clearTimeout(longPressTimer); });
-
-    // header slider sync
-    speedSlider.addEventListener('input', (e)=>{
-      const v = parseFloat(e.target.value);
-      settings.orbitRotationPerScroll = v; speedLabel.textContent = v.toFixed(2);
-    });
-
-    // --- animation ---
-    const clock = new THREE.Clock();
-    function animate(){
-      const dt = clock.getDelta();
-      const t = clock.getElapsedTime();
-
-      // static particle rotation
-      const spd = settings.particleStaticRotationSpeed || 0.03;
-      if(particlesGroup){
-        if(settings.particleStaticRotationAxis==='x') particlesGroup.rotation.x += dt * spd;
-        else if(settings.particleStaticRotationAxis==='y') particlesGroup.rotation.y += dt * spd;
-        else particlesGroup.rotation.z += dt * spd;
-      }
-
-      // gentle twinkle
-      if(points) points.rotation.y += dt * 0.01;
-
-      // camera interpolation
-      camera.position.lerp(cameraTarget, 0.08);
-      camera.lookAt(0,0,0);
 
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
 
-    animate();
+    // --- scroll -> camera orbit mapping ---
+    // We'll map page scroll (0..1) to angle (radians) and set camera accordingly
+    function updateCameraFromScroll(){
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const t = maxScroll <= 0 ? 0 : scrollTop / maxScroll;
+      const turn = t * Math.PI * 2 * (Number(settings.orbitSpeedPerScroll)||1);
 
-    // initial scroll positioning
-    onScroll();
+      const distance = Number(settings.cameraZoom) || 700;
+      if(settings.orbitOrientation === 'horizontal'){
+        const x = Math.cos(turn)*250;
+        const z = Math.sin(turn)*250 + distance;
+        camera.position.x = x; camera.position.y = Math.sin(turn*0.1)*80; camera.position.z = z;
+      } else {
+        const y = Math.cos(turn)*250;
+        const z = Math.sin(turn)*250 + distance;
+        camera.position.y = y; camera.position.x = Math.sin(turn*0.1)*80; camera.position.z = z;
+      }
+      camera.lookAt(0,0,0);
+    }
 
-    window.addEventListener('resize', ()=>{
-      renderer.setSize(window.innerWidth, window.innerHeight, false);
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-    });
+    document.addEventListener('scroll',()=>{ updateCameraFromScroll(); });
 
-    // expose convenience on window for debugging
-    window._particlePage = {settings, applySettingsFromUI, triggerExport};
+    // --- UI interactions ---
+    const cog = qs('#cogBtn');
+    const panel = qs('#devPanel');
+    cog.addEventListener('click', ()=>{ panel.classList.toggle('open'); panel.setAttribute('aria-hidden', panel.classList.contains('open')? 'false':'true'); });
+
+    // wire inputs (apply immediately)
+    function wireInputs(){
+      el('particleCount').addEventListener('change', (e)=>{ settings.particleCount = Number(e.target.value); buildParticles(); saveSettings(); });
+      el('particleSize').addEventListener('input', (e)=>{ settings.particleSize = Number(e.target.value); // update uniform
+        if(particles && particles.material && particles.material.uniforms) particles.material.uniforms.uBaseSize.value = settings.particleSize;
+        saveSettings(); });
+      el('particleColor').addEventListener('input', (e)=>{ settings.particleColor = e.target.value; buildParticles(); saveSettings(); });
+      el('particleRotSpeed').addEventListener('input', (e)=>{ settings.particleRotSpeed = Number(e.target.value); saveSettings(); });
+      el('particleAxis').addEventListener('change', (e)=>{ settings.particleAxis = e.target.value; saveSettings(); });
+      el('orbitSpeedPerScroll').addEventListener('input', (e)=>{ settings.orbitSpeedPerScroll = Number(e.target.value); saveSettings(); });
+      el('orbitOrientation').addEventListener('change', (e)=>{ settings.orbitOrientation = e.target.value; saveSettings(); });
+      el('cameraZoom').addEventListener('input', (e)=>{ settings.cameraZoom = Number(e.target.value); camera.position.z = settings.cameraZoom; saveSettings(); });
+      el('bgColor').addEventListener('input', (e)=>{ settings.bgColor = e.target.value; applyVisuals(); saveSettings(); });
+      el('contentColor').addEventListener('input', (e)=>{ settings.contentColor = e.target.value; applyVisuals(); saveSettings(); });
+      el('textSize').addEventListener('input', (e)=>{ settings.textSize = Number(e.target.value); applyVisuals(); saveSettings(); });
+      el('fontSelect').addEventListener('change', (e)=>{ settings.font = e.target.value; applyVisuals(); saveSettings(); });
+
+      // Save button short click vs long press
+      const saveBtn = el('saveBtn');
+      let pressTimer = null;
+      saveBtn.addEventListener('mousedown', (ev)=>{
+        ev.preventDefault();
+        // start timer for long-press
+        pressTimer = setTimeout(()=>{ // long press -> export full html
+          doExportHTML();
+          pressTimer = null;
+        }, 4000);
+      });
+      document.addEventListener('mouseup', ()=>{
+        if(pressTimer){ clearTimeout(pressTimer); pressTimer = null; // treat as normal click -> save
+          saveSettings();
+          // small flash feedback
+          saveBtn.textContent = 'Saved ✓'; setTimeout(()=> saveBtn.textContent = 'Save settings', 900);
+        }
+      });
+
+      el('resetBtn').addEventListener('click', ()=>{ if(confirm('Reset to default settings?')) resetSettings(); });
+    }
+
+    // --- Export full HTML with current settings embedded ---
+    function doExportHTML(){
+      // gather current settings
+      const payload = settings;
+      // Build a copy of the current document's HTML but inject the settings JSON as defaults in a script tag.
+      // We will fetch the current outerHTML of <html> and replace a marker. Simpler: create a template that mirrors this file and inserts settings.
+
+      const pageHtml = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Swirling Particles - exported</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Slab:wght@300;400;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+  <style> /* inline minimal styles to preserve look */
+    :root{--bg:${settings.bgColor};--content:${settings.contentColor};}
+    html,body{height:100%;margin:0;font-family:${settings.font};font-size:${settings.textSize}px;background:var(--bg);color:var(--content)}
+    #stage{position:fixed;inset:0;z-index:0}
+    .content{position:relative;z-index:2;max-width:900px;margin:60px auto;padding:40px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(6px);border-radius:12px}
+    .cog{position:fixed;right:16px;bottom:16px;width:44px;height:44px;border-radius:999px;background:rgba(10,10,10,0.75);display:flex;align-items:center;justify-content:center;z-index:6}
+  </style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+  <main class="content">
+    <h1>Exported: Swirling Particles</h1>
+    <p>This file contains the exported default settings embedded. Re-open this file to use these as defaults.</p>
+  </main>
+  <script src="https://unpkg.com/three@0.154.0/build/three.min.js"></script>
+  <script>
+    // embedded defaults
+    const __EMBEDDED_DEFAULTS = ${JSON.stringify(settings)};
+    // The exported page will recreate the particle field using the embedded defaults.
+    // Minimal recreation: create a scene and points similar to original demo.
+    (function(){
+      const canvas = document.getElementById('stage');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 1, 5000);
+      camera.position.set(0,0,__EMBEDDED_DEFAULTS.cameraZoom||700);
+      const renderer = new THREE.WebGLRenderer({canvas:canvas,alpha:true,antialias:true});
+      renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+      function build(){
+        const geo = new THREE.BufferGeometry();
+        const n = __EMBEDDED_DEFAULTS.particleCount||1500;
+        const pos = new Float32Array(n*3);
+        const col = new Float32Array(n*3);
+        for(let i=0;i<n;i++){
+          const a=Math.random()*Math.PI*2; const r = (Math.random()*900)+200;
+          pos[i*3]=Math.cos(a)*r; pos[i*3+1]=(Math.random()-0.5)*800; pos[i*3+2]=Math.sin(a)*r;
+          const c = new THREE.Color(__EMBEDDED_DEFAULTS.particleColor||'#fff'); col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+        geo.setAttribute('aColor', new THREE.BufferAttribute(col,3));
+        const mat = new THREE.PointsMaterial({size:__EMBEDDED_DEFAULTS.particleSize*0.6,color:__EMBEDDED_DEFAULTS.particleColor,transparent:true,opacity:0.9});
+        const pts = new THREE.Points(geo, mat); scene.add(pts);
+        animate();
+      }
+      function animate(){ requestAnimationFrame(animate); renderer.render(scene, camera); }
+      build();
+    })();
   </script>
+</body>
+</html>`;
+
+      const blob = new Blob([pageHtml], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'swirling-particles-export.html';
+      a.click();
+      setTimeout(()=> URL.revokeObjectURL(url), 3000);
+    }
+
+    // Init
+    setUIFromSettings();
+    wireInputs();
+    initThree();
+    updateCameraFromScroll();
+
+  })();
+  </script>
+
 </body>
 </html>
