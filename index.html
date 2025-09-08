@@ -3,49 +3,68 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js Particle Field — Scroll Orbit + Speed Slider</title>
+  <title>Three.js Particle Field — Scroll Orbit + Dev Menu</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <style>
     :root{
       --bg:#0b1020;
       --accent:#7bd389;
       --muted:#c8d3e0;
+      --content:#c8d3e0;
       --header-height:72px;
+      --root-font-size:16px;
     }
-    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--muted);}
+    html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--content);font-size:var(--root-font-size)}
 
     /* canvas sits behind everything */
     canvas#bg{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;}
 
     /* header with slider */
-    header.header{position:fixed;left:0;right:0;top:0;height:var(--header-height);display:flex;align-items:center;gap:18px;padding:0 20px;background:linear-gradient(to bottom, rgba(11,16,32,0.45), rgba(11,16,32,0.08));backdrop-filter: blur(6px);z-index:10;}
+    header.header{position:fixed;left:0;right:0;top:0;height:var(--header-height);display:flex;align-items:center;gap:18px;padding:0 20px;background:linear-gradient(to bottom, rgba(11,16,32,0.45), rgba(11,16,32,0.08));backdrop-filter: blur(6px);z-index:30}
     .brand{font-weight:700;color:var(--accent);letter-spacing:0.6px}
     .controls{display:flex;align-items:center;gap:12px;margin-left:auto}
     .controls label{font-size:13px;color:var(--muted)}
     input[type=range]{width:200px}
 
     /* main content scrollable, sits above canvas */
-    main{position:relative;z-index:5;padding-top:calc(var(--header-height) + 20px);}
+    main{position:relative;z-index:20;padding-top:calc(var(--header-height) + 20px);}
     section.content-section{min-height:100vh;padding:60px 12vw;display:flex;flex-direction:column;gap:18px}
     .card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));padding:26px;border-radius:14px;box-shadow:0 6px 18px rgba(2,6,23,0.5);max-width:900px}
-    h1{margin:0;font-size:32px;color:white}
+    h1{margin:0;font-size:2rem;color:white}
     p{margin:0;color:rgba(200,211,224,0.9);line-height:1.6}
 
     /* floating shapes/text in foreground */
-    .float{position:absolute;pointer-events:none;z-index:6;will-change:transform;}
+    .float{position:absolute;pointer-events:none;z-index:22;will-change:transform}
     .float.shape{width:120px;height:120px;border-radius:14px;opacity:0.95;display:flex;align-items:center;justify-content:center}
     .float.shape svg{width:72px;height:72px;display:block}
 
-    /* a few positions for variety */
     .float.one{left:8%;top:30vh}
     .float.two{right:6%;top:60vh}
     .float.three{left:22%;top:160vh}
     .float.four{right:22%;top:260vh}
 
-    /* small responsive tweaks */
+    /* cog button */
+    button.cog{position:fixed;right:18px;bottom:18px;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:none;background:rgba(255,255,255,0.06);backdrop-filter: blur(4px);z-index:50;cursor:pointer}
+    button.cog svg{width:20px;height:20px;transform-origin:center center}
+
+    /* dev menu */
+    .devmenu{position:fixed;right:18px;bottom:78px;width:380px;max-width:92vw;background:rgba(6,10,18,0.98);border-radius:12px;padding:14px;box-shadow:0 10px 40px rgba(2,6,23,0.6);z-index:60;color:var(--content);display:none}
+    .devmenu.open{display:block}
+    .devmenu h3{margin:0 0 8px 0;font-size:16px}
+    .row{display:flex;gap:8px;align-items:center;margin:8px 0}
+    .row label{min-width:120px;font-size:13px;color:var(--muted)}
+    .row input[type=text], .row select{flex:1;padding:6px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--content)}
+    .row input[type=range]{flex:1}
+    .controls-block{max-height:58vh;overflow:auto;padding-right:6px}
+    .small{font-size:13px;color:rgba(200,211,224,0.7)}
+    .footer-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+    .btn{padding:8px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.06);color:var(--content);cursor:pointer}
+    .btn.primary{background:var(--accent);color:#042014}
+
     @media (max-width:720px){
+      .devmenu{left:6px;right:6px;bottom:80px;width:auto}
       input[type=range]{width:120px}
-      .card{padding:18px}
-      h1{font-size:26px}
+      h1{font-size:1.4rem}
     }
   </style>
 </head>
@@ -58,6 +77,36 @@
       <div style="min-width:48px;text-align:right;font-weight:600;color:var(--muted)"><span id="speedLabel">1.00</span>x</div>
     </div>
   </header>
+
+  <!--DEFAULT_SETTINGS_START-->
+  <script>
+    // Default settings injected here (export will replace this block when saving defaults)
+    window.DEFAULT_SETTINGS = {
+      particleCount: 6000,
+      particleSize: 0.9,
+      particleColor: '#ffffff',
+      particleOpacity: 0.85,
+      particleStaticRotationSpeed: 0.03,
+      particleStaticRotationAxis: 'y',
+
+      cameraOrbitRadius: 60,
+      cameraBaseY: 18,
+
+      orbitRotationPerScroll: 1.0,
+      orbitOrientation: 'vertical', // 'vertical' or 'horizontal'
+
+      backgroundColor: '#0b1020',
+      accentColor: '#7bd389',
+      contentColor: '#c8d3e0',
+
+      globalFontSizePx: 16,
+      fontFamily: 'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+
+      parallaxEnabled: true,
+      reduceParticlesOnMobile: true
+    };
+  </script>
+  <!--DEFAULT_SETTINGS_END-->
 
   <canvas id="bg"></canvas>
 
@@ -123,142 +172,360 @@
     </section>
   </main>
 
+  <button class="cog" id="cogBtn" aria-label="Open settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"></path>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.27 17.9l.06-.06c.39-.39.5-1 .33-1.82A1.65 1.65 0 0 0 2.25 14h-.09a2 2 0 0 1 0-4h.09c.72 0 1.31-.27 1.82-.66.59-.48.68-1.28.33-1.82L5.37 6.2A2 2 0 0 1 8.2 3.37l.06.06c.39.39 1 .5 1.82.33.74-.17 1.34-.03 1.82.33.39.39 1 .5 1.82.33H15a2 2 0 0 1 4 0h.09c.72 0 1.31.27 1.82.66.59.48.68 1.28.33 1.82l-.06.06c-.39.39-.5 1-.33 1.82.17.74.03 1.34-.33 1.82z"></path>
+    </svg>
+  </button>
+
+  <div class="devmenu" id="devmenu" role="dialog" aria-hidden="true">
+    <h3>Dev / Settings</h3>
+    <div class="controls-block" id="controlsBlock">
+      <!-- controls injected by script for clarity -->
+    </div>
+    <div class="footer-actions">
+      <button class="btn" id="resetBtn">Reset</button>
+      <button class="btn" id="saveBtn">Save</button>
+      <button class="btn primary" id="applyBtn">Apply</button>
+    </div>
+    <div class="small" style="margin-top:8px">Tip: long-press Save (4s) to export this page HTML with current settings embedded as defaults.</div>
+  </div>
+
   <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-    // --- Basic renderer / scene / camera setup ---
+    // --- helpers ---
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    const defaultSettings = window.DEFAULT_SETTINGS || {};
+
+    // load saved settings (local per device)
+    function loadSaved(){
+      try{
+        const s = localStorage.getItem('particlePageSettings');
+        return s ? JSON.parse(s) : null;
+      }catch(e){return null}
+    }
+    function saveLocal(settings){
+      localStorage.setItem('particlePageSettings', JSON.stringify(settings));
+    }
+
+    // initial effective settings: saved overrides defaults
+    let settings = Object.assign({}, defaultSettings, loadSaved() || {});
+
+    // --- renderer / scene / camera ---
     const canvas = document.getElementById('bg');
     const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight, false);
-    renderer.outputColorSpace = THREE.SRGBColorSpace || undefined;
 
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const ORBIT_RADIUS = 60;
-    // Vertical orbit: camera will move in the Y (up/down) and Z (depth) plane around the origin.
+    let ORBIT_RADIUS = settings.cameraOrbitRadius || 60;
     camera.position.set(0, ORBIT_RADIUS, 0);
     camera.lookAt(0,0,0);
 
-    // --- Particles ---
-    const PARTICLE_COUNT = 6000; // tweak if you want more/less
-    const positions = new Float32Array(PARTICLE_COUNT * 3);
-    const sizes = new Float32Array(PARTICLE_COUNT);
+    // points holder
+    let particlesGroup = new THREE.Group();
+    scene.add(particlesGroup);
+    let points = null;
 
-    for(let i=0;i<PARTICLE_COUNT;i++){
-      // place in a loose spherical-ish cloud with more spread on X/Z
-      const r = THREE.MathUtils.randFloat(10, 180);
-      const theta = Math.random() * Math.PI * 2;
-      const phi = THREE.MathUtils.randFloat(0, Math.PI);
-      const x = r * Math.sin(phi) * Math.cos(theta) * THREE.MathUtils.randFloat(0.5,1.1);
-      const y = r * Math.cos(phi) * THREE.MathUtils.randFloat(0.2,0.8);
-      const z = r * Math.sin(phi) * Math.sin(theta) * THREE.MathUtils.randFloat(0.5,1.1);
-      positions[i*3]=x; positions[i*3+1]=y; positions[i*3+2]=z;
-      sizes[i]=THREE.MathUtils.randFloat(0.5, 2.5);
+    function createParticles(count, size, color, opacity){
+      // remove old
+      if(points){
+        particlesGroup.remove(points);
+        if(points.geometry) points.geometry.dispose();
+        if(points.material) points.material.dispose();
+      }
+
+      const PARTICLE_COUNT = Math.max(0, Math.floor(count));
+      const positions = new Float32Array(PARTICLE_COUNT * 3);
+      const sizes = new Float32Array(PARTICLE_COUNT);
+      for(let i=0;i<PARTICLE_COUNT;i++){
+        const r = THREE.MathUtils.randFloat(10, 180);
+        const theta = Math.random() * Math.PI * 2;
+        const phi = THREE.MathUtils.randFloat(0, Math.PI);
+        const x = r * Math.sin(phi) * Math.cos(theta) * THREE.MathUtils.randFloat(0.5,1.1);
+        const y = r * Math.cos(phi) * THREE.MathUtils.randFloat(0.2,0.8);
+        const z = r * Math.sin(phi) * Math.sin(theta) * THREE.MathUtils.randFloat(0.5,1.1);
+        positions[i*3]=x; positions[i*3+1]=y; positions[i*3+2]=z;
+        sizes[i]=THREE.MathUtils.randFloat(0.5, 2.5) * (size||1);
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+      const material = new THREE.PointsMaterial({
+        size: size || 0.9,
+        sizeAttenuation:true,
+        color: new THREE.Color(color || '#ffffff'),
+        opacity: opacity != null ? opacity : 0.85,
+        transparent:true,
+        depthWrite:false
+      });
+
+      points = new THREE.Points(geometry, material);
+      particlesGroup.add(points);
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    // create initial particles
+    function initParticlesFromSettings(){
+      let cnt = settings.particleCount;
+      if(settings.reduceParticlesOnMobile && isMobile){ cnt = Math.max(512, Math.floor(cnt * 0.25)); }
+      createParticles(cnt, settings.particleSize, settings.particleColor, settings.particleOpacity);
+    }
 
-    const material = new THREE.PointsMaterial({
-      size:0.9,
-      sizeAttenuation:true,
-      color:0xffffff,
-      opacity:0.85,
-      transparent:true,
-      depthWrite:false
-    });
+    initParticlesFromSettings();
 
-    const points = new THREE.Points(geometry, material);
-    const particlesGroup = new THREE.Group();
-    particlesGroup.add(points);
-    scene.add(particlesGroup);
-
-    // subtle ambient glow using a large, dim point light
     const light = new THREE.PointLight(0xffffff, 0.5);
     light.position.set(0,50,50);
     scene.add(light);
 
-    // --- Interaction: scroll -> camera angle ---
-    // rotation speed per full-scroll (slider controls this)
-    let rotationPerScroll = parseFloat(document.getElementById('speedSlider').value) || 1.0;
+    // --- UI wiring ---
+    const speedSlider = document.getElementById('speedSlider');
     const speedLabel = document.getElementById('speedLabel');
-    speedLabel.textContent = rotationPerScroll.toFixed(2);
 
-    const doc = document.documentElement;
+    function setHeaderSlider(v){
+      speedSlider.value = v;
+      speedLabel.textContent = parseFloat(v).toFixed(2);
+    }
+    setHeaderSlider(settings.orbitRotationPerScroll || 1.0);
+
+    // small helper to set CSS vars
+    function applyCSSColors(){
+      document.documentElement.style.setProperty('--bg', settings.backgroundColor);
+      document.documentElement.style.setProperty('--accent', settings.accentColor);
+      document.documentElement.style.setProperty('--content', settings.contentColor || settings.contentColor || '#c8d3e0');
+      document.documentElement.style.setProperty('--root-font-size', settings.globalFontSizePx + 'px');
+      document.body.style.fontFamily = settings.fontFamily;
+      renderer.setClearColor(new THREE.Color(settings.backgroundColor), 0);
+    }
+
+    applyCSSColors();
+
+    // camera orbit target
+    const cameraTarget = new THREE.Vector3().copy(camera.position);
+
     function getScrollProgress(){
+      const doc = document.documentElement;
       const scrollTop = window.scrollY || window.pageYOffset || doc.scrollTop;
       const max = doc.scrollHeight - window.innerHeight;
       return max > 0 ? Math.min(1, Math.max(0, scrollTop / max)) : 0;
     }
 
-    // smooth camera target for damping
-    const cameraTarget = new THREE.Vector3().copy(camera.position);
-    const tempVec = new THREE.Vector3();
-
-    // DOM floating elements parallax
     const floats = Array.from(document.querySelectorAll('.float'));
 
     function onScroll(){
       const p = getScrollProgress();
-      // The target angle for a full 0->1 progress. Multiply by slider.
-      const targetAngle = p * Math.PI * 2 * rotationPerScroll;
+      const targetAngle = p * Math.PI * 2 * (settings.orbitRotationPerScroll || 1.0);
+      const OR = settings.cameraOrbitRadius || ORBIT_RADIUS;
+      const CENTER_Y = settings.cameraBaseY != null ? settings.cameraBaseY : (defaultSettings.cameraBaseY || 18);
 
-      // For vertical orbit we map angle into Y/Z coordinates.
-      const CENTER_Y = 18; // base offset so the camera doesn't orbit exactly around world y=0
-      cameraTarget.x = Math.sin(targetAngle * 0.25) * 8; // slight x wobble for depth
-      cameraTarget.y = CENTER_Y + ORBIT_RADIUS * Math.sin(targetAngle);
-      cameraTarget.z = ORBIT_RADIUS * Math.cos(targetAngle);
+      if(settings.orbitOrientation === 'vertical'){
+        cameraTarget.x = Math.sin(targetAngle * 0.25) * 8;
+        cameraTarget.y = CENTER_Y + OR * Math.sin(targetAngle);
+        cameraTarget.z = OR * Math.cos(targetAngle);
+      }else{
+        cameraTarget.x = OR * Math.cos(targetAngle);
+        cameraTarget.z = OR * Math.sin(targetAngle);
+        cameraTarget.y = CENTER_Y + Math.sin(targetAngle * 0.7) * 8;
+      }
 
-      // dom parallax: each float has data-speed (multiplier), we center around mid-scroll
+      // dom parallax
       const centerOffset = (p - 0.5);
-      floats.forEach(el => {
-        const s = parseFloat(el.dataset.speed) || 0.6;
-        // subtle X/Y offset based on scroll (and a little per-element randomness)
-        const xOff = centerOffset * 400 * (s * 0.6);
-        const yOff = Math.sin(p * Math.PI * 2 * s + el.className.length) * 8 * s;
-        el.style.transform = `translate3d(${xOff}px, ${yOff}px, 0)`;
+      if(settings.parallaxEnabled){
+        floats.forEach(el => {
+          const s = parseFloat(el.dataset.speed) || 0.6;
+          const xOff = centerOffset * 400 * (s * 0.6);
+          const yOff = Math.sin(p * Math.PI * 2 * s + el.className.length) * 8 * s;
+          el.style.transform = `translate3d(${xOff}px, ${yOff}px, 0)`;
+        });
+      }
+    }
+    window.addEventListener('scroll', ()=>requestAnimationFrame(onScroll), {passive:true});
+
+    // --- dev menu building ---
+    const devmenu = document.getElementById('devmenu');
+    const cogBtn = document.getElementById('cogBtn');
+    const controlsBlock = document.getElementById('controlsBlock');
+
+    const Controls = [
+      {id:'particleCount',label:'Particle count',type:'range',min:128,max:20000,step:1},
+      {id:'particleSize',label:'Particle size',type:'range',min:0.1,max:4,step:0.01},
+      {id:'particleColor',label:'Particle color',type:'color'},
+      {id:'particleOpacity',label:'Particle opacity',type:'range',min:0,step:0.01,max:1},
+      {id:'particleStaticRotationSpeed',label:'Particle static rotation speed',type:'range',min:0,step:0.001,max:0.5},
+      {id:'particleStaticRotationAxis',label:'Particles rotation axis',type:'select',options:['x','y','z']},
+
+      {id:'cameraOrbitRadius',label:'Camera orbit radius',type:'range',min:10,max:240,step:1},
+      {id:'cameraBaseY',label:'Camera base Y',type:'range',min:-40,max:120,step:1},
+
+      {id:'orbitRotationPerScroll',label:'Orbit rotation / scroll',type:'range',min:0,max:4,step:0.01},
+      {id:'orbitOrientation',label:'Orbit orientation',type:'select',options:['vertical','horizontal']},
+
+      {id:'backgroundColor',label:'Background color',type:'color'},
+      {id:'accentColor',label:'Accent color',type:'color'},
+      {id:'contentColor',label:'Content color',type:'color'},
+
+      {id:'globalFontSizePx',label:'Global text size (px)',type:'range',min:10,max:28,step:1},
+      {id:'fontFamily',label:'Font family',type:'select',options:[
+        'Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+        'Georgia, "Times New Roman", Times, serif',
+        'Roboto, system-ui, -apple-system, "Segoe UI", Arial',
+        '"Courier New", Courier, monospace'
+      ]},
+
+      {id:'parallaxEnabled',label:'Parallax floats',type:'checkbox'},
+      {id:'reduceParticlesOnMobile',label:'Reduce particles on mobile',type:'checkbox'}
+    ];
+
+    function makeControl(c){
+      const row = document.createElement('div'); row.className='row';
+      const label = document.createElement('label'); label.htmlFor = c.id; label.textContent = c.label;
+      row.appendChild(label);
+      let control;
+      if(c.type==='range' || c.type==='color' || c.type==='text'){
+        control = document.createElement('input'); control.type = c.type; control.id = c.id;
+        if(c.min!=null) control.min = c.min; if(c.max!=null) control.max = c.max; if(c.step!=null) control.step = c.step;
+      }else if(c.type==='select'){
+        control = document.createElement('select'); control.id = c.id;
+        c.options.forEach(o=>{ const opt=document.createElement('option'); opt.value=o; opt.textContent=o; control.appendChild(opt); });
+      }else if(c.type==='checkbox'){
+        control = document.createElement('input'); control.type='checkbox'; control.id=c.id;
+      }
+      if(!control) return null;
+
+      const wrap = document.createElement('div'); wrap.style.flex='1'; wrap.appendChild(control);
+      row.appendChild(wrap);
+
+      // live value display for ranges
+      if(c.type==='range'){
+        const val = document.createElement('div'); val.className='small'; val.style.minWidth='48px'; val.style.textAlign='right'; val.textContent = control.value;
+        row.appendChild(val);
+        control.addEventListener('input', ()=>{ val.textContent = control.value; });
+      }
+
+      return row;
+    }
+
+    Controls.forEach(c => { const el = makeControl(c); if(el) controlsBlock.appendChild(el); });
+
+    // wire UI controls to settings
+    function syncUIFromSettings(){
+      Controls.forEach(c=>{
+        const el = document.getElementById(c.id);
+        if(!el) return;
+        const v = settings[c.id];
+        if(c.type==='checkbox') el.checked = !!v;
+        else if(c.type==='select' || c.type==='text') el.value = v != null ? v : el.value;
+        else el.value = v != null ? v : el.value;
+        // update range value label if present
+        if(c.type==='range'){
+          const row = el.closest('.row');
+          if(row){ const small = row.querySelector('.small'); if(small) small.textContent = el.value; }
+        }
       });
     }
 
-    // listen passive for performance
-    window.addEventListener('scroll', onScroll, {passive:true});
+    function applySettingsFromUI(saveLocalFlag=false){
+      Controls.forEach(c=>{
+        const el = document.getElementById(c.id);
+        if(!el) return;
+        let val;
+        if(c.type==='checkbox') val = el.checked;
+        else if(c.type==='range') val = parseFloat(el.value);
+        else val = el.value;
+        settings[c.id] = val;
+      });
+      // apply immediate visual changes
+      ORBIT_RADIUS = settings.cameraOrbitRadius;
+      setHeaderSlider(settings.orbitRotationPerScroll || 1.0);
+      applyCSSColors();
+      // rebuild particles if count/size/color changed
+      initParticlesFromSettings();
+      if(saveLocalFlag) saveLocal(settings);
+    }
 
-    // slider hookup
-    const slider = document.getElementById('speedSlider');
-    slider.addEventListener('input', (e)=>{
-      rotationPerScroll = parseFloat(e.target.value);
-      speedLabel.textContent = rotationPerScroll.toFixed(2);
-      // update once so scroll response uses new value
-      onScroll();
+    // initial UI sync
+    syncUIFromSettings();
+
+    cogBtn.addEventListener('click', ()=>{
+      const open = devmenu.classList.toggle('open');
+      devmenu.setAttribute('aria-hidden', !open);
     });
 
-    // initial call
-    onScroll();
-
-    // resize
-    window.addEventListener('resize', ()=>{
-      renderer.setSize(window.innerWidth, window.innerHeight, false);
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
+    document.getElementById('applyBtn').addEventListener('click', ()=>{
+      applySettingsFromUI(false);
     });
 
-    // animation loop
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      settings = Object.assign({}, defaultSettings);
+      syncUIFromSettings();
+      applySettingsFromUI(true);
+    });
+
+    // save button with long-press export
+    const saveBtn = document.getElementById('saveBtn');
+    let longPressTimer = null;
+
+    saveBtn.addEventListener('click', ()=>{ applySettingsFromUI(true); alert('Settings saved locally. Long-press the Save button to export HTML with these defaults.'); });
+    function triggerExport(){
+      // Build HTML and replace default-settings block
+      const s = JSON.stringify(settings, null, 2);
+      const docHTML = '<!doctype html>
+' + document.documentElement.outerHTML;
+      const start = '<!--DEFAULT_SETTINGS_START-->';
+      const end = '<!--DEFAULT_SETTINGS_END-->';
+      const before = docHTML.split(start)[0];
+      const afterSplit = docHTML.split(end);
+      if(afterSplit.length < 2){ alert('Export failed: template markers missing.'); return; }
+      const after = afterSplit.slice(1).join(end);
+      const newSettingsBlock = start + '
+<script>
+window.DEFAULT_SETTINGS = ' + s + '
+</script>
+' + end;
+      const out = before + newSettingsBlock + after;
+      const blob = new Blob([out], {type:'text/html;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'particle_page_with_defaults.html';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+    // mouse
+    saveBtn.addEventListener('mousedown', ()=>{ longPressTimer = setTimeout(()=>{ triggerExport(); }, 4000); });
+    saveBtn.addEventListener('mouseup', ()=>{ clearTimeout(longPressTimer); });
+    saveBtn.addEventListener('mouseleave', ()=>{ clearTimeout(longPressTimer); });
+    // touch
+    saveBtn.addEventListener('touchstart', ()=>{ longPressTimer = setTimeout(()=>{ triggerExport(); }, 4000); });
+    saveBtn.addEventListener('touchend', ()=>{ clearTimeout(longPressTimer); });
+
+    // header slider sync
+    speedSlider.addEventListener('input', (e)=>{
+      const v = parseFloat(e.target.value);
+      settings.orbitRotationPerScroll = v; speedLabel.textContent = v.toFixed(2);
+    });
+
+    // --- animation ---
     const clock = new THREE.Clock();
     function animate(){
       const dt = clock.getDelta();
       const t = clock.getElapsedTime();
 
-      // rotate the particle cloud slowly for subtle motion
-      particlesGroup.rotation.y += dt * 0.03; // base slow spin
-      particlesGroup.rotation.x = Math.sin(t * 0.02) * 0.02;
+      // static particle rotation
+      const spd = settings.particleStaticRotationSpeed || 0.03;
+      if(particlesGroup){
+        if(settings.particleStaticRotationAxis==='x') particlesGroup.rotation.x += dt * spd;
+        else if(settings.particleStaticRotationAxis==='y') particlesGroup.rotation.y += dt * spd;
+        else particlesGroup.rotation.z += dt * spd;
+      }
 
-      // gentle individual twinkle: vary point sizes via shader would be better; we'll fake it by moving a little
-      points.rotation.y += dt * 0.01;
+      // gentle twinkle
+      if(points) points.rotation.y += dt * 0.01;
 
-      // smooth camera interpolation towards computed target
+      // camera interpolation
       camera.position.lerp(cameraTarget, 0.08);
       camera.lookAt(0,0,0);
 
@@ -268,10 +535,17 @@
 
     animate();
 
-    // helpful: let the user click header labels etc without hitting the canvas
-    canvas.style.pointerEvents = 'none';
+    // initial scroll positioning
+    onScroll();
 
-    // Safety/caveat: particle count can be changed above; smaller counts are faster on mobile
+    window.addEventListener('resize', ()=>{
+      renderer.setSize(window.innerWidth, window.innerHeight, false);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    // expose convenience on window for debugging
+    window._particlePage = {settings, applySettingsFromUI, triggerExport};
   </script>
 </body>
 </html>
