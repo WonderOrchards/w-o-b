@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js Particle Field + Camera Orbit</title>
+  <title>Three.js Particle Field + Fixed Camera Orbit</title>
   <style>
     :root{--bg: rgba(255,255,255,0.0);--content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));--text-color: #111;--panel-bg: #ffffff;--cog-bg: rgba(255,255,255,0.9);} 
     .dark{--bg: #071026;--content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));--text-color: #e6eef8;--panel-bg: #0f1724;--cog-bg: rgba(14,18,24,0.95);} 
@@ -22,25 +22,6 @@
     .small{font-size:13px;color:rgba(100,100,120,1)}
     .control-inline{display:flex;gap:8px;align-items:center}
     @media (max-width:520px){.panel{width:92%;right:4%;bottom:80px}} .hidden{display:none} hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0}
-    .save-btn {margin-top: 16px;padding: 10px 16px;background: #4a6cf7;color: white;border: none;border-radius: 6px;cursor: pointer;width: 100%;font-weight: 500;transition: background 0.2s;}
-    .save-btn:hover {background: #3b5be3;}
-    .export-notification {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4a6cf7;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 100;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .export-notification.show {
-      opacity: 1;
-    }
   </style>
 </head>
 <body>
@@ -49,7 +30,7 @@
   <main>
     <div style="height:40px"></div>
     <div class="content">
-      <h1>Three.js Particle Field + Camera Orbit</h1>
+      <h1>Three.js Particle Field + Fixed Camera Orbit</h1>
       <p>This is an example page with enough content to scroll. The background is a particle field rendered with three.js and the camera will orbit as you scroll the page. Use the small cog in the lower-right to open the settings panel.</p>
 
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
@@ -103,8 +84,8 @@
     <hr>
 
     <div class="row">
-      <label for="lightMode">Light mode</label>
-      <div class="control-inline"><input id="lightMode" type="checkbox"><span class="small">Toggle</span></div>
+      <label for="darkMode">Dark mode</label>
+      <div class="control-inline"><input id="darkMode" type="checkbox"><span class="small">Toggle</span></div>
     </div>
 
     <div class="row">
@@ -155,21 +136,14 @@
     </div>
     <input id="cameraPanY" type="range" min="-200" max="200" step="1" value="0">
 
-    <button id="saveSettings" class="save-btn">Save Settings</button>
-    
     <div class="row small" style="margin-top:10px">
       <div>Tip:</div>
-      <div>Long press (4 seconds) on Save to export page with current settings</div>
+      <div>Pan the camera to view the particle field from different angles.</div>
     </div>
   </aside>
 
-  <div id="exportNotification" class="export-notification">Exporting page with current settings...</div>
-
   <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
   <script>
-    // Set dark mode as default
-    document.documentElement.classList.add('dark');
-    
     const canvas = document.getElementById('bg');
     const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -234,7 +208,7 @@
     let lastScrollY = window.scrollY; 
     let targetAngle = 0; 
     let currentAngle = 0;
-    const settings = {speed:1.0, orientation:'horizontal', lightMode:false};
+    const settings = {speed:1.0, orientation:'horizontal', darkMode:false};
 
     // UI refs
     const speedInput = document.getElementById('speed'); 
@@ -243,7 +217,7 @@
     const cogBtn = document.getElementById('cogBtn'); 
     const panel = document.getElementById('panel'); 
     const closePanel = document.getElementById('closePanel');
-    const lightModeCheckbox = document.getElementById('lightMode'); 
+    const darkModeCheckbox = document.getElementById('darkMode'); 
     const particleSizeInput = document.getElementById('particleSize'); 
     const sizeVal = document.getElementById('sizeVal');
     const colorPreset = document.getElementById('colorPreset'); 
@@ -257,12 +231,11 @@
     const panXVal = document.getElementById('panXVal');
     const cameraPanYInput = document.getElementById('cameraPanY'); 
     const panYVal = document.getElementById('panYVal');
-    const saveSettingsBtn = document.getElementById('saveSettings');
-    const exportNotification = document.getElementById('exportNotification');
 
     // Update labels to reflect pan functionality
     document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";
     document.querySelector('label[for="cameraPanY"]').textContent = "Camera pan Y (up / down)";
+    document.querySelector('.row.small div:last-child').textContent = "Pan the camera to view the particle field from different angles.";
 
     // initial UI values
     speedVal.textContent = settings.speed.toFixed(2); 
@@ -272,20 +245,13 @@
     panXVal.textContent = cameraPan.x; 
     panYVal.textContent = cameraPan.y; 
     customColorRow.classList.add('hidden');
-    lightModeCheckbox.checked = settings.lightMode;
-
-    // Load saved settings if available
-    loadSettings();
 
     // handlers
     speedInput.addEventListener('input', (e)=>{ settings.speed = parseFloat(e.target.value); speedVal.textContent = settings.speed.toFixed(2); });
     orientationInput.addEventListener('change', (e)=>{ settings.orientation = e.target.value; });
 
     particleSizeInput.addEventListener('input', (e)=>{ const v = parseFloat(e.target.value); if(mat) mat.size = v; sizeVal.textContent = v.toFixed(1); });
-    lightModeCheckbox.addEventListener('change', (e)=>{ 
-      settings.lightMode = e.target.checked; 
-      document.documentElement.classList.toggle('dark', !settings.lightMode); 
-    });
+    darkModeCheckbox.addEventListener('change', (e)=>{ settings.darkMode = e.target.checked; document.documentElement.classList.toggle('dark', settings.darkMode); });
 
     colorPreset.addEventListener('change', (e)=>{ const val = e.target.value; if(val === 'custom'){ customColorRow.classList.remove('hidden'); applyCustomColor(colorPicker.value); } else { customColorRow.classList.add('hidden'); applyColorPreset(val); } });
     colorPicker.addEventListener('input', (e)=>{ if(colorPreset.value === 'custom') applyCustomColor(e.target.value); });
@@ -304,611 +270,6 @@
       cameraPan.y = parseFloat(e.target.value); 
       panYVal.textContent = cameraPan.y; 
     });
-
-    // Save settings functionality
-    saveSettingsBtn.addEventListener('click', saveSettings);
-    
-    // Long press for export functionality
-    let longPressTimer;
-    saveSettingsBtn.addEventListener('mousedown', startLongPress);
-    saveSettingsBtn.addEventListener('touchstart', startLongPress);
-    saveSettingsBtn.addEventListener('mouseup', cancelLongPress);
-    saveSettingsBtn.addEventListener('touchend', cancelLongPress);
-    saveSettingsBtn.addEventListener('mouseleave', cancelLongPress);
-
-    function startLongPress() {
-      longPressTimer = setTimeout(exportPageWithSettings, 4000); // 4 seconds
-    }
-
-    function cancelLongPress() {
-      clearTimeout(longPressTimer);
-    }
-
-    function showExportNotification() {
-      exportNotification.classList.add('show');
-      setTimeout(() => {
-        exportNotification.classList.remove('show');
-      }, 3000);
-    }
-
-    function exportPageWithSettings() {
-      showExportNotification();
-      
-      // Gather all current settings
-      const currentSettings = {
-        speed: settings.speed,
-        orientation: settings.orientation,
-        lightMode: settings.lightMode,
-        particleSize: parseFloat(particleSizeInput.value),
-        colorPreset: colorPreset.value,
-        customColor: colorPicker.value,
-        particleCount: parseInt(particleCountInput.value),
-        cameraZoom: parseInt(cameraZoomInput.value),
-        cameraPanX: parseInt(cameraPanXInput.value),
-        cameraPanY: parseInt(cameraPanYInput.value)
-      };
-      
-      // Create a downloadable HTML file with these settings as defaults
-      const htmlContent = `<!doctype html>
-<html lang="en" class="${currentSettings.lightMode ? '' : 'dark'}">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js Particle Field + Camera Orbit</title>
-  <style>
-    :root{--bg: rgba(255,255,255,0.0);--content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));--text-color: #111;--panel-bg: #ffffff;--cog-bg: rgba(255,255,255,0.9);} 
-    .dark{--bg: #071026;--content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));--text-color: #e6eef8;--panel-bg: #0f1724;--cog-bg: rgba(14,18,24,0.95);} 
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text-color)}
-    #bg {position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
-    .content{position:relative;z-index:1;max-width:900px;margin:40px auto;padding:20px;background:var(--content-bg);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.08);backdrop-filter: blur(6px)}
-    h1{font-size:clamp(26px,4vw,40px);margin:0 0 12px}
-    p{line-height:1.6;color:var(--text-color)}
-    .floating-shape{width:120px;height:120px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin:10px;background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);color:var(--text-color)}
-    .cog {position:fixed;right:16px;bottom:16px;z-index:3;width:36px;height:36px;border-radius:999px;display:grid;place-items:center;background:var(--cog-bg);box-shadow:0 6px 18px rgba(0,0,0,0.12);cursor:pointer;border:1px solid rgba(0,0,0,0.06)}
-    .cog svg{width:18px;height:18px}
-    .panel{position:fixed;right:16px;bottom:64px;z-index:4;width:360px;background:var(--panel-bg);border-radius:12px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,0.12);display:none;color:var(--text-color)}
-    .panel.open{display:block}
-    .panel label{font-size:13px;color:var(--text-color)}
-    .row{display:flex;align-items:center;justify-content:space-between;margin:8px 0}
-    .small{font-size:13px;color:rgba(100,100,120,1)}
-    .control-inline{display:flex;gap:8px;align-items:center}
-    @media (max-width:520px){.panel{width:92%;right:4%;bottom:80px}} .hidden{display:none} hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0}
-    .save-btn {margin-top: 16px;padding: 10px 16px;background: #4a6cf7;color: white;border: none;border-radius: 6px;cursor: pointer;width: 100%;font-weight: 500;transition: background 0.2s;}
-    .save-btn:hover {background: #3b5be3;}
-    .export-notification {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4a6cf7;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 100;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .export-notification.show {
-      opacity: 1;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="bg"></canvas>
-
-  <main>
-    <div style="height:40px"></div>
-    <div class="content">
-      <h1>Three.js Particle Field + Camera Orbit</h1>
-      <p>This is an example page with enough content to scroll. The background is a particle field rendered with three.js and the camera will orbit as you scroll the page. Use the small cog in the lower-right to open the settings panel.</p>
-
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
-        <div class="floating-shape">Box</div>
-        <div class="floating-shape">Circle</div>
-        <div class="floating-shape">SVG</div>
-        <div class="floating-shape">Text</div>
-        <div class="floating-shape">Shape</div>
-      </div>
-
-      <p style="margin-top:18px">Scroll down to see the camera orbit effect. The foreground content stays interactive while the canvas remains a decorative background.</p>
-    </div>
-
-    <div style="height:900px"></div>
-    <div class="content">
-      <h2>More content</h2>
-      <p>Here's more sample content so the page is definitely scrollable. Feel free to paste your own content here. The particle field will continue to animate while you read.</p>
-      <div style="height:600px"></div>
-    </div>
-
-    <div style="height:400px"></div>
-  </main>
-
-  <button class="cog" id="cogBtn" aria-label="Open settings" title="Open settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"></path>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.28 17.9l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09c.7 0 1.32-.39 1.51-1a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 0 1 6.1 2.28l.06.06c.45.45 1.07.66 1.67.51.58-.14 1.05-.59 1.2-1.17L9.5 2A2 2 0 0 1 13.5 2l.07.09c.15.58.62 1.03 1.2 1.17.6.15 1.22-.06 1.67-.51l.06-.06A2 2 0 0 1 21.72 6.1l-.06.06c-.45.45-.66 1.07-.51 1.67.14.58.59 1.05 1.17 1.2L22 9.5a2 2 0 0 1 0 4l-.09.07c-.58.15-1.03.62-1.17 1.2-.15.6.06 1.22.51 1.67z"/>
-    </svg>
-  </button>
-
-  <aside class="panel" id="panel" role="dialog" aria-label="Dev settings">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <strong>Dev Settings</strong>
-      <button id="closePanel" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:var(--text-color)">✕</button>
-    </div>
-
-    <div class="row">
-      <label for="speed">Orbit rotation speed (per scroll)</label>
-      <div class="small" id="speedVal">${currentSettings.speed.toFixed(2)}</div>
-    </div>
-    <input id="speed" type="range" min="0" max="5" step="0.05" value="${currentSettings.speed}">
-
-    <div class="row" style="margin-top:8px">
-      <label for="orientation">Orbit orientation</label>
-      <select id="orientation">
-        <option value="horizontal" ${currentSettings.orientation === 'horizontal' ? 'selected' : ''}>Horizontal (Y axis)</option>
-        <option value="vertical" ${currentSettings.orientation === 'vertical' ? 'selected' : ''}>Vertical (X axis)</option>
-      </select>
-    </div>
-
-    <hr>
-
-    <div class="row">
-      <label for="lightMode">Light mode</label>
-      <div class="control-inline"><input id="lightMode" type="checkbox" ${currentSettings.lightMode ? 'checked' : ''}><span class="small">Toggle</span></div>
-    </div>
-
-    <div class="row">
-      <label for="particleSize">Particle size</label>
-      <div class="small" id="sizeVal">${currentSettings.particleSize.toFixed(1)}</div>
-    </div>
-    <input id="particleSize" type="range" min="0.2" max="6" step="0.1" value="${currentSettings.particleSize}">
-
-    <div class="row" style="margin-top:8px">
-      <label for="colorPreset">Particle colors</label>
-      <select id="colorPreset">
-        <option value="soft" ${currentSettings.colorPreset === 'soft' ? 'selected' : ''}>Soft (default)</option>
-        <option value="warm" ${currentSettings.colorPreset === 'warm' ? 'selected' : ''}>Warm</option>
-        <option value="cool" ${currentSettings.colorPreset === 'cool' ? 'selected' : ''}>Cool</option>
-        <option value="mono" ${currentSettings.colorPreset === 'mono' ? 'selected' : ''}>Monochrome</option>
-        <option value="custom" ${currentSettings.colorPreset === 'custom' ? 'selected' : ''}>Custom</option>
-      </select>
-    </div>
-
-    <div class="row" id="customColorRow" style="margin-top:6px" ${currentSettings.colorPreset !== 'custom' ? 'class="hidden"' : ''}>
-      <label for="colorPicker">Custom color</label>
-      <input id="colorPicker" type="color" value="${currentSettings.customColor}">
-    </div>
-
-    <hr>
-
-    <div class="row">
-      <label for="particleCount">Particle count</label>
-      <div class="small" id="countVal">${currentSettings.particleCount}</div>
-    </div>
-    <input id="particleCount" type="range" min="200" max="6000" step="50" value="${currentSettings.particleCount}">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraZoom">Camera zoom (distance)</label>
-      <div class="small" id="zoomVal">${currentSettings.cameraZoom}</div>
-    </div>
-    <input id="cameraZoom" type="range" min="20" max="220" step="1" value="${currentSettings.cameraZoom}">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraPanX">Camera pan X (left / right)</label>
-      <div class="small" id="panXVal">${currentSettings.cameraPanX}</div>
-    </div>
-    <input id="cameraPanX" type="range" min="-200" max="200" step="1" value="${currentSettings.cameraPanX}">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraPanY">Camera pan Y (up / down)</label>
-      <div class="small" id="panYVal">${currentSettings.cameraPanY}</div>
-    </div>
-    <input id="cameraPanY" type="range" min="-200" max="200" step="1" value="${currentSettings.cameraPanY}">
-
-    <button id="saveSettings" class="save-btn">Save Settings</button>
-    
-    <div class="row small" style="margin-top:10px">
-      <div>Tip:</div>
-      <div>Long press (4 seconds) on Save to export page with current settings</div>
-    </div>
-  </aside>
-
-  <div id="exportNotification" class="export-notification">Exporting page with current settings...</div>
-
-  <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
-  <script>
-    // Set dark mode as default
-    document.documentElement.classList.add('dark');
-    
-    const canvas = document.getElementById('bg');
-    const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 2000);
-
-    let particleCount = ${currentSettings.particleCount};
-    let orbitRadius = ${currentSettings.cameraZoom};
-    let geo = null, mat = null, points = null;
-
-    // Camera pan offset (we'll adjust the camera position for panning)
-    const cameraPan = {x:${currentSettings.cameraPanX}, y:${currentSettings.cameraPanY}};
-
-    function createPoints(count){
-      if(points){
-        scene.remove(points);
-        geo.dispose && geo.dispose();
-        mat.dispose && mat.dispose();
-      }
-
-      particleCount = Math.max(10, Math.floor(count));
-      const positions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
-
-      for(let i=0;i<particleCount;i++){
-        const i3 = i*3;
-        const r = 10 + Math.random()*200;
-        const theta = Math.random()*Math.PI*2;
-        const phi = Math.acos(2*Math.random()-1);
-        positions[i3+0] = r*Math.sin(phi)*Math.cos(theta);
-        positions[i3+1] = r*Math.sin(phi)*Math.sin(theta);
-        positions[i3+2] = r*Math.cos(phi);
-
-        colors[i3+0] = 0.5 + Math.random()*0.5;
-        colors[i3+1] = 0.5 + Math.random()*0.5;
-        colors[i3+2] = 0.6 + Math.random()*0.4;
-      }
-
-      geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-      geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
-
-      mat = new THREE.PointsMaterial({size:${currentSettings.particleSize},vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});
-
-      points = new THREE.Points(geo, mat);
-      // Keep the particle cloud at the origin
-      points.position.set(0, 0, 0);
-
-      scene.add(points);
-    }
-
-    createPoints(particleCount);
-
-    const light = new THREE.DirectionalLight(0xffffff,0.4);
-    light.position.set(1,1,1);
-    scene.add(light);
-
-    window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight, false); camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); });
-
-    let lastScrollY = window.scrollY; 
-    let targetAngle = 0; 
-    let currentAngle = 0;
-    const settings = {speed:${currentSettings.speed}, orientation:'${currentSettings.orientation}', lightMode:${currentSettings.lightMode}};
-
-    // UI refs
-    const speedInput = document.getElementById('speed'); 
-    const speedVal = document.getElementById('speedVal'); 
-    const orientationInput = document.getElementById('orientation');
-    const cogBtn = document.getElementById('cogBtn'); 
-    const panel = document.getElementById('panel'); 
-    const closePanel = document.getElementById('closePanel');
-    const lightModeCheckbox = document.getElementById('lightMode'); 
-    const particleSizeInput = document.getElementById('particleSize'); 
-    const sizeVal = document.getElementById('sizeVal');
-    const colorPreset = document.getElementById('colorPreset'); 
-    const colorPicker = document.getElementById('colorPicker'); 
-    const customColorRow = document.getElementById('customColorRow');
-    const particleCountInput = document.getElementById('particleCount'); 
-    const countVal = document.getElementById('countVal');
-    const cameraZoomInput = document.getElementById('cameraZoom'); 
-    const zoomVal = document.getElementById('zoomVal');
-    const cameraPanXInput = document.getElementById('cameraPanX'); 
-    const panXVal = document.getElementById('panXVal');
-    const cameraPanYInput = document.getElementById('cameraPanY'); 
-    const panYVal = document.getElementById('panYVal');
-    const saveSettingsBtn = document.getElementById('saveSettings');
-    const exportNotification = document.getElementById('exportNotification');
-
-    // Update labels to reflect pan functionality
-    document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";
-    document.querySelector('label[for="cameraPanY"]').textContent = "Camera pan Y (up / down)";
-
-    // initial UI values
-    speedVal.textContent = settings.speed.toFixed(2); 
-    countVal.textContent = particleCount; 
-    zoomVal.textContent = orbitRadius; 
-    sizeVal.textContent = ${currentSettings.particleSize}.toFixed(1); 
-    panXVal.textContent = cameraPan.x; 
-    panYVal.textContent = cameraPan.y; 
-    customColorRow.classList.add('hidden');
-    lightModeCheckbox.checked = settings.lightMode;
-
-    // Load saved settings if available
-    loadSettings();
-
-    // handlers
-    speedInput.addEventListener('input', (e)=>{ settings.speed = parseFloat(e.target.value); speedVal.textContent = settings.speed.toFixed(2); });
-    orientationInput.addEventListener('change', (e)=>{ settings.orientation = e.target.value; });
-
-    particleSizeInput.addEventListener('input', (e)=>{ const v = parseFloat(e.target.value); if(mat) mat.size = v; sizeVal.textContent = v.toFixed(1); });
-    lightModeCheckbox.addEventListener('change', (e)=>{ 
-      settings.lightMode = e.target.checked; 
-      document.documentElement.classList.toggle('dark', !settings.lightMode); 
-    });
-
-    colorPreset.addEventListener('change', (e)=>{ const val = e.target.value; if(val === 'custom'){ customColorRow.classList.remove('hidden'); applyCustomColor(colorPicker.value); } else { customColorRow.classList.add('hidden'); applyColorPreset(val); } });
-    colorPicker.addEventListener('input', (e)=>{ if(colorPreset.value === 'custom') applyCustomColor(e.target.value); });
-
-    particleCountInput.addEventListener('input', (e)=>{ const val = parseInt(e.target.value); countVal.textContent = val; createPoints(val); if(mat) mat.size = parseFloat(particleSizeInput.value) || mat.size; });
-
-    cameraZoomInput.addEventListener('input', (e)=>{ orbitRadius = parseFloat(e.target.value); zoomVal.textContent = orbitRadius; });
-
-    // Update camera pan handlers
-    cameraPanXInput.addEventListener('input', (e)=>{ 
-      cameraPan.x = parseFloat(e.target.value); 
-      panXVal.textContent = cameraPan.x; 
-    });
-    
-    cameraPanYInput.addEventListener('input', (e)=>{ 
-      cameraPan.y = parseFloat(e.target.value); 
-      panYVal.textContent = cameraPan.y; 
-    });
-
-    // Save settings functionality
-    saveSettingsBtn.addEventListener('click', saveSettings);
-    
-    // Long press for export functionality
-    let longPressTimer;
-    saveSettingsBtn.addEventListener('mousedown', startLongPress);
-    saveSettingsBtn.addEventListener('touchstart', startLongPress);
-    saveSettingsBtn.addEventListener('mouseup', cancelLongPress);
-    saveSettingsBtn.addEventListener('touchend', cancelLongPress);
-    saveSettingsBtn.addEventListener('mouseleave', cancelLongPress);
-
-    function startLongPress() {
-      longPressTimer = setTimeout(exportPageWithSettings, 4000); // 4 seconds
-    }
-
-    function cancelLongPress() {
-      clearTimeout(longPressTimer);
-    }
-
-    function showExportNotification() {
-      exportNotification.classList.add('show');
-      setTimeout(() => {
-        exportNotification.classList.remove('show');
-      }, 3000);
-    }
-
-    function exportPageWithSettings() {
-      showExportNotification();
-      
-      // Gather all current settings
-      const currentSettings = {
-        speed: settings.speed,
-        orientation: settings.orientation,
-        lightMode: settings.lightMode,
-        particleSize: parseFloat(particleSizeInput.value),
-        colorPreset: colorPreset.value,
-        customColor: colorPicker.value,
-        particleCount: parseInt(particleCountInput.value),
-        cameraZoom: parseInt(cameraZoomInput.value),
-        cameraPanX: parseInt(cameraPanXInput.value),
-        cameraPanY: parseInt(cameraPanYInput.value)
-      };
-      
-      // Create a downloadable HTML file with these settings as defaults
-      const htmlContent = document.documentElement.outerHTML;
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'particle-field-export.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    function saveSettings() {
-      const settingsToSave = {
-        speed: settings.speed,
-        orientation: settings.orientation,
-        lightMode: settings.lightMode,
-        particleSize: parseFloat(particleSizeInput.value),
-        colorPreset: colorPreset.value,
-        customColor: colorPicker.value,
-        particleCount: parseInt(particleCountInput.value),
-        cameraZoom: parseInt(cameraZoomInput.value),
-        cameraPanX: parseInt(cameraPanXInput.value),
-        cameraPanY: parseInt(cameraPanYInput.value)
-      };
-      
-      localStorage.setItem('particleFieldSettings', JSON.stringify(settingsToSave));
-      
-      // Show a brief confirmation
-      const originalText = saveSettingsBtn.textContent;
-      saveSettingsBtn.textContent = 'Saved!';
-      setTimeout(() => {
-        saveSettingsBtn.textContent = originalText;
-      }, 1500);
-    }
-
-    function loadSettings() {
-      const savedSettings = localStorage.getItem('particleFieldSettings');
-      if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        
-        // Apply saved settings
-        speedInput.value = settings.speed;
-        speedVal.textContent = settings.speed.toFixed(2);
-        orientationInput.value = settings.orientation;
-        lightModeCheckbox.checked = settings.lightMode;
-        document.documentElement.classList.toggle('dark', !settings.lightMode);
-        particleSizeInput.value = settings.particleSize;
-        sizeVal.textContent = settings.particleSize.toFixed(1);
-        colorPreset.value = settings.colorPreset;
-        colorPicker.value = settings.customColor;
-        if (settings.colorPreset === 'custom') {
-          customColorRow.classList.remove('hidden');
-        }
-        particleCountInput.value = settings.particleCount;
-        countVal.textContent = settings.particleCount;
-        cameraZoomInput.value = settings.cameraZoom;
-        zoomVal.textContent = settings.cameraZoom;
-        cameraPanXInput.value = settings.cameraPanX;
-        panXVal.textContent = settings.cameraPanX;
-        cameraPanYInput.value = settings.cameraPanY;
-        panYVal.textContent = settings.cameraPanY;
-        
-        // Update the Three.js scene with saved settings
-        if (mat) mat.size = settings.particleSize;
-        createPoints(settings.particleCount);
-        orbitRadius = settings.cameraZoom;
-        cameraPan.x = settings.cameraPanX;
-        cameraPan.y = settings.cameraPanY;
-        
-        // Apply color preset if needed
-        if (settings.colorPreset !== 'custom') {
-          applyColorPreset(settings.colorPreset);
-        } else {
-          applyCustomColor(settings.customColor);
-        }
-      }
-    }
-
-    function hexToRgbNorm(hex){ const parsed = hex.replace('#',''); const bigint = parseInt(parsed,16); const r = ((bigint >> 16) & 255)/255; const g = ((bigint >> 8) & 255)/255; const b = (bigint & 255)/255; return [r,g,b]; }
-
-    function applyColorPreset(preset){ if(!geo) return; const arr = geo.attributes.color.array; for(let i=0;i<particleCount;i++){ const i3 = i*3; if(preset === 'warm'){ arr[i3+0] = 0.7 + Math.random()*0.3; arr[i3+1] = 0.35 + Math.random()*0.4; arr[i3+2] = 0.1 + Math.random()*0.25; } else if(preset === 'cool'){ arr[i3+0] = 0.2 + Math.random()*0.35; arr[i3+1] = 0.5 + Math.random()*0.45; arr[i3+2] = 0.7 + Math.random()*0.3; } else if(preset === 'mono'){ const v = 0.55 + Math.random()*0.45; arr[i3+0] = v; arr[i3+1] = v; arr[i3+2] = v; } else { arr[i3+0] = 0.5 + Math.random()*0.5; arr[i3+1] = 0.5 + Math.random()*0.5; arr[i3+2] = 0.6 + Math.random()*0.4; } } geo.attributes.color.needsUpdate = true; }
-
-    function applyCustomColor(hex){ if(!geo) return; const [r,g,b] = hexToRgbNorm(hex); const arr = geo.attributes.color.array; for(let i=0;i<particleCount;i++){ const i3 = i*3; arr[i3+0] = Math.min(1, r * (0.9 + Math.random()*0.2)); arr[i3+1] = Math.min(1, g * (0.9 + Math.random()*0.2)); arr[i3+2] = Math.min(1, b * (0.9 + Math.random()*0.2)); } geo.attributes.color.needsUpdate = true; }
-
-    function onScroll(){ 
-      const y = window.scrollY; 
-      const dy = y - lastScrollY; 
-      lastScrollY = y; 
-      targetAngle += dy * settings.speed * 0.0025; 
-    }
-    window.addEventListener('scroll', onScroll, {passive:true});
-
-    const autoRotSpeed = 0.0006;
-
-    function animate(){ 
-      requestAnimationFrame(animate); 
-      if(points) points.rotation.y += autoRotSpeed; 
-      currentAngle += (targetAngle - currentAngle) * 0.08;
-
-      // Calculate the orbit position
-      const orbitX = orbitRadius * Math.sin(currentAngle);
-      const orbitZ = orbitRadius * Math.cos(currentAngle);
-      
-      // Position camera with pan offset
-      if (settings.orientation === 'horizontal') {
-        // Horizontal orbit (around Y axis)
-        camera.position.x = orbitX + cameraPan.x;
-        camera.position.y = (Math.sin(currentAngle*0.3) * 8) + cameraPan.y;
-        camera.position.z = orbitZ;
-      } else {
-        // Vertical orbit (around X axis)
-        camera.position.x = (Math.sin(currentAngle*0.3) * 8) + cameraPan.x;
-        camera.position.y = orbitX + cameraPan.y;
-        camera.position.z = orbitZ;
-      }
-
-      // Always look at the center of the particle cloud (with pan offset)
-      camera.lookAt(cameraPan.x, cameraPan.y, 0);
-
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    cogBtn.addEventListener('click', ()=>{ panel.classList.toggle('open'); });
-    closePanel.addEventListener('click', ()=>{ panel.classList.remove('open'); });
-
-    window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
-  </script>
-</body>
-</html>`;
-      
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'particle-field-export.html';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    function saveSettings() {
-      const settingsToSave = {
-        speed: settings.speed,
-        orientation: settings.orientation,
-        lightMode: settings.lightMode,
-        particleSize: parseFloat(particleSizeInput.value),
-        colorPreset: colorPreset.value,
-        customColor: colorPicker.value,
-        particleCount: parseInt(particleCountInput.value),
-        cameraZoom: parseInt(cameraZoomInput.value),
-        cameraPanX: parseInt(cameraPanXInput.value),
-        cameraPanY: parseInt(cameraPanYInput.value)
-      };
-      
-      localStorage.setItem('particleFieldSettings', JSON.stringify(settingsToSave));
-      
-      // Show a brief confirmation
-      const originalText = saveSettingsBtn.textContent;
-      saveSettingsBtn.textContent = 'Saved!';
-      setTimeout(() => {
-        saveSettingsBtn.textContent = originalText;
-      }, 1500);
-    }
-
-    function loadSettings() {
-      const savedSettings = localStorage.getItem('particleFieldSettings');
-      if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        
-        // Apply saved settings
-        speedInput.value = settings.speed;
-        speedVal.textContent = settings.speed.toFixed(2);
-        orientationInput.value = settings.orientation;
-        lightModeCheckbox.checked = settings.lightMode;
-        document.documentElement.classList.toggle('dark', !settings.lightMode);
-        particleSizeInput.value = settings.particleSize;
-        sizeVal.textContent = settings.particleSize.toFixed(1);
-        colorPreset.value = settings.colorPreset;
-        colorPicker.value = settings.customColor;
-        if (settings.colorPreset === 'custom') {
-          customColorRow.classList.remove('hidden');
-        }
-        particleCountInput.value = settings.particleCount;
-        countVal.textContent = settings.particleCount;
-        cameraZoomInput.value = settings.cameraZoom;
-        zoomVal.textContent = settings.cameraZoom;
-        cameraPanXInput.value = settings.cameraPanX;
-        panXVal.textContent = settings.cameraPanX;
-        cameraPanYInput.value = settings.cameraPanY;
-        panYVal.textContent = settings.cameraPanY;
-        
-        // Update the Three.js scene with saved settings
-        if (mat) mat.size = settings.particleSize;
-        createPoints(settings.particleCount);
-        orbitRadius = settings.cameraZoom;
-        cameraPan.x = settings.cameraPanX;
-        cameraPan.y = settings.cameraPanY;
-        
-        // Apply color preset if needed
-        if (settings.colorPreset !== 'custom') {
-          applyColorPreset(settings.colorPreset);
-        } else {
-          applyCustomColor(settings.customColor);
-        }
-      }
-    }
 
     function hexToRgbNorm(hex){ const parsed = hex.replace('#',''); const bigint = parseInt(parsed,16); const r = ((bigint >> 16) & 255)/255; const g = ((bigint >> 8) & 255)/255; const b = (bigint & 255)/255; return [r,g,b]; }
 
