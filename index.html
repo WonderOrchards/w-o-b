@@ -1,47 +1,93 @@
 <!doctype html>
+
 <html lang="en" class="dark">
+
 <head>
+
   <meta charset="utf-8" />
+
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
   <title>Three.js Particle Field + Dynamic Navigation</title>
+
   
+
   <!-- CSS Files -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/components/navigation.css">
-  <link rel="stylesheet" href="css/components/content.css">
-  <link rel="stylesheet" href="css/components/panel.css">
-  <link rel="stylesheet" href="css/components/responsive.css">
+
+  <link rel="stylesheet" href="frontend/css/main.css">
+
+  <link rel="stylesheet" href="frontend/css/components/navigation.css">
+
+  <link rel="stylesheet" href="frontend/css/components/content.css">
+
+  <link rel="stylesheet" href="frontend/css/components/panel.css">
+
+  <link rel="stylesheet" href="frontend/css/components/responsive.css">
+
 </head>
+
 <body>
+
   <canvas id="bg"></canvas>
 
+
+
   <!-- Navigation sidebar -->
+
   <aside class="nav-container">
+
     <div class="nav-header">Documentation</div>
+
     <ul class="nav-list" id="navList"></ul>
+
   </aside>
+
+
 
   <main>
+
     <div class="content">
+
       <article id="file-content"></article>
+
     </div>
+
   </main>
 
+
+
   <button class="cog" id="cogBtn" aria-label="Open settings" title="Open settings">
+
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+
       <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"></path>
+
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.28 17.9l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09c.7 0 1.32-.39 1.51-1a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 0 1 6.1 2.28l.06.06c.45.45 1.07.66 1.67.51.58-.14 1.05-.59 1.2-1.17L9.5 2A2 2 0 0 1 13.5 2l.07.09c.15.58.62 1.03 1.2 1.17.6.15 1.22-.06 1.67-.51l.06-.06A2 2 0 0 1 21.72 6.1l-.06.06c-.45.45-.66 1.07-.51 1.67.14.58.59 1.05 1.17 1.2L22 9.5a2 2 0 0 1 0 4l-.09.07c-.58.15-1.03.62-1.17 1.2-.15.6.06 1.22.51 1.67z"/>
+
     </svg>
+
   </button>
 
+
+
   <aside class="panel" id="panel" role="dialog" aria-label="Dev settings">
+
     <!-- Panel content will be loaded dynamically -->
+
   </aside>
 
+
+
   <!-- Three.js Library -->
+
   <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
+
   
+
   <!-- JavaScript Modules -->
-  <script type="module" src="js/main.js"></script>
+
+  <script type="module" src="frontend/js/main.js"></script>
+
 </body>
+
 </html>
