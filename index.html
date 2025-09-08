@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js Particle Field + Camera Pan on Scroll</title>
+  <title>Three.js Particle Field + Fixed Camera Orbit</title>
   <style>
     :root{--bg: rgba(255,255,255,0.0);--content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));--text-color: #111;--panel-bg: #ffffff;--cog-bg: rgba(255,255,255,0.9);} 
     .dark{--bg: #071026;--content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));--text-color: #e6eef8;--panel-bg: #0f1724;--cog-bg: rgba(14,18,24,0.95);} 
@@ -30,7 +30,7 @@
   <main>
     <div style="height:40px"></div>
     <div class="content">
-      <h1>Three.js Particle Field + Camera Pan</h1>
+      <h1>Three.js Particle Field + Fixed Camera Orbit</h1>
       <p>This is an example page with enough content to scroll. The background is a particle field rendered with three.js and the camera will orbit as you scroll the page. Use the small cog in the lower-right to open the settings panel.</p>
 
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
@@ -205,18 +205,32 @@
 
     window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight, false); camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); });
 
-    let lastScrollY = window.scrollY; let targetAngle = 0; let currentAngle = 0;
+    let lastScrollY = window.scrollY; 
+    let targetAngle = 0; 
+    let currentAngle = 0;
     const settings = {speed:1.0, orientation:'horizontal', darkMode:false};
 
     // UI refs
-    const speedInput = document.getElementById('speed'); const speedVal = document.getElementById('speedVal'); const orientationInput = document.getElementById('orientation');
-    const cogBtn = document.getElementById('cogBtn'); const panel = document.getElementById('panel'); const closePanel = document.getElementById('closePanel');
-    const darkModeCheckbox = document.getElementById('darkMode'); const particleSizeInput = document.getElementById('particleSize'); const sizeVal = document.getElementById('sizeVal');
-    const colorPreset = document.getElementById('colorPreset'); const colorPicker = document.getElementById('colorPicker'); const customColorRow = document.getElementById('customColorRow');
-    const particleCountInput = document.getElementById('particleCount'); const countVal = document.getElementById('countVal');
-    const cameraZoomInput = document.getElementById('cameraZoom'); const zoomVal = document.getElementById('zoomVal');
-    const cameraPanXInput = document.getElementById('cameraPanX'); const panXVal = document.getElementById('panXVal');
-    const cameraPanYInput = document.getElementById('cameraPanY'); const panYVal = document.getElementById('panYVal');
+    const speedInput = document.getElementById('speed'); 
+    const speedVal = document.getElementById('speedVal'); 
+    const orientationInput = document.getElementById('orientation');
+    const cogBtn = document.getElementById('cogBtn'); 
+    const panel = document.getElementById('panel'); 
+    const closePanel = document.getElementById('closePanel');
+    const darkModeCheckbox = document.getElementById('darkMode'); 
+    const particleSizeInput = document.getElementById('particleSize'); 
+    const sizeVal = document.getElementById('sizeVal');
+    const colorPreset = document.getElementById('colorPreset'); 
+    const colorPicker = document.getElementById('colorPicker'); 
+    const customColorRow = document.getElementById('customColorRow');
+    const particleCountInput = document.getElementById('particleCount'); 
+    const countVal = document.getElementById('countVal');
+    const cameraZoomInput = document.getElementById('cameraZoom'); 
+    const zoomVal = document.getElementById('zoomVal');
+    const cameraPanXInput = document.getElementById('cameraPanX'); 
+    const panXVal = document.getElementById('panXVal');
+    const cameraPanYInput = document.getElementById('cameraPanY'); 
+    const panYVal = document.getElementById('panYVal');
 
     // Update labels to reflect pan functionality
     document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";
@@ -263,7 +277,12 @@
 
     function applyCustomColor(hex){ if(!geo) return; const [r,g,b] = hexToRgbNorm(hex); const arr = geo.attributes.color.array; for(let i=0;i<particleCount;i++){ const i3 = i*3; arr[i3+0] = Math.min(1, r * (0.9 + Math.random()*0.2)); arr[i3+1] = Math.min(1, g * (0.9 + Math.random()*0.2)); arr[i3+2] = Math.min(1, b * (0.9 + Math.random()*0.2)); } geo.attributes.color.needsUpdate = true; }
 
-    function onScroll(){ const y = window.scrollY; const dy = y - lastScrollY; lastScrollY = y; targetAngle += dy * settings.speed * 0.0025; }
+    function onScroll(){ 
+      const y = window.scrollY; 
+      const dy = y - lastScrollY; 
+      lastScrollY = y; 
+      targetAngle += dy * settings.speed * 0.0025; 
+    }
     window.addEventListener('scroll', onScroll, {passive:true});
 
     const autoRotSpeed = 0.0006;
@@ -273,17 +292,24 @@
       if(points) points.rotation.y += autoRotSpeed; 
       currentAngle += (targetAngle - currentAngle) * 0.08;
 
-      // compute orbit vector
+      // Calculate the orbit position
       const orbitX = orbitRadius * Math.sin(currentAngle);
       const orbitZ = orbitRadius * Math.cos(currentAngle);
-      const orbitY = Math.sin(currentAngle*0.3) * 8;
+      
+      // Position camera with pan offset
+      if (settings.orientation === 'horizontal') {
+        // Horizontal orbit (around Y axis)
+        camera.position.x = orbitX + cameraPan.x;
+        camera.position.y = (Math.sin(currentAngle*0.3) * 8) + cameraPan.y;
+        camera.position.z = orbitZ;
+      } else {
+        // Vertical orbit (around X axis)
+        camera.position.x = (Math.sin(currentAngle*0.3) * 8) + cameraPan.x;
+        camera.position.y = orbitX + cameraPan.y;
+        camera.position.z = orbitZ;
+      }
 
-      // position camera with pan offset
-      camera.position.x = orbitX + cameraPan.x;
-      camera.position.y = orbitY + cameraPan.y;
-      camera.position.z = orbitZ;
-
-      // look at the center of the particle cloud (with pan offset applied to create the pan effect)
+      // Always look at the center of the particle cloud (with pan offset)
       camera.lookAt(cameraPan.x, cameraPan.y, 0);
 
       renderer.render(scene, camera);
