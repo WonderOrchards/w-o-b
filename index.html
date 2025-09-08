@@ -75,6 +75,7 @@
       overflow-y: auto;
       width: 240px;
       backdrop-filter: blur(var(--nav-panel-blur));
+      transition: transform 0.3s ease;
     }
     
     .nav-header {
@@ -151,6 +152,46 @@
       opacity: 0.7;
     }
     
+    /* Mobile hamburger menu */
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      background: var(--panel-bg);
+      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text-color);
+      margin: 2px 0;
+      transition: all 0.3s ease;
+    }
+    
+    .hamburger.active span:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+    
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .hamburger.active span:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+    
     /* Responsive adjustments */
     @media (max-width: 1024px) {
       .nav-container {
@@ -164,18 +205,41 @@
     }
     
     @media (max-width: 768px) {
+      .hamburger {
+        display: flex;
+      }
+      
       .nav-container {
-        position: relative;
-        width: auto;
-        left: auto;
-        top: auto;
-        margin: 20px 20px 0;
-        max-height: none;
+        transform: translateX(-100%);
+        left: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        border-radius: 0;
+        padding-top: 70px;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+      }
+      
+      .nav-container.active {
+        transform: translateX(0);
       }
       
       .content {
-        margin: 20px;
+        margin: 80px 20px 20px;
         max-width: calc(100% - 40px);
+        padding: 20px;
+      }
+      
+      .panel {
+        width: 92%;
+        right: 4%;
+        bottom: 80px;
+        max-height: 70vh;
+      }
+      
+      .cog {
+        bottom: 24px;
+        right: 24px;
       }
     }
 
@@ -198,8 +262,15 @@
 <body>
   <canvas id="bg"></canvas>
 
+  <!-- Hamburger menu for mobile -->
+  <div class="hamburger" id="hamburgerMenu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
   <!-- Navigation sidebar -->
-  <aside class="nav-container">
+  <aside class="nav-container" id="navContainer">
     <div class="nav-header">Documentation</div>
     <ul class="nav-list" id="navList"></ul>
   </aside>
@@ -420,6 +491,8 @@
     // DOM elements
     const navList = document.getElementById('navList');
     const fileContent = document.getElementById('file-content');
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const navContainer = document.getElementById('navContainer');
 
     // Extract links from README content
     function extractLinksFromReadme(content) {
@@ -464,6 +537,12 @@
           // Add active class to clicked link
           a.classList.add('active');
           loadFile(file.path);
+          
+          // On mobile, close the nav panel after selecting a link
+          if (window.innerWidth <= 768) {
+            navContainer.classList.remove('active');
+            hamburgerMenu.classList.remove('active');
+          }
         });
         li.appendChild(a);
         navList.appendChild(li);
@@ -869,9 +948,9 @@
         document.documentElement.style.setProperty('--text-color', '#e6eef8');
         document.documentElement.style.setProperty('--link-color', '#93d6ff');
         document.documentElement.style.setProperty('--link-hover-color', '#c2e4ff');
-        document.documentElement.style.setProperty('--h1-color', '#ffffff');
-        document.documentElement.style.setProperty('--h2-color', '#e6eef8');
-        document.documentElement.style.setProperty('--h3-color', '#d0d8e2');
+        document.documentElement.style.setProperty('--h1-color', '#ffffff';
+        document.documentElement.style.setProperty('--h2-color', '#e6eef8';
+        document.documentElement.style.setProperty('--h3-color', '#d0d8e2';
         
         // Update input values
         contentBgColorInput.value = '#0f1218';
@@ -982,8 +1061,25 @@
     }
     animate();
 
+    // Toggle hamburger menu
+    hamburgerMenu.addEventListener('click', () => {
+      hamburgerMenu.classList.toggle('active');
+      navContainer.classList.toggle('active');
+    });
+
     cogBtn.addEventListener('click', ()=>{ panel.classList.toggle('open'); });
     closePanel.addEventListener('click', ()=>{ panel.classList.remove('open'); });
+
+    // Close nav panel when clicking outside on mobile
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768 && 
+          navContainer.classList.contains('active') &&
+          !navContainer.contains(e.target) &&
+          !hamburgerMenu.contains(e.target)) {
+        navContainer.classList.remove('active');
+        hamburgerMenu.classList.remove('active');
+      }
+    });
 
     // Initialize the navigation and markdown rendering
     initNavigation();
