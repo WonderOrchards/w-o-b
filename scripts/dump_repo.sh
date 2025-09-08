@@ -1,38 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Generate timestamped filename
+# Generate timestamp for filename (UTC)
 TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
-OUT="${1:-repo_full_text_dump_${TIMESTAMP}.txt}"
+OUT="${1:-repo_dump_${TIMESTAMP}.txt}"  # Default filename includes timestamp
 
+# Header
 {
-echo "=== FULL REPO TEXT DUMP ==="
-echo "Timestamp (UTC): $(date -u)"
-echo "Repository path: $(pwd)"
-echo
-echo "=== Git Remotes ==="
-git remote -v
-echo
-echo "=== Git Branches ==="
-git branch -a
-echo
-echo "=== Git Tags ==="
-git tag
-echo
-echo "=== Git Config ==="
-git config --list
-echo
-echo "=== Git Status ==="
-git status
-echo
-echo "=== Full Commit History ==="
-git log --all --pretty=format:"%H%n%an%n%ae%n%ad%n%s%n%b%n---"
-echo
-echo "=== Working Directory Files (including hidden) ==="
-ls -RA
-echo
-echo "=== .git Folder Structure ==="
-ls -RA .git
+  echo "=== REPO DUMP ==="
+  echo "remote: $(git config --get remote.origin.url 2>/dev/null || echo 'n/a')"
+  echo "commit: $(git rev-parse HEAD 2>/dev/null || echo 'n/a')"
+  echo "generated_utc: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  echo
 } > "$OUT"
 
-echo "Full repo text dump completed: $OUT"
+# List only tracked files (ignores .git/ and untracked stuff)
+git ls-files -z | while IFS= read -r -d '' f; do
+  printf "=== %s ===\n" "$f" >> "$OUT"
+
+  if [ -f "$f" ]; then
+    # Detect binary: grep -Iq returns 0 for text, 1 for binary
+    if grep -Iq . "$f"; then
+      cat "$f" >> "$OUT"
+    else
+      echo "[binary file omitted]" >> "$OUT"
+    fi
+  else
+    echo "[skipped: not a regular file]" >> "$OUT"
+  fi
+
+  printf "\n\n" >> "$OUT"
+done
+
+echo "Wrote $(pwd)/$OUT"
