@@ -137,7 +137,8 @@
 
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
     const ORBIT_RADIUS = 60;
-    camera.position.set(ORBIT_RADIUS, 18, 0);
+    // Vertical orbit: camera will move in the Y (up/down) and Z (depth) plane around the origin.
+    camera.position.set(0, ORBIT_RADIUS, 0);
     camera.lookAt(0,0,0);
 
     // --- Particles ---
@@ -204,11 +205,12 @@
       const p = getScrollProgress();
       // The target angle for a full 0->1 progress. Multiply by slider.
       const targetAngle = p * Math.PI * 2 * rotationPerScroll;
-      cameraTarget.x = ORBIT_RADIUS * Math.cos(targetAngle);
-      cameraTarget.z = ORBIT_RADIUS * Math.sin(targetAngle);
 
-      // small vertical motion for camera to add interest
-      cameraTarget.y = 18 + Math.sin(targetAngle * 0.7) * 8;
+      // For vertical orbit we map angle into Y/Z coordinates.
+      const CENTER_Y = 18; // base offset so the camera doesn't orbit exactly around world y=0
+      cameraTarget.x = Math.sin(targetAngle * 0.25) * 8; // slight x wobble for depth
+      cameraTarget.y = CENTER_Y + ORBIT_RADIUS * Math.sin(targetAngle);
+      cameraTarget.z = ORBIT_RADIUS * Math.cos(targetAngle);
 
       // dom parallax: each float has data-speed (multiplier), we center around mid-scroll
       const centerOffset = (p - 0.5);
