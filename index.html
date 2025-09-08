@@ -5,7 +5,22 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Three.js Particle Field + Camera Orbit on Scroll</title>
   <style>
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}
+    :root{
+      --bg: rgba(255,255,255,0.0);
+      --content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+      --text-color: #111;
+      --panel-bg: #ffffff;
+      --cog-bg: rgba(255,255,255,0.9);
+    }
+    .dark{
+      --bg: #071026;
+      --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
+      --text-color: #e6eef8;
+      --panel-bg: #0f1724;
+      --cog-bg: rgba(14,18,24,0.95);
+    }
+
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text-color)}
     /* full-screen background canvas */
     #bg {
       position:fixed;inset:0;z-index:0;pointer-events:none;display:block
@@ -14,35 +29,40 @@
     /* content floats above the canvas */
     .content{
       position:relative;z-index:1;max-width:900px;margin:40px auto;padding:20px;
-      background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+      background:var(--content-bg);
       border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.08);
       backdrop-filter: blur(6px);
     }
 
     h1{font-size:clamp(26px,4vw,40px);margin:0 0 12px}
-    p{line-height:1.6;color:#111}
+    p{line-height:1.6;color:var(--text-color)}
 
     /* some blocks to force scrolling */
     .floating-shape{
       width:120px;height:120px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin:10px;
-      background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04)
+      background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);color:var(--text-color)
     }
 
     /* cog button */
     .cog {
       position:fixed;right:16px;bottom:16px;z-index:3;width:36px;height:36px;border-radius:999px;display:grid;place-items:center;
-      background:rgba(255,255,255,0.9);box-shadow:0 6px 18px rgba(0,0,0,0.12);cursor:pointer;border:1px solid rgba(0,0,0,0.06)
+      background:var(--cog-bg);box-shadow:0 6px 18px rgba(0,0,0,0.12);cursor:pointer;border:1px solid rgba(0,0,0,0.06)
     }
     .cog svg{width:18px;height:18px}
 
     /* settings panel */
-    .panel{position:fixed;right:16px;bottom:64px;z-index:4;width:280px;background:white;border-radius:12px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,0.12);display:none}
+    .panel{position:fixed;right:16px;bottom:64px;z-index:4;width:320px;background:var(--panel-bg);border-radius:12px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,0.12);display:none;color:var(--text-color)}
     .panel.open{display:block}
-    .panel label{font-size:13px;color:#333}
+    .panel label{font-size:13px;color:var(--text-color)}
     .row{display:flex;align-items:center;justify-content:space-between;margin:8px 0}
-    .small{font-size:13px;color:#666}
+    .small{font-size:13px;color:rgba(100,100,120,1)}
+
+    .control-inline{display:flex;gap:8px;align-items:center}
 
     @media (max-width:520px){.panel{width:92%;right:4%;bottom:80px}}
+
+    /* small helper to hide/show the color picker when not needed */
+    .hidden{display:none}
   </style>
 </head>
 <body>
@@ -87,10 +107,10 @@
   </button>
 
   <!-- settings panel -->
-  <aside class="panel" id="panel">
+  <aside class="panel" id="panel" role="dialog" aria-label="Dev settings">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
       <strong>Dev Settings</strong>
-      <button id="closePanel" style="border:none;background:transparent;cursor:pointer;font-size:16px">✕</button>
+      <button id="closePanel" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:var(--text-color)">✕</button>
     </div>
 
     <div class="row">
@@ -107,9 +127,39 @@
       </select>
     </div>
 
+    <!-- New controls: dark mode, particle size, color selection -->
+    <hr style="margin:12px 0;border:none;border-top:1px solid rgba(0,0,0,0.06)">
+
+    <div class="row">
+      <label for="darkMode">Dark mode</label>
+      <div class="control-inline"><input id="darkMode" type="checkbox"><span class="small">Toggle</span></div>
+    </div>
+
+    <div class="row">
+      <label for="particleSize">Particle size</label>
+      <div class="small" id="sizeVal">1.8</div>
+    </div>
+    <input id="particleSize" type="range" min="0.2" max="6" step="0.1" value="1.8">
+
+    <div class="row" style="margin-top:10px">
+      <label for="colorPreset">Particle colors</label>
+      <select id="colorPreset">
+        <option value="soft">Soft (default)</option>
+        <option value="warm">Warm</option>
+        <option value="cool">Cool</option>
+        <option value="mono">Monochrome</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+
+    <div class="row" id="customColorRow" style="margin-top:6px">
+      <label for="colorPicker">Custom color</label>
+      <input id="colorPicker" type="color" value="#93d6ff">
+    </div>
+
     <div class="row small" style="margin-top:10px">
       <div>Tip:</div>
-      <div>Try scrolling quickly and adjusting the speed for stronger orbiting.</div>
+      <div>Try enabling dark mode + warm colors for a moody look.</div>
     </div>
   </aside>
 
@@ -134,26 +184,29 @@
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
 
-    for(let i=0;i<particleCount;i++){
-      const i3 = i*3;
-      const r = 10 + Math.random()*200;
-      const theta = Math.random()*Math.PI*2;
-      const phi = Math.acos(2*Math.random()-1);
-      positions[i3+0] = r*Math.sin(phi)*Math.cos(theta);
-      positions[i3+1] = r*Math.sin(phi)*Math.sin(theta);
-      positions[i3+2] = r*Math.cos(phi);
+    function initParticles(){
+      for(let i=0;i<particleCount;i++){
+        const i3 = i*3;
+        const r = 10 + Math.random()*200;
+        const theta = Math.random()*Math.PI*2;
+        const phi = Math.acos(2*Math.random()-1);
+        positions[i3+0] = r*Math.sin(phi)*Math.cos(theta);
+        positions[i3+1] = r*Math.sin(phi)*Math.sin(theta);
+        positions[i3+2] = r*Math.cos(phi);
 
-      // soft color palette
-      colors[i3+0] = 0.5 + Math.random()*0.5;
-      colors[i3+1] = 0.5 + Math.random()*0.5;
-      colors[i3+2] = 0.6 + Math.random()*0.4;
+        // soft color palette default
+        colors[i3+0] = 0.5 + Math.random()*0.5;
+        colors[i3+1] = 0.5 + Math.random()*0.5;
+        colors[i3+2] = 0.6 + Math.random()*0.4;
+      }
     }
+    initParticles();
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
     geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
 
-    const mat = new THREE.PointsMaterial({size:1.8,vertexColors:true,transparent:true,opacity:0.85,depthWrite:false});
+    const mat = new THREE.PointsMaterial({size:1.8,vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});
     const points = new THREE.Points(geo, mat);
     scene.add(points);
 
@@ -176,14 +229,26 @@
 
     const settings = {
       speed: 1.0, // multiplier for scroll -> angle
-      orientation: 'horizontal' // 'horizontal' or 'vertical'
+      orientation: 'horizontal', // 'horizontal' or 'vertical'
+      darkMode: false
     };
 
-    // update settings from UI
+    // UI elements
     const speedInput = document.getElementById('speed');
     const speedVal = document.getElementById('speedVal');
     const orientationInput = document.getElementById('orientation');
+    const cogBtn = document.getElementById('cogBtn');
+    const panel = document.getElementById('panel');
+    const closePanel = document.getElementById('closePanel');
 
+    const darkModeCheckbox = document.getElementById('darkMode');
+    const particleSizeInput = document.getElementById('particleSize');
+    const sizeVal = document.getElementById('sizeVal');
+    const colorPreset = document.getElementById('colorPreset');
+    const colorPicker = document.getElementById('colorPicker');
+    const customColorRow = document.getElementById('customColorRow');
+
+    // initial UI wiring
     speedInput.addEventListener('input', (e)=>{
       settings.speed = parseFloat(e.target.value);
       speedVal.textContent = settings.speed.toFixed(2);
@@ -191,6 +256,82 @@
     orientationInput.addEventListener('change', (e)=>{
       settings.orientation = e.target.value;
     });
+
+    particleSizeInput.addEventListener('input', (e)=>{
+      const v = parseFloat(e.target.value);
+      mat.size = v;
+      sizeVal.textContent = v.toFixed(1);
+    });
+
+    darkModeCheckbox.addEventListener('change', (e)=>{
+      settings.darkMode = e.target.checked;
+      document.documentElement.classList.toggle('dark', settings.darkMode);
+    });
+
+    // color handling
+    function hexToRgbNorm(hex){
+      const parsed = hex.replace('#','');
+      const bigint = parseInt(parsed,16);
+      const r = ((bigint >> 16) & 255)/255;
+      const g = ((bigint >> 8) & 255)/255;
+      const b = (bigint & 255)/255;
+      return [r,g,b];
+    }
+
+    function applyColorPreset(preset){
+      const arr = geo.attributes.color.array;
+      for(let i=0;i<particleCount;i++){
+        const i3 = i*3;
+        if(preset === 'warm'){
+          arr[i3+0] = 0.7 + Math.random()*0.3; // r
+          arr[i3+1] = 0.35 + Math.random()*0.4; // g
+          arr[i3+2] = 0.1 + Math.random()*0.25; // b
+        } else if(preset === 'cool'){
+          arr[i3+0] = 0.2 + Math.random()*0.35;
+          arr[i3+1] = 0.5 + Math.random()*0.45;
+          arr[i3+2] = 0.7 + Math.random()*0.3;
+        } else if(preset === 'mono'){
+          const v = 0.55 + Math.random()*0.45;
+          arr[i3+0] = v; arr[i3+1] = v; arr[i3+2] = v;
+        } else { // soft/default
+          arr[i3+0] = 0.5 + Math.random()*0.5;
+          arr[i3+1] = 0.5 + Math.random()*0.5;
+          arr[i3+2] = 0.6 + Math.random()*0.4;
+        }
+      }
+      geo.attributes.color.needsUpdate = true;
+    }
+
+    function applyCustomColor(hex){
+      const [r,g,b] = hexToRgbNorm(hex);
+      const arr = geo.attributes.color.array;
+      for(let i=0;i<particleCount;i++){
+        const i3 = i*3;
+        // add slight variation so particles don't look flat
+        arr[i3+0] = Math.min(1, r * (0.9 + Math.random()*0.2));
+        arr[i3+1] = Math.min(1, g * (0.9 + Math.random()*0.2));
+        arr[i3+2] = Math.min(1, b * (0.9 + Math.random()*0.2));
+      }
+      geo.attributes.color.needsUpdate = true;
+    }
+
+    colorPreset.addEventListener('change', (e)=>{
+      const val = e.target.value;
+      if(val === 'custom'){
+        customColorRow.classList.remove('hidden');
+        applyCustomColor(colorPicker.value);
+      } else {
+        customColorRow.classList.add('hidden');
+        applyColorPreset(val);
+      }
+    });
+
+    colorPicker.addEventListener('input', (e)=>{
+      if(colorPreset.value === 'custom') applyCustomColor(e.target.value);
+    });
+
+    // initialize color UI
+    customColorRow.classList.add('hidden');
 
     // scroll handler computes delta and updates targetAngle
     function onScroll(){
@@ -235,18 +376,12 @@
     animate();
 
     // simple UI: cog opens panel
-    const cogBtn = document.getElementById('cogBtn');
-    const panel = document.getElementById('panel');
-    const closePanel = document.getElementById('closePanel');
-
     cogBtn.addEventListener('click', ()=>{ panel.classList.toggle('open'); });
     closePanel.addEventListener('click', ()=>{ panel.classList.remove('open'); });
 
-    // initialize displayed value
+    // initialize displayed values
     speedVal.textContent = settings.speed.toFixed(2);
-
-    // allow clicking and interacting with foreground content
-    // (canvas pointer-events are disabled via CSS so everything works by default)
+    sizeVal.textContent = mat.size.toFixed(1);
 
   </script>
 </body>
