@@ -1,0 +1,70 @@
+/* Navigation styles */
+.nav-container {
+  position: fixed;
+  left: 20px;
+  top: 20px;
+  z-index: 2;
+  background: var(--panel-bg);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  width: 240px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.nav-container:hover {
+  background: rgba(15, 23, 36, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.nav-header {
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: var(--h2-color);
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-list li {
+  margin-bottom: 6px;
+}
+
+.nav-list a {
+  color: var(--link-color);
+  text-decoration: none;
+  display: block;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.nav-list a:hover {
+  color: var(--link-hover-color);
+  background: rgba(255,255,255,0.1);
+}
+
+.nav-list a.active {
+  background: rgba(93, 173, 255, 0.15);
+  color: var(--link-hover-color);
+}
+
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+  .nav-container {
+    background: rgba(15, 23, 36, 0.9);
+  }
+  
+  .light .nav-container {
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
