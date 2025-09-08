@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js Particle Field + Fixed Camera Orbit</title>
+  <title>Three.js Particle Field + Markdown Renderer</title>
   <style>
     :root{
       --bg: #071026;
@@ -16,6 +16,10 @@
       --h1-color: #ffffff;
       --h2-color: #e6eef8;
       --h3-color: #d0d8e2;
+      --code-bg: rgba(0,0,0,0.2);
+      --code-color: #ff9d9d;
+      --blockquote-border: rgba(93, 173, 255, 0.5);
+      --blockquote-bg: rgba(93, 173, 255, 0.08);
     } 
     .light{
       --bg: rgba(255,255,255,0.0);
@@ -28,16 +32,131 @@
       --h1-color: #000000;
       --h2-color: #111111;
       --h3-color: #222222;
+      --code-bg: rgba(0,0,0,0.06);
+      --code-color: #d73038;
+      --blockquote-border: rgba(0, 102, 204, 0.4);
+      --blockquote-bg: rgba(0, 102, 204, 0.06);
     } 
     html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text-color)}
     #bg {position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
-    .content{position:relative;z-index:1;max-width:900px;margin:40px auto;padding:20px;background:var(--content-bg);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.08);backdrop-filter: blur(6px)}
-    h1{font-size:clamp(26px,4vw,40px);margin:0 0 12px;color:var(--h1-color)}
-    h2{color:var(--h2-color)}
-    h3{color:var(--h3-color)}
-    p{line-height:1.6;color:var(--text-color)}
-    a{color:var(--link-color);text-decoration:none;transition:color 0.2s ease}
-    a:hover{color:var(--link-hover-color)}
+    
+    /* Navigation styles */
+    .nav-container {
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      z-index: 2;
+      background: var(--panel-bg);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.12);
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      width: 240px;
+    }
+    
+    .nav-header {
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: var(--h2-color);
+    }
+    
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .nav-list li {
+      margin-bottom: 6px;
+    }
+    
+    .nav-list a {
+      color: var(--link-color);
+      text-decoration: none;
+      display: block;
+      padding: 6px 8px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+    
+    .nav-list a:hover {
+      color: var(--link-hover-color);
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .nav-list a.active {
+      background: rgba(93, 173, 255, 0.15);
+      color: var(--link-hover-color);
+    }
+    
+    /* Content area */
+    .content{
+      position:relative;
+      z-index:1;
+      max-width:900px;
+      margin: 40px auto 40px 300px;
+      padding:30px;
+      background:var(--content-bg);
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);
+      backdrop-filter: blur(6px);
+      min-height: 400px;
+    }
+    
+    /* Markdown content styles */
+    #file-content h1{font-size:clamp(26px,4vw,40px);margin:0 0 12px;color:var(--h1-color)}
+    #file-content h2{color:var(--h2-color); margin-top: 1.8em; margin-bottom: 0.8em;}
+    #file-content h3{color:var(--h3-color); margin-top: 1.5em; margin-bottom: 0.7em;}
+    #file-content p{line-height:1.6;color:var(--text-color); margin-bottom: 1em;}
+    #file-content a{color:var(--link-color);text-decoration:none;transition:color 0.2s ease}
+    #file-content a:hover{color:var(--link-hover-color)}
+    #file-content ul, #file-content ol {margin-bottom: 1em; padding-left: 1.8em;}
+    #file-content li {margin-bottom: 0.4em; line-height: 1.5;}
+    #file-content code {background: var(--code-bg); color: var(--code-color); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em;}
+    #file-content pre {background: var(--code-bg); padding: 1em; border-radius: 8px; overflow: auto; margin-bottom: 1.5em;}
+    #file-content pre code {background: none; padding: 0; color: inherit;}
+    #file-content blockquote {border-left: 4px solid var(--blockquote-border); background: var(--blockquote-bg); padding: 1em 1.5em; margin: 1.5em 0; border-radius: 0 8px 8px 0;}
+    #file-content table {width: 100%; border-collapse: collapse; margin-bottom: 1.5em;}
+    #file-content th, #file-content td {padding: 0.5em 1em; text-align: left; border: 1px solid rgba(255,255,255,0.1);}
+    #file-content th {background: rgba(255,255,255,0.05);}
+    
+    /* Loading state */
+    #loading {
+      text-align: center;
+      padding: 2em;
+      color: var(--text-color);
+      opacity: 0.7;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .nav-container {
+        width: 200px;
+      }
+      
+      .content {
+        margin-left: 260px;
+        max-width: calc(100% - 280px);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .nav-container {
+        position: relative;
+        width: auto;
+        left: auto;
+        top: auto;
+        margin: 20px 20px 0;
+        max-height: none;
+      }
+      
+      .content {
+        margin: 20px;
+        max-width: calc(100% - 40px);
+      }
+    }
+
     .floating-shape{width:120px;height:120px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin:10px;background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);color:var(--text-color)}
     .cog {position:fixed;right:16px;bottom:16px;z-index:3;width:36px;height:36px;border-radius:999px;display:grid;place-items:center;background:var(--cog-bg);box-shadow:0 6px 18px rgba(0,0,0,0.12);cursor:pointer;border:1px solid rgba(0,0,0,0.06)}
     .cog svg{width:18px;height:18px}
@@ -56,37 +175,16 @@
 <body>
   <canvas id="bg"></canvas>
 
+  <!-- Navigation sidebar -->
+  <aside class="nav-container">
+    <div class="nav-header">Documentation</div>
+    <ul class="nav-list" id="navList"></ul>
+  </aside>
+
   <main>
-    <div style="height:40px"></div>
     <div class="content">
-      <h1>Three.js Particle Field + Fixed Camera Orbit</h1>
-      <p>This is an example page with enough content to scroll. The background is a particle field rendered with three.js and the camera will orbit as you scroll the page. Use the small cog in the lower-right to open the settings panel.</p>
-
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
-        <div class="floating-shape">Box</div>
-        <div class="floating-shape">Circle</div>
-        <div class="floating-shape">SVG</div>
-        <div class="floating-shape">Text</div>
-        <div class="floating-shape">Shape</div>
-      </div>
-
-      <p style="margin-top:18px">Scroll down to see the camera orbit effect. The foreground content stays interactive while the canvas remains a decorative background.</p>
-      
-      <h2>Sample Markdown Content</h2>
-      <p>This is a sample of how <a href="#">Markdown content</a> with links might appear on your page. You can customize the colors using the settings panel.</p>
-      
-      <h3>Third Level Heading</h3>
-      <p>This is some additional content under an H3 heading to demonstrate the heading color customization.</p>
+      <article id="file-content"></article>
     </div>
-
-    <div style="height:900px"></div>
-    <div class="content">
-      <h2>More content</h2>
-      <p>Here's more sample content so the page is definitely scrollable. Feel free to paste your own content here. The particle field will continue to animate while you read.</p>
-      <div style="height:600px"></div>
-    </div>
-
-    <div style="height:400px"></div>
   </main>
 
   <button class="cog" id="cogBtn" aria-label="Open settings" title="Open settings">
@@ -222,6 +320,147 @@
 
   <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
   <script>
+    // File structure definition
+    const fileStructure = [
+      { name: "README", path: "README.md" },
+      { name: "Vision", path: "data/vision.md" },
+      { name: "Getting Started", path: "docs/getting-started.md" },
+      { name: "API Reference", path: "docs/api-reference.md" },
+      { name: "Contributing", path: "docs/contributing.md" }
+    ];
+
+    // DOM elements
+    const navList = document.getElementById('navList');
+    const fileContent = document.getElementById('file-content');
+
+    // Render navigation
+    function renderNavigation() {
+      navList.innerHTML = '';
+      fileStructure.forEach(file => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#';
+        a.textContent = file.name;
+        a.dataset.path = file.path;
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          // Remove active class from all links
+          document.querySelectorAll('#navList a').forEach(link => {
+            link.classList.remove('active');
+          });
+          // Add active class to clicked link
+          a.classList.add('active');
+          loadFile(file.path);
+        });
+        li.appendChild(a);
+        navList.appendChild(li);
+      });
+    }
+
+    // Load file function
+    async function loadFile(filePath) {
+      fileContent.innerHTML = '<div id="loading">Loading file...</div>';
+      try {
+        const response = await fetch(filePath);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        let content = await response.text();
+        
+        // Remove YAML frontmatter if present
+        if (content.startsWith('---')) {
+          const frontmatterEnd = content.indexOf('---', 3);
+          if (frontmatterEnd !== -1) {
+            content = content.substring(frontmatterEnd + 3).trim();
+          }
+        }
+        
+        renderFile(content, filePath);
+      } catch (error) {
+        fileContent.innerHTML = `<div class="error">Error loading file: ${error.message}</div>`;
+        console.error('Error loading file:', error);
+      }
+    }
+
+    // Render file function with markdown parsing
+    function renderFile(content, filePath) {
+      const markdownToHtml = (text) => {
+        return text
+          // Headers
+          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
+          .replace(/^##### (.*$)/gim, '<h5>$1</h5>')
+          .replace(/^###### (.*$)/gim, '<h6>$1</h6>')
+          // Bold
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(.*?)__/g, '<strong>$1</strong>')
+          // Italic
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/_(.*?)_/g, '<em>$1</em>')
+          // Strikethrough
+          .replace(/~~(.*?)~~/g, '<del>$1</del>')
+          // Links
+          .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+          // Images
+          .replace(/!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2" />')
+          // Blockquotes
+          .replace(/^>\s(.*$)/gim, '<blockquote>$1</blockquote>')
+          // Horizontal rule
+          .replace(/^\-\-\-\-*$/gim, '<hr />')
+          // Unordered lists
+          .replace(/^\s*[\-\*\+]\s(.*$)/gim, '<li>$1</li>')
+          .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+          // Ordered lists
+          .replace(/^\s*\d+\.\s(.*$)/gim, '<li>$1</li>')
+          .replace(/(<li>.*<\/li>)/gs, function(match) {
+            return /<li>.*<\/li>/.test(match) ? '<ol>' + match + '</ol>' : match;
+          })
+          // Paragraphs
+          .replace(/^\s*(\n)?(.+)/gim, function(m){
+            return /\<(\/)?(h\d|ul|ol|li|blockquote|pre|img|hr)/.test(m) ? m : '<p>'+m+'</p>';
+          })
+          // Code blocks
+          .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="$1">$2</code></pre>')
+          // Inline code
+          .replace(/`(.*?)`/g, '<code>$1</code>')
+          // Tables (basic support)
+          .replace(/^\|(.+)\|$/gm, function(match, row) {
+            if (match.startsWith('|--')) return ''; // Skip separator rows for now
+            const cells = row.split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
+            return `<tr>${cells}</tr>`;
+          })
+          .replace(/(<tr>.*<\/tr>)/gs, function(match) {
+            return /<tr>.*<\/tr>/.test(match) ? '<table>' + match + '</table>' : match;
+          });
+      };
+      
+      const html = markdownToHtml(content);
+      fileContent.innerHTML = html;
+      
+      // Update browser history
+      history.pushState({ path: filePath }, '', `#${filePath}`);
+    }
+
+    // Initialize navigation and load first file
+    function initNavigation() {
+      renderNavigation();
+      
+      // Check if there's a hash in the URL
+      const hash = window.location.hash.substring(1);
+      const fileToLoad = fileStructure.find(file => file.path === hash) || fileStructure[0];
+      
+      // Set active class to the current file
+      document.querySelectorAll('#navList a').forEach(link => {
+        if (link.dataset.path === fileToLoad.path) {
+          link.classList.add('active');
+        }
+      });
+      
+      loadFile(fileToLoad.path);
+    }
+
+    // Three.js code (unchanged from your original)
     const canvas = document.getElementById('bg');
     const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -498,6 +737,9 @@
 
     cogBtn.addEventListener('click', ()=>{ panel.classList.toggle('open'); });
     closePanel.addEventListener('click', ()=>{ panel.classList.remove('open'); });
+
+    // Initialize the navigation and markdown rendering
+    initNavigation();
 
     window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
   </script>
