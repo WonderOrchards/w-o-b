@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Three.js Particle Field + Fixed Camera Orbit</title>
   <style>
-    :root{--bg: rgba(255,255,255,0.0);--content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));--text-color: #111;--panel-bg: #ffffff;--cog-bg: rgba(255,255,255,0.9);} 
-    .dark{--bg: #071026;--content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));--text-color: #e6eef8;--panel-bg: #0f1724;--cog-bg: rgba(14,18,24,0.95);} 
+    :root{--bg: #071026;--content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));--text-color: #e6eef8;--panel-bg: #0f1724;--cog-bg: rgba(14,18,24,0.95);} 
+    .light{--bg: rgba(255,255,255,0.0);--content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));--text-color: #111;--panel-bg: #ffffff;--cog-bg: rgba(255,255,255,0.9);} 
     html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text-color)}
     #bg {position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
     .content{position:relative;z-index:1;max-width:900px;margin:40px auto;padding:20px;background:var(--content-bg);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.08);backdrop-filter: blur(6px)}
@@ -84,8 +84,8 @@
     <hr>
 
     <div class="row">
-      <label for="darkMode">Dark mode</label>
-      <div class="control-inline"><input id="darkMode" type="checkbox"><span class="small">Toggle</span></div>
+      <label for="lightMode">Light mode</label>
+      <div class="control-inline"><input id="lightMode" type="checkbox"><span class="small">Toggle</span></div>
     </div>
 
     <div class="row">
@@ -208,7 +208,7 @@
     let lastScrollY = window.scrollY; 
     let targetAngle = 0; 
     let currentAngle = 0;
-    const settings = {speed:1.0, orientation:'horizontal', darkMode:false};
+    const settings = {speed:1.0, orientation:'horizontal', lightMode:false};
 
     // UI refs
     const speedInput = document.getElementById('speed'); 
@@ -217,7 +217,7 @@
     const cogBtn = document.getElementById('cogBtn'); 
     const panel = document.getElementById('panel'); 
     const closePanel = document.getElementById('closePanel');
-    const darkModeCheckbox = document.getElementById('darkMode'); 
+    const lightModeCheckbox = document.getElementById('lightMode'); 
     const particleSizeInput = document.getElementById('particleSize'); 
     const sizeVal = document.getElementById('sizeVal');
     const colorPreset = document.getElementById('colorPreset'); 
@@ -251,7 +251,10 @@
     orientationInput.addEventListener('change', (e)=>{ settings.orientation = e.target.value; });
 
     particleSizeInput.addEventListener('input', (e)=>{ const v = parseFloat(e.target.value); if(mat) mat.size = v; sizeVal.textContent = v.toFixed(1); });
-    darkModeCheckbox.addEventListener('change', (e)=>{ settings.darkMode = e.target.checked; document.documentElement.classList.toggle('dark', settings.darkMode); });
+    lightModeCheckbox.addEventListener('change', (e)=>{ 
+      settings.lightMode = e.target.checked; 
+      document.documentElement.classList.toggle('light', settings.lightMode); 
+    });
 
     colorPreset.addEventListener('change', (e)=>{ const val = e.target.value; if(val === 'custom'){ customColorRow.classList.remove('hidden'); applyCustomColor(colorPicker.value); } else { customColorRow.classList.add('hidden'); applyColorPreset(val); } });
     colorPicker.addEventListener('input', (e)=>{ if(colorPreset.value === 'custom') applyCustomColor(e.target.value); });
