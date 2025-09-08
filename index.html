@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js Particle Field + Camera Orbit on Scroll</title>
+  <title>Three.js Particle Field + Camera Pan on Scroll</title>
   <style>
     :root{--bg: rgba(255,255,255,0.0);--content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));--text-color: #111;--panel-bg: #ffffff;--cog-bg: rgba(255,255,255,0.9);} 
     .dark{--bg: #071026;--content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));--text-color: #e6eef8;--panel-bg: #0f1724;--cog-bg: rgba(14,18,24,0.95);} 
@@ -30,7 +30,7 @@
   <main>
     <div style="height:40px"></div>
     <div class="content">
-      <h1>Three.js Particle Field + Camera Orbit</h1>
+      <h1>Three.js Particle Field + Camera Pan</h1>
       <p>This is an example page with enough content to scroll. The background is a particle field rendered with three.js and the camera will orbit as you scroll the page. Use the small cog in the lower-right to open the settings panel.</p>
 
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
@@ -125,20 +125,20 @@
     <input id="cameraZoom" type="range" min="20" max="220" step="1" value="60">
 
     <div class="row" style="margin-top:8px">
-      <label for="cameraSlideX">Cloud slide X (left / right)</label>
-      <div class="small" id="slideXVal">0</div>
+      <label for="cameraPanX">Camera pan X (left / right)</label>
+      <div class="small" id="panXVal">0</div>
     </div>
-    <input id="cameraSlideX" type="range" min="-200" max="200" step="1" value="0">
+    <input id="cameraPanX" type="range" min="-200" max="200" step="1" value="0">
 
     <div class="row" style="margin-top:8px">
-      <label for="cameraSlideY">Cloud slide Y (up / down)</label>
-      <div class="small" id="slideYVal">0</div>
+      <label for="cameraPanY">Camera pan Y (up / down)</label>
+      <div class="small" id="panYVal">0</div>
     </div>
-    <input id="cameraSlideY" type="range" min="-200" max="200" step="1" value="0">
+    <input id="cameraPanY" type="range" min="-200" max="200" step="1" value="0">
 
     <div class="row small" style="margin-top:10px">
       <div>Tip:</div>
-      <div>Move the cloud center independently from the camera orbit to explore different compositions.</div>
+      <div>Pan the camera to view the particle field from different angles.</div>
     </div>
   </aside>
 
@@ -156,8 +156,8 @@
     let orbitRadius = 60;
     let geo = null, mat = null, points = null;
 
-    // cloud center offset (we'll move the particle group's position)
-    const cloud = {x:0, y:0};
+    // Camera pan offset (we'll adjust the camera position for panning)
+    const cameraPan = {x:0, y:0};
 
     function createPoints(count){
       if(points){
@@ -191,8 +191,8 @@
       mat = new THREE.PointsMaterial({size:parseFloat(document.getElementById('particleSize').value)||1.8,vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});
 
       points = new THREE.Points(geo, mat);
-      // position the entire cloud according to current offsets
-      points.position.set(cloud.x, cloud.y, 0);
+      // Keep the particle cloud at the origin
+      points.position.set(0, 0, 0);
 
       scene.add(points);
     }
@@ -215,11 +215,22 @@
     const colorPreset = document.getElementById('colorPreset'); const colorPicker = document.getElementById('colorPicker'); const customColorRow = document.getElementById('customColorRow');
     const particleCountInput = document.getElementById('particleCount'); const countVal = document.getElementById('countVal');
     const cameraZoomInput = document.getElementById('cameraZoom'); const zoomVal = document.getElementById('zoomVal');
-    const cameraSlideX = document.getElementById('cameraSlideX'); const slideXVal = document.getElementById('slideXVal');
-    const cameraSlideY = document.getElementById('cameraSlideY'); const slideYVal = document.getElementById('slideYVal');
+    const cameraPanXInput = document.getElementById('cameraPanX'); const panXVal = document.getElementById('panXVal');
+    const cameraPanYInput = document.getElementById('cameraPanY'); const panYVal = document.getElementById('panYVal');
+
+    // Update labels to reflect pan functionality
+    document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";
+    document.querySelector('label[for="cameraPanY"]').textContent = "Camera pan Y (up / down)";
+    document.querySelector('.row.small div:last-child').textContent = "Pan the camera to view the particle field from different angles.";
 
     // initial UI values
-    speedVal.textContent = settings.speed.toFixed(2); countVal.textContent = particleCount; zoomVal.textContent = orbitRadius; sizeVal.textContent = (1.8).toFixed(1); slideXVal.textContent = cloud.x; slideYVal.textContent = cloud.y; customColorRow.classList.add('hidden');
+    speedVal.textContent = settings.speed.toFixed(2); 
+    countVal.textContent = particleCount; 
+    zoomVal.textContent = orbitRadius; 
+    sizeVal.textContent = (1.8).toFixed(1); 
+    panXVal.textContent = cameraPan.x; 
+    panYVal.textContent = cameraPan.y; 
+    customColorRow.classList.add('hidden');
 
     // handlers
     speedInput.addEventListener('input', (e)=>{ settings.speed = parseFloat(e.target.value); speedVal.textContent = settings.speed.toFixed(2); });
@@ -235,8 +246,16 @@
 
     cameraZoomInput.addEventListener('input', (e)=>{ orbitRadius = parseFloat(e.target.value); zoomVal.textContent = orbitRadius; });
 
-    cameraSlideX.addEventListener('input', (e)=>{ cloud.x = parseFloat(e.target.value); slideXVal.textContent = cloud.x; if(points) points.position.x = cloud.x; });
-    cameraSlideY.addEventListener('input', (e)=>{ cloud.y = parseFloat(e.target.value); slideYVal.textContent = cloud.y; if(points) points.position.y = cloud.y; });
+    // Update camera pan handlers
+    cameraPanXInput.addEventListener('input', (e)=>{ 
+      cameraPan.x = parseFloat(e.target.value); 
+      panXVal.textContent = cameraPan.x; 
+    });
+    
+    cameraPanYInput.addEventListener('input', (e)=>{ 
+      cameraPan.y = parseFloat(e.target.value); 
+      panYVal.textContent = cameraPan.y; 
+    });
 
     function hexToRgbNorm(hex){ const parsed = hex.replace('#',''); const bigint = parseInt(parsed,16); const r = ((bigint >> 16) & 255)/255; const g = ((bigint >> 8) & 255)/255; const b = (bigint & 255)/255; return [r,g,b]; }
 
@@ -249,24 +268,23 @@
 
     const autoRotSpeed = 0.0006;
 
-    function animate(){ requestAnimationFrame(animate); if(points) points.rotation.y += autoRotSpeed; currentAngle += (targetAngle - currentAngle) * 0.08;
+    function animate(){ 
+      requestAnimationFrame(animate); 
+      if(points) points.rotation.y += autoRotSpeed; 
+      currentAngle += (targetAngle - currentAngle) * 0.08;
 
-      // camera placement — we orbit the camera around the origin, but lookAt the cloud center
-      if(settings.orientation === 'horizontal'){
-        camera.position.x = orbitRadius * Math.sin(currentAngle);
-        camera.position.z = orbitRadius * Math.cos(currentAngle);
-        camera.position.y = Math.sin(currentAngle*0.3) * 8;
-      } else {
-        camera.position.y = orbitRadius * Math.sin(currentAngle);
-        camera.position.z = orbitRadius * Math.cos(currentAngle);
-        camera.position.x = Math.sin(currentAngle*0.2) * 8;
-      }
+      // compute orbit vector
+      const orbitX = orbitRadius * Math.sin(currentAngle);
+      const orbitZ = orbitRadius * Math.cos(currentAngle);
+      const orbitY = Math.sin(currentAngle*0.3) * 8;
 
-      // ensure the camera looks at the particle cloud center, and the points are positioned there
-      if(points){
-        points.position.set(cloud.x, cloud.y, 0);
-      }
-      camera.lookAt(cloud.x, cloud.y, 0);
+      // position camera with pan offset
+      camera.position.x = orbitX + cameraPan.x;
+      camera.position.y = orbitY + cameraPan.y;
+      camera.position.z = orbitZ;
+
+      // look at the center of the particle cloud (with pan offset applied to create the pan effect)
+      camera.lookAt(cameraPan.x, cameraPan.y, 0);
 
       renderer.render(scene, camera);
     }
@@ -275,8 +293,7 @@
     cogBtn.addEventListener('click', ()=>{ panel.classList.toggle('open'); });
     closePanel.addEventListener('click', ()=>{ panel.classList.remove('open'); });
 
-    // expose small API for debugging
-    window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCloud: ()=>({x:cloud.x,y:cloud.y}), setCloud: (x,y)=>{ cloud.x = x||0; cloud.y = y||0; if(points) points.position.set(cloud.x, cloud.y, 0); }};
+    window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
   </script>
 </body>
 </html>
