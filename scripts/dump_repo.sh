@@ -3,31 +3,36 @@ set -euo pipefail
 
 # Generate timestamped filename
 TIMESTAMP=$(date -u +"%Y%m%d_%H%M%S")
-OUT="${1:-repo_full_dump_${TIMESTAMP}.txt}"
+OUT="${1:-repo_full_text_dump_${TIMESTAMP}.txt}"
 
-echo "=== FULL REPO DUMP ===" > "$OUT"
-echo "Timestamp (UTC): $(date -u)" >> "$OUT"
-echo "Repository path: $(pwd)" >> "$OUT"
-echo "Current branch: $(git branch --show-current)" >> "$OUT"
-echo "Git remotes:" >> "$OUT"
-git remote -v >> "$OUT"
+{
+echo "=== FULL REPO TEXT DUMP ==="
+echo "Timestamp (UTC): $(date -u)"
+echo "Repository path: $(pwd)"
+echo
+echo "=== Git Remotes ==="
+git remote -v
+echo
+echo "=== Git Branches ==="
+git branch -a
+echo
+echo "=== Git Tags ==="
+git tag
+echo
+echo "=== Git Config ==="
+git config --list
+echo
+echo "=== Git Status ==="
+git status
+echo
+echo "=== Full Commit History ==="
+git log --all --pretty=format:"%H%n%an%n%ae%n%ad%n%s%n%b%n---"
+echo
+echo "=== Working Directory Files (including hidden) ==="
+ls -RA
+echo
+echo "=== .git Folder Structure ==="
+ls -RA .git
+} > "$OUT"
 
-echo -e "\n=== Git Status ===" >> "$OUT"
-git status >> "$OUT"
-
-echo -e "\n=== Commit History ===" >> "$OUT"
-git log --all --pretty=format:"%H%n%an%n%ae%n%ad%n%s%n%b%n---" >> "$OUT"
-
-echo -e "\n=== Tags ===" >> "$OUT"
-git tag >> "$OUT"
-
-echo -e "\n=== Branches ===" >> "$OUT"
-git branch -a >> "$OUT"
-
-echo -e "\n=== File Tree ===" >> "$OUT"
-ls -R >> "$OUT"
-
-echo -e "\n=== Git Config ===" >> "$OUT"
-git config --list >> "$OUT"
-
-echo "Full repo dump completed: $OUT"
+echo "Full repo text dump completed: $OUT"
