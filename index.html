@@ -4,842 +4,338 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Three.js Particle Field + Dynamic Navigation</title>
+  <title>Three.js Particle Field + Camera Orbit on Scroll</title>
   <style>
     :root{
-      --bg: #071026;
-      --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
+      --bg: rgba(255,255,255,0.0);
+      --content-bg: linear-gradient(180deg, rgba(15,23,36,0.6), rgba(2,6,23,0.6));
       --text-color: #e6eef8;
       --panel-bg: #0f1724;
-      --cog-bg: rgba(14,18,24,0.95);
-      --link-color: #93d6ff;
-      --link-hover-color: #c2e4ff;
+      --cog-bg: #0b1220;
+      --link-color: #6ee7b7;
+      --link-hover-color: #34d399;
       --h1-color: #ffffff;
-      --h2-color: #e6eef8;
-      --h3-color: #d0d8e2;
-      --code-bg: rgba(0,0,0,0.2);
-      --code-color: #ff9d9d;
-      --blockquote-border: rgba(93, 173, 255, 0.5);
-      --blockquote-bg: rgba(93, 173, 255, 0.08);
-      
-      /* New variables for background customization */
-      --nav-panel-bg-color: #0f1724;
-      --nav-panel-bg-alpha: 10;
-      --nav-panel-blur: 8px;
-      
-      --dev-panel-bg-color: #0f1724;
-      --dev-panel-bg-alpha: 10;
-      --dev-panel-blur: 8px;
-      
-      --content-bg-color: #0f1218;
-      --content-bg-alpha: 10;
-      --content-bg-blur: 8px;
-    } 
-
-    .light{
-      --bg: rgba(255,255,255,0.0);
-      --content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
-      --text-color: #111;
+      --h2-color: #c7d2fe;
+      --h3-color: #93c5fd;
+      --code-bg: #0b1220;
+      --code-color: #cbd5e1;
+      --blockquote-border: rgba(255,255,255,0.06);
+      --blockquote-bg: rgba(255,255,255,0.02);
+      /* other defaults... */
+    }
+    html.light{
+      --bg: rgba(255,255,255,0.02);
+      --text-color: #0b1220;
       --panel-bg: #ffffff;
-      --cog-bg: rgba(255,255,255,0.9);
-      --link-color: #0066cc;
-      --link-hover-color: #004499;
-      --h1-color: #000000;
-      --h2-color: #111111;
-      --h3-color: #222222;
-      --code-bg: rgba(0,0,0,0.06);
-      --code-color: #d73038;
-      --blockquote-border: rgba(0, 102, 204, 0.4);
-      --blockquote-bg: rgba(0, 102, 204, 0.06);
-      
-      /* Light theme defaults for background customization */
-      --nav-panel-bg-color: #ffffff;
-      --dev-panel-bg-color: #ffffff;
-      --content-bg-color: #ffffff;
-    } 
-
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text-color)}
-    #bg {position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
-    
-    /* Navigation styles */
-    .nav-container {
-      position: fixed;
-      left: 20px;
-      top: 20px;
-      z-index: 2;
-      background: rgba(var(--nav-panel-bg-color-rgb), var(--nav-panel-bg-alpha));
-      border-radius: 12px;
-      padding: 14px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.12);
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      width: 240px;
-      backdrop-filter: blur(var(--nav-panel-blur));
     }
-    
-    .nav-header {
-      font-weight: bold;
-      margin-bottom: 12px;
-      color: var(--h2-color);
+    html,body{
+      height:100%;
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text-color);
+      font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
-    
-    .nav-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .nav-list li {
-      margin-bottom: 6px;
-    }
-    
-    .nav-list a {
-      color: var(--link-color);
-      text-decoration: none;
-      display: block;
-      padding: 6px 8px;
-      border-radius: 6px;
-      transition: background 0.2s ease;
-    }
-    
-    .nav-list a:hover {
-      color: var(--link-hover-color);
-      background: rgba(255,255,255,0.05);
-    }
-    
-    .nav-list a.active {
-      background: rgba(93, 173, 255, 0.15);
-      color: var(--link-hover-color);
-    }
-    
-    /* Content area */
-    .content{
+    /* basic layout */
+    #app{
+      min-height:100vh;
       position:relative;
-      z-index:1;
+      overflow-x:hidden;
+    }
+    .foreground{
+      position:relative;
+      z-index:20;
+      pointer-events:auto;
+      padding:48px;
       max-width:900px;
-      margin: 40px auto 40px 300px;
-      padding:30px;
-      background: rgba(var(--content-bg-color-rgb), var(--content-bg-alpha));
+      margin:0 auto;
+      box-sizing:border-box;
+    }
+    /* dev panel */
+    #cog{
+      position:fixed;
+      right:14px;
+      bottom:14px;
+      z-index:40;
+      width:44px;
+      height:44px;
+      border-radius:8px;
+      background:var(--cog-bg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(2,6,23,0.6);
+    }
+    #panel{
+      position:fixed;
+      right:14px;
+      bottom:68px;
+      width:320px;
+      max-width:calc(100% - 32px);
+      z-index:40;
+      background:var(--panel-bg);
+      color:var(--text-color);
       border-radius:12px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
-      backdrop-filter: blur(var(--content-bg-blur));
-      min-height: 400px;
+      padding:14px;
+      box-shadow:0 12px 40px rgba(2,6,23,0.6);
+      transform-origin:bottom right;
+      transition:transform .22s ease, opacity .2s ease;
+      opacity:1;
     }
-    
-    /* Markdown content styles */
-    #file-content h1{font-size:clamp(26px,4vw,40px);margin:0 0 12px;color:var(--h1-color)}
-    #file-content h2{color:var(--h2-color); margin-top: 1.8em; margin-bottom: 0.8em;}
-    #file-content h3{color:var(--h3-color); margin-top: 1.5em; margin-bottom: 0.7em;}
-    #file-content p{line-height:1.6;color:var(--text-color); margin-bottom: 1em;}
-    #file-content a{color:var(--link-color);text-decoration:none;transition:color 0.2s ease}
-    #file-content a:hover{color:var(--link-hover-color)}
-    #file-content ul, #file-content ol {margin-bottom: 1em; padding-left: 1.8em;}
-    #file-content li {margin-bottom: 0.4em; line-height: 1.5;}
-    #file-content code {background: var(--code-bg); color: var(--code-color); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em;}
-    #file-content pre {background: var(--code-bg); padding: 1em; border-radius: 8px; overflow: auto; margin-bottom: 1.5em;}
-    #file-content pre code {background: none; padding: 0; color: inherit;}
-    #file-content blockquote {border-left: 4px solid var(--blockquote-border); background: var(--blockquote-bg); padding: 1em 1.5em; margin: 1.5em 0; border-radius: 0 8px 8px 0;}
-    #file-content table {width: 100%; border-collapse: collapse; margin-bottom: 1.5em;}
-    #file-content th, #file-content td {padding: 0.5em 1em; text-align: left; border: 1px solid rgba(255,255,255,0.1);}
-    #file-content th {background: rgba(255,255,255,0.05);}
-    
-    /* Loading state */
-    #loading {
-      text-align: center;
-      padding: 2em;
-      color: var(--text-color);
-      opacity: 0.7;
+    #panel.closed{
+      transform:scale(.96);
+      opacity:0;
+      pointer-events:none;
     }
-    
-    /* Responsive adjustments */
-    @media (max-width: 1024px) {
-      .nav-container {
-        width: 200px;
-      }
-      
-      .content {
-        margin-left: 260px;
-        max-width: calc(100% - 280px);
-      }
+    label{display:block;margin-bottom:8px;font-size:13px}
+    input[type=range]{width:100%}
+    .row{display:flex;gap:8px;align-items:center}
+    footer{padding:48px 12px;color:var(--text-color);opacity:.9}
+    /* ensure exported file not too heavy on mobile */
+    @media (max-width:600px){
+      #panel{width:92%}
     }
-    
-    @media (max-width: 768px) {
-      .nav-container {
-        position: relative;
-        width: auto;
-        left: auto;
-        top: auto;
-        margin: 20px 20px 0;
-        max-height: none;
-      }
-      
-      .content {
-        margin: 20px;
-        max-width: calc(100% - 40px);
-      }
-    }
-
-    .floating-shape{width:120px;height:120px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin:10px;background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);color:var(--text-color)}
-    .cog {position:fixed;right:16px;bottom:16px;z-index:3;width:36px;height:36px;border-radius:999px;display:grid;place-items:center;background:var(--cog-bg);box-shadow:0 6px 18px rgba(0,0,0,0.12);cursor:pointer;border:1px solid rgba(0,0,0,0.06)}
-    .cog svg{width:18px;height:18px}
-    .panel{position:fixed;right:16px;bottom:64px;z-index:4;width:360px;background: rgba(var(--dev-panel-bg-color-rgb), var(--dev-panel-bg-alpha));border-radius:12px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,0.12);display:none;color:var(--text-color);max-height:80vh;overflow-y:auto;backdrop-filter: blur(var(--dev-panel-blur))}
-    .panel.open{display:block}
-    .panel label{font-size:13px;color:var(--text-color)}
-    .row{display:flex;align-items:center;justify-content:space-between;margin:8px 0}
-    .small{font-size:13px;color:rgba(100,100,120,1)}
-    .control-inline{display:flex;gap:8px;align-items:center}
-    .color-input{width:24px;height:24px;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.2)}
-    .color-input input{width:100%;height:100%;border:none;padding:0;cursor:pointer;background:transparent}
-    @media (max-width:520px){.panel{width:92%;right:4%;bottom:80px}} .hidden{display:none} hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0}
-    .panel-section-title{margin:12px 0 6px;font-weight:bold;font-size:14px}
   </style>
 </head>
 
 <body>
-  <canvas id="bg"></canvas>
+  <div id="app">
+    <canvas id="bg-canvas" style="position:fixed;inset:0;z-index:0;display:block"></canvas>
 
-  <!-- Navigation sidebar -->
-  <aside class="nav-container">
-    <div class="nav-header">Documentation</div>
-    <ul class="nav-list" id="navList"></ul>
-  </aside>
+    <div class="foreground" id="content">
+      <h1>Particle Field + Scroll Camera</h1>
+      <p>Example content floating above the particle background. Scroll to orbit the camera.</p>
 
-  <main>
-    <div class="content">
-      <article id="file-content"></article>
-    </div>
-  </main>
+      <h2>Controls</h2>
+      <p>Open the cog to change particle count, size and colors. Use the export button to download a copy with your current settings as defaults.</p>
 
-  <button class="cog" id="cogBtn" aria-label="Open settings" title="Open settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"></path>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.28 17.9l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09c.7 0 1.32-.39 1.51-1a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 0 1 6.1 2.28l.06.06c.45.45 1.07.66 1.67.51.58-.14 1.05-.59 1.2-1.17L9.5 2A2 2 0 0 1 13.5 2l.07.09c.15.58.62 1.03 1.2 1.17.6.15 1.22-.06 1.67-.51l.06-.06A2 2 0 0 1 21.72 6.1l-.06.06c-.45.45-.66 1.07-.51 1.67.14.58.59 1.05 1.17 1.2L22 9.5a2 2 0 0 1 0 4l-.09.07c-.58.15-1.03.62-1.17 1.2-.15.6.06 1.22.51 1.67z"/>
-    </svg>
-  </button>
+      <div style="height:1200px;">
+        <p>Long content to allow scrolling... (repeat as needed)</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec orci ac lorem hendrerit vulputate. Integer vitae justo nec massa feugiat viverra. Suspendisse potenti. Duis vitae fermentum orci. Aenean at posuere arcu. Donec id sem id lectus finibus varius.</p>
+      </div>
 
-  <aside class="panel" id="panel" role="dialog" aria-label="Dev settings">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <strong>Dev Settings</strong>
-      <button id="closePanel" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:var(--text-color)">✕</button>
+      <footer>
+        <small>Exported file warning: mobile browsers may struggle when opened directly from file:// — for best results host on a web server.</small>
+      </footer>
     </div>
 
-    <div class="row">
-      <label for="speed">Orbit rotation speed (per scroll)</label>
-      <div class="small" id="speedVal">1.0</div>
-    </div>
-    <input id="speed" type="range" min="0" max="5" step="0.05" value="1">
-
-    <div class="row" style="margin-top:8px">
-      <label for="orientation">Orbit orientation</label>
-      <select id="orientation">
-        <option value="horizontal">Horizontal (Y axis)</option>
-        <option value="vertical">Vertical (X axis)</option>
-      </select>
+    <div id="cog" title="Dev settings">
+      ⚙️
     </div>
 
-    <hr>
+    <div id="panel" class="">
+      <h3 style="margin-top:0">Dev Settings</h3>
 
-    <div class="row">
-      <label for="lightMode">Light mode</label>
-      <div class="control-inline"><input id="lightMode" type="checkbox"><span class="small">Toggle</span></div>
-    </div>
+      <label for="particleCount">Particle Count: <span id="pcountVal">1000</span></label>
+      <input id="particleCount" type="range" min="100" max="4000" step="100" value="1000">
 
-    <div class="row">
-      <label for="particleSize">Particle size</label>
-      <div class="small" id="sizeVal">1.8</div>
-    </div>
-    <input id="particleSize" type="range" min="0.2" max="6" step="0.1" value="1.8">
+      <label for="particleSize">Particle Size: <span id="psizeVal">2.5</span></label>
+      <input id="particleSize" type="range" min="0.5" max="8" step="0.1" value="2.5">
 
-    <div class="row" style="margin-top:8px">
-      <label for="colorPreset">Particle colors</label>
-      <select id="colorPreset">
-        <option value="soft">Soft (default)</option>
-        <option value="warm">Warm</option>
-        <option value="cool">Cool</option>
-        <option value="mono">Monochrome</option>
-        <option value="custom">Custom</option>
-      </select>
+      <label for="particleColor">Particle Color</label>
+      <input id="particleColor" type="color" value="#88ccff">
+
+      <div style="height:12px"></div>
+      <div class="row">
+        <button id="applyBtn">Apply</button>
+        <button id="exportBtn">Export</button>
+        <button id="resetBtn">Reset</button>
+      </div>
     </div>
 
-    <div class="row" id="customColorRow" style="margin-top:6px">
-      <label for="colorPicker">Custom color</label>
-      <input id="colorPicker" type="color" value="#93d6ff">
-    </div>
+  </div>
 
-    <hr>
-
-    <div class="row">
-      <label for="particleCount">Particle count</label>
-      <div class="small" id="countVal">1200</div>
-    </div>
-    <input id="particleCount" type="range" min="200" max="6000" step="50" value="1200">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraZoom">Camera zoom (distance)</label>
-      <div class="small" id="zoomVal">60</div>
-    </div>
-    <input id="cameraZoom" type="range" min="20" max="220" step="1" value="60">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraPanX">Camera pan X (left / right)</label>
-      <div class="small" id="panXVal">0</div>
-    </div>
-    <input id="cameraPanX" type="range" min="-200" max="200" step="1" value="0">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraPanY">Camera pan Y (up / down)</label>
-      <div class="small" id="panYVal">0</div>
-    </div>
-    <input id="cameraPanY" type="range" min="-200" max="200" step="1" value="0">
-
-    <div class="row small" style="margin-top:10px">
-      <div>Tip:</div>
-      <div>Pan the camera to view the particle field from different angles.</div>
-    </div>
-    
-    <hr>
-    
-    <div class="panel-section-title">Content Styles</div>
-    
-    <div class="row">
-      <label for="contentBgColor">Content background</label>
-      <div class="color-input"><input id="contentBgColor" type="color" value="#0f1218"></div>
-    </div>
-    
-    <div class="row">
-      <label for="textColor">Text color</label>
-      <div class="color-input"><input id="textColor" type="color" value="#e6eef8"></div>
-    </div>
-    
-    <div class="row">
-      <label for="linkColor">Link color</label>
-      <div class="color-input"><input id="linkColor" type="color" value="#93d6ff"></div>
-    </div>
-    
-    <div class="row">
-      <label for="linkHoverColor">Link hover color</label>
-      <div class="color-input"><input id="linkHoverColor" type="color" value="#c2e4ff"></div>
-    </div>
-    
-    <div class="row">
-      <label for="h1Color">H1 heading color</label>
-      <div class="color-input"><input id="h1Color" type="color" value="#ffffff"></div>
-    </div>
-    
-    <div class="row">
-      <label for="h2Color">H2 heading color</label>
-      <div class="color-input"><input id="h2Color" type="color" value="#e6eef8"></div>
-    </div>
-    
-    <div class="row">
-      <label for="h3Color">H3 heading color</label>
-      <div class="color-input"><input id="h3Color" type="color" value="#d0d8e2"></div>
-    </div>
-    
-    <div class="row" style="margin-top:10px">
-      <button id="resetContentStyles" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Reset Content Styles</button>
-    </div>
-    
-    <hr>
-    
-    <div class="panel-section-title">Background Customization</div>
-    
-    <div class="row">
-      <label>Navigation Panel</label>
-    </div>
-    
-    <div class="row">
-      <label for="navPanelColor">Color</label>
-      <div class="color-input"><input id="navPanelColor" type="color" value="#0f1724"></div>
-    </div>
-    
-    <div class="row">
-      <label for="navPanelAlpha">Transparency</label>
-      <div class="small" id="navPanelAlphaVal">100%</div>
-    </div>
-    <input id="navPanelAlpha" type="range" min="0" max="100" step="1" value="100">
-    
-    <div class="row">
-      <label for="navPanelBlur">Blur</label>
-      <div class="small" id="navPanelBlurVal">0px</div>
-    </div>
-    <input id="navPanelBlur" type="range" min="0" max="20" step="1" value="0">
-    
-    <div class="row">
-      <label>Dev Settings Panel</label>
-    </div>
-    
-    <div class="row">
-      <label for="devPanelColor">Color</label>
-      <div class="color-input"><input id="devPanelColor" type="color" value="#0f1724"></div>
-    </div>
-    
-    <div class="row">
-      <label for="devPanelAlpha">Transparency</label>
-      <div class="small" id="devPanelAlphaVal">100%</div>
-    </div>
-    <input id="devPanelAlpha" type="range" min="0" max="100" step="1" value="100">
-    
-    <div class="row">
-      <label for="devPanelBlur">Blur</label>
-      <div class="small" id="devPanelBlurVal">0px</div>
-    </div>
-    <input id="devPanelBlur" type="range" min="0" max="20" step="1" value="0">
-    
-    <div class="row">
-      <label>Content Background</label>
-    </div>
-    
-    <div class="row">
-      <label for="contentBgSolidColor">Color</label>
-      <div class="color-input"><input id="contentBgSolidColor" type="color" value="#0f1218"></div>
-    </div>
-    
-    <div class="row">
-      <label for="contentBgAlpha">Transparency</label>
-      <div class="small" id="contentBgAlphaVal">100%</div>
-    </div>
-    <input id="contentBgAlpha" type="range" min="0" max="100" step="1" value="100">
-    
-    <div class="row">
-      <label for="contentBgBlur">Blur</label>
-      <div class="small" id="contentBgBlurVal">6px</div>
-    </div>
-    <input id="contentBgBlur" type="range" min="0" max="20" step="1" value="6">
-    
-    <div class="row" style="margin-top:10px">
-      <button id="resetBackgroundStyles" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Reset Background Styles</button>
-    </div>
-    
-    <hr>
-    
-    <div class="panel-section-title">Export Settings</div>
-    
-    <div class="row" style="margin-top:10px">
-      <button id="exportSettings" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Export as Default Settings</button>
-    </div>
-  </aside>
-
-  <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
   <script>
-    // This will be populated dynamically from README links
-    let fileStructure = [];
+    // Basic Three.js particle field + scroll orbit demo
+    // NOTE: This file is adapted with export improvements and DPR clamping.
 
-    // DOM elements
-    const navList = document.getElementById('navList');
-    const fileContent = document.getElementById('file-content');
-
-    // Extract links from README content
-    function extractLinksFromReadme(content) {
-      const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-      const links = [];
-      let match;
-      
-      while ((match = linkRegex.exec(content)) !== null) {
-        const name = match[1];
-        const path = match[2];
-        
-        // Only include .md files and exclude external URLs
-        if (path.endsWith('.md') && !path.startsWith('http')) {
-          // Check if this is a relative path to a directory with a README
-          let finalPath = path;
-          if (!path.endsWith('.md') && path.endsWith('/')) {
-            finalPath = path + 'README.md';
-          }
-          
-          links.push({ name, path: finalPath });
-        }
-      }
-      
-      return links;
-    }
-
-    // Render navigation
-    function renderNavigation() {
-      navList.innerHTML = '';
-      fileStructure.forEach(file => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = '#';
-        a.textContent = file.name;
-        a.dataset.path = file.path;
-        a.addEventListener('click', (e) => {
-          e.preventDefault();
-          // Remove active class from all links
-          document.querySelectorAll('#navList a').forEach(link => {
-            link.classList.remove('active');
-          });
-          // Add active class to clicked link
-          a.classList.add('active');
-          loadFile(file.path);
-        });
-        li.appendChild(a);
-        navList.appendChild(li);
-      });
-    }
-
-    // Load file function
-    async function loadFile(filePath) {
-      fileContent.innerHTML = '<div id="loading">Loading file...</div>';
-      try {
-        const response = await fetch(filePath);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        let content = await response.text();
-        
-        // Remove YAML frontmatter if present
-        if (content.startsWith('---')) {
-          const frontmatterEnd = content.indexOf('---', 3);
-          if (frontmatterEnd !== -1) {
-            content = content.substring(frontmatterEnd + 3).trim();
-          }
-        }
-        
-        renderFile(content, filePath);
-        
-        // If this is the README, extract links and update navigation
-        if (filePath === 'README.md') {
-          const links = extractLinksFromReadme(content);
-          fileStructure = [
-            { name: "README", path: "README.md" },
-            ...links
-          ];
-          renderNavigation();
-          
-          // Set active class to README link
-          document.querySelectorAll('#navList a').forEach(link => {
-            if (link.dataset.path === 'README.md') {
-              link.classList.add('active');
-            }
-          });
-        }
-      } catch (error) {
-        fileContent.innerHTML = `<div class="error">Error loading file: ${error.message}</div>`;
-        console.error('Error loading file:', error);
-      }
-    }
-
-    // Render file function with markdown parsing
-    function renderFile(content, filePath) {
-      const markdownToHtml = (text) => {
-        return text
-          // Headers
-          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-          .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
-          .replace(/^##### (.*$)/gim, '<h5>$1</h5>')
-          .replace(/^###### (.*$)/gim, '<h6>$1</h6>')
-          // Bold
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/__(.*?)__/g, '<strong>$1</strong>')
-          // Italic
-          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-          .replace(/_(.*?)_/g, '<em>$1</em>')
-          // Strikethrough
-          .replace(/~~(.*?)~~/g, '<del>$1</del>')
-          // Links
-          .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-          // Images
-          .replace(/!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2" />')
-          // Blockquotes
-          .replace(/^>\s(.*$)/gim, '<blockquote>$1</blockquote>')
-          // Horizontal rule
-          .replace(/^\-\-\-\-*$/gim, '<hr />')
-          // Unordered lists
-          .replace(/^\s*[\-\*\+]\s(.*$)/gim, '<li>$1</li>')
-          .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-          // Ordered lists
-          .replace(/^\s*\d+\.\s(.*$)/gim, '<li>$1</li>')
-          .replace(/(<li>.*<\/li>)/gs, function(match) {
-            return /<li>.*<\/li>/.test(match) ? '<ol>' + match + '</ol>' : match;
-          })
-          // Paragraphs
-          .replace(/^\s*(\n)?(.+)/gim, function(m){
-            return /\<(\/)?(h\d|ul|ol|li|blockquote|pre|img|hr)/.test(m) ? m : '<p>'+m+'</p>';
-          })
-          // Code blocks
-          .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="$1">$2</code></pre>')
-          // Inline code
-          .replace(/`(.*?)`/g, '<code>$1</code>')
-          // Tables (basic support)
-          .replace(/^\|(.+)\|$/gm, function(match, row) {
-            if (match.startsWith('|--')) return ''; // Skip separator rows for now
-            const cells = row.split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
-            return `<tr>${cells}</tr>`;
-          })
-          .replace(/(<tr>.*<\/tr>)/gs, function(match) {
-            return /<tr>.*<\/tr>/.test(match) ? '<table>' + match + '</table>' : match;
-          });
-      };
-      
-      const html = markdownToHtml(content);
-      fileContent.innerHTML = html;
-      
-      // Update browser history
-      history.pushState({ path: filePath }, '', `#${filePath}`);
-    }
-
-    // Initialize navigation and load README
-    function initNavigation() {
-      // Start by loading the README
-      loadFile('README.md');
-    }
-
-    // Three.js code (unchanged from your original)
-    const canvas = document.getElementById('bg');
-    const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
+    // --- basic renderer / scene / camera setup ---
+    const canvas = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    // limit DPR to avoid huge GPU usage on mobile (prevents crashes)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setClearColor(0x000000, 0);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 2000);
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 60;
 
-    let particleCount = 1200;
-    let orbitRadius = 60;
-    let geo = null, mat = null, points = null;
+    // particle defaults (use these as initial visual defaults)
+    let particleCount = parseInt(document.getElementById('particleCount').value, 10) || 1000;
+    let particleSize = parseFloat(document.getElementById('particleSize').value) || 2.5;
+    let particleColor = document.getElementById('particleColor').value || '#88ccff';
 
-    // Camera pan offset (we'll adjust the camera position for panning)
-    const cameraPan = {x:0, y:0};
-
-    function createPoints(count){
-      if(points){
+    // helper to build the particle system
+    let points;
+    function buildParticles(count, size, hexColor) {
+      if (points) {
         scene.remove(points);
-        geo.dispose && geo.dispose();
-        mat.dispose && mat.dispose();
+        points.geometry.dispose();
+        points.material.dispose();
       }
 
-      particleCount = Math.max(10, Math.floor(count));
-      const positions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
-
-      for(let i=0;i<particleCount;i++){
-        const i3 = i*3;
-        const r = 10 + Math.random()*200;
-        const theta = Math.random()*Math.PI*2;
-        const phi = Math.acos(2*Math.random()-1);
-        positions[i3+0] = r*Math.sin(phi)*Math.cos(theta);
-        positions[i3+1] = r*Math.sin(phi)*Math.sin(theta);
-        positions[i3+2] = r*Math.cos(phi);
-
-        colors[i3+0] = 0.5 + Math.random()*0.5;
-        colors[i3+1] = 0.5 + Math.random()*0.5;
-        colors[i3+2] = 0.6 + Math.random()*0.4;
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        positions[i * 3 + 0] = (Math.random() - 0.5) * 200;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 200;
       }
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-      geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-      geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
+      const material = new THREE.PointsMaterial({
+        size: size,
+        sizeAttenuation: true,
+        color: new THREE.Color(hexColor),
+        transparent: true,
+        opacity: 0.95,
+      });
 
-      mat = new THREE.PointsMaterial({size:parseFloat(document.getElementById('particleSize').value)||1.8,vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});
-
-      points = new THREE.Points(geo, mat);
-      // Keep the particle cloud at the origin
-      points.position.set(0, 0, 0);
-
+      points = new THREE.Points(geometry, material);
       scene.add(points);
     }
 
-    createPoints(particleCount);
+    buildParticles(particleCount, particleSize, particleColor);
 
-    const light = new THREE.DirectionalLight(0xffffff,0.4);
-    light.position.set(1,1,1);
-    scene.add(light);
-
-    window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight, false); camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); });
-
-    let lastScrollY = window.scrollY; 
-    let targetAngle = 0; 
-    let currentAngle = 0;
-    const settings = {speed:1.0, orientation:'horizontal', lightMode:false};
-
-    // UI refs
-    const speedInput = document.getElementById('speed'); 
-    const speedVal = document.getElementById('speedVal'); 
-    const orientationInput = document.getElementById('orientation');
-    const cogBtn = document.getElementById('cogBtn'); 
-    const panel = document.getElementById('panel'); 
-    const closePanel = document.getElementById('closePanel');
-    const lightModeCheckbox = document.getElementById('lightMode'); 
-    const particleSizeInput = document.getElementById('particleSize'); 
-    const sizeVal = document.getElementById('sizeVal');
-    const colorPreset = document.getElementById('colorPreset'); 
-    const colorPicker = document.getElementById('colorPicker'); 
-    const customColorRow = document.getElementById('customColorRow');
-    const particleCountInput = document.getElementById('particleCount'); 
-    const countVal = document.getElementById('countVal');
-    const cameraZoomInput = document.getElementById('cameraZoom'); 
-    const zoomVal = document.getElementById('zoomVal');
-    const cameraPanXInput = document.getElementById('cameraPanX'); 
-    const panXVal = document.getElementById('panXVal');
-    const cameraPanYInput = document.getElementById('cameraPanY'); 
-    const panYVal = document.getElementById('panYVal');
-    
-    // New content style controls
-    const contentBgColorInput = document.getElementById('contentBgColor');
-    const textColorInput = document.getElementById('textColor');
-    const linkColorInput = document.getElementById('linkColor');
-    const linkHoverColorInput = document.getElementById('linkHoverColor');
-    const h1ColorInput = document.getElementById('h1Color');
-    const h2ColorInput = document.getElementById('h2Color');
-    const h3ColorInput = document.getElementById('h3Color');
-    const resetContentStylesBtn = document.getElementById('resetContentStyles');
-    
-    // New background customization controls
-    const navPanelColorInput = document.getElementById('navPanelColor');
-    const navPanelAlphaInput = document.getElementById('navPanelAlpha');
-    const navPanelAlphaVal = document.getElementById('navPanelAlphaVal');
-    const navPanelBlurInput = document.getElementById('navPanelBlur');
-    const navPanelBlurVal = document.getElementById('navPanelBlurVal');
-    
-    const devPanelColorInput = document.getElementById('devPanelColor');
-    const devPanelAlphaInput = document.getElementById('devPanelAlpha');
-    const devPanelAlphaVal = document.getElementById('devPanelAlphaVal');
-    const devPanelBlurInput = document.getElementById('devPanelBlur');
-    const devPanelBlurVal = document.getElementById('devPanelBlurVal');
-    
-    const contentBgSolidColorInput = document.getElementById('contentBgSolidColor');
-    const contentBgAlphaInput = document.getElementById('contentBgAlpha');
-    const contentBgAlphaVal = document.getElementById('contentBgAlphaVal');
-    const contentBgBlurInput = document.getElementById('contentBgBlur');
-    const contentBgBlurVal = document.getElementById('contentBgBlurVal');
-    
-    const resetBackgroundStylesBtn = document.getElementById('resetBackgroundStyles');
-    
-    // Export settings button
-    const exportSettingsBtn = document.getElementById('exportSettings');
-
-    // Update labels to reflect pan functionality
-    document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";
-    document.querySelector('label[for="cameraPanY"]').textContent = "Camera pan Y (up / down)";
-    document.querySelector('.row.small div:last-child').textContent = "Pan the camera to view the particle field from different angles.";
-
-    // initial UI values
-    speedVal.textContent = settings.speed.toFixed(2); 
-    countVal.textContent = particleCount; 
-    zoomVal.textContent = orbitRadius; 
-    sizeVal.textContent = (1.8).toFixed(1); 
-    panXVal.textContent = cameraPan.x; 
-    panYVal.textContent = cameraPan.y; 
-    customColorRow.classList.add('hidden');
-    
-    // Convert hex color to RGB format for CSS
-    function hexToRgb(hex) {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : null;
+    // --- resize handling ---
+    function onResize() {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
     }
-    
-    // Update background styles based on inputs
-    function updateBackgroundStyles() {
-      // Navigation panel
-      const navColor = hexToRgb(navPanelColorInput.value);
-      document.documentElement.style.setProperty('--nav-panel-bg-color-rgb', `${navColor.r}, ${navColor.g}, ${navColor.b}`);
-      document.documentElement.style.setProperty('--nav-panel-bg-alpha', navPanelAlphaInput.value / 100);
-      document.documentElement.style.setProperty('--nav-panel-blur', `${navPanelBlurInput.value}px`);
-      
-      // Dev settings panel
-      const devColor = hexToRgb(devPanelColorInput.value);
-      document.documentElement.style.setProperty('--dev-panel-bg-color-rgb', `${devColor.r}, ${devColor.g}, ${devColor.b}`);
-      document.documentElement.style.setProperty('--dev-panel-bg-alpha', devPanelAlphaInput.value / 100);
-      document.documentElement.style.setProperty('--dev-panel-blur', `${devPanelBlurInput.value}px`);
-      
-      // Content background
-      const contentColor = hexToRgb(contentBgSolidColorInput.value);
-      document.documentElement.style.setProperty('--content-bg-color-rgb', `${contentColor.r}, ${contentColor.g}, ${contentColor.b}`);
-      document.documentElement.style.setProperty('--content-bg-alpha', contentBgAlphaInput.value / 100);
-      document.documentElement.style.setProperty('--content-bg-blur', `${contentBgBlurInput.value}px`);
+    window.addEventListener('resize', onResize, { passive: true });
+
+    // --- animate ---
+    let rafId;
+    function animate(t) {
+      // simple slow rotation for a subtle motion
+      if (points) points.rotation.y += 0.0005 * (1 + (particleSize / 3));
+      renderer.render(scene, camera);
+      rafId = requestAnimationFrame(animate);
     }
-    
-    // Reset background styles to defaults
-    function resetBackgroundStyles() {
-      if (document.documentElement.classList.contains('light')) {
-        // Light theme defaults
-        navPanelColorInput.value = '#ffffff';
-        navPanelAlphaInput.value = 100;
-        navPanelBlurInput.value = 0;
-        
-        devPanelColorInput.value = '#ffffff';
-        devPanelAlphaInput.value = 100;
-        devPanelBlurInput.value = 0;
-        
-        contentBgSolidColorInput.value = '#ffffff';
-        contentBgAlphaInput.value = 100;
-        contentBgBlurInput.value = 6;
-      } else {
-        // Dark theme defaults
-        navPanelColorInput.value = '#0f1724';
-        navPanelAlphaInput.value = 100;
-        navPanelBlurInput.value = 0;
-        
-        devPanelColorInput.value = '#0f1724';
-        devPanelAlphaInput.value = 100;
-        devPanelBlurInput.value = 0;
-        
-        contentBgSolidColorInput.value = '#0f1218';
-        contentBgAlphaInput.value = 100;
-        contentBgBlurInput.value = 6;
-      }
-      
-      // Update display values
-      navPanelAlphaVal.textContent = `${navPanelAlphaInput.value}%`;
-      navPanelBlurVal.textContent = `${navPanelBlurInput.value}px`;
-      
-      devPanelAlphaVal.textContent = `${devPanelAlphaInput.value}%`;
-      devPanelBlurVal.textContent = `${devPanelBlurInput.value}px`;
-      
-      contentBgAlphaVal.textContent = `${contentBgAlphaInput.value}%`;
-      contentBgBlurVal.textContent = `${contentBgBlurInput.value}px`;
-      
-      updateBackgroundStyles();
+    rafId = requestAnimationFrame(animate);
+
+    // --- scroll-driven camera orbit ---
+    let lastScroll = window.scrollY;
+    function onScroll() {
+      const scrollY = window.scrollY;
+      const delta = scrollY - lastScroll;
+      lastScroll = scrollY;
+
+      // map scrollY to a reasonable camera orbit range
+      const t = Math.min(1, scrollY / (document.body.scrollHeight - window.innerHeight));
+      const angle = (t - 0.5) * Math.PI * 0.8;
+      // move camera on an orbital path but keep focus centered
+      camera.position.x = Math.sin(angle) * 60;
+      camera.position.y = (t - 0.5) * 40;
+      camera.lookAt(0, 0, 0);
     }
-    
-    // Function to export current settings as default values
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // --- UI wiring ---
+    const pCountInput = document.getElementById('particleCount');
+    const pSizeInput = document.getElementById('particleSize');
+    const pColorInput = document.getElementById('particleColor');
+    const pcountVal = document.getElementById('pcountVal');
+    const psizeVal = document.getElementById('psizeVal');
+
+    pCountInput.addEventListener('input', () => {
+      pcountVal.textContent = pCountInput.value;
+    });
+    pSizeInput.addEventListener('input', () => {
+      psizeVal.textContent = pSizeInput.value;
+    });
+
+    document.getElementById('applyBtn').addEventListener('click', () => {
+      particleCount = parseInt(pCountInput.value, 10);
+      particleSize = parseFloat(pSizeInput.value);
+      particleColor = pColorInput.value;
+      buildParticles(particleCount, particleSize, particleColor);
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      // simple reset to defaults
+      pCountInput.value = 1000;
+      pSizeInput.value = 2.5;
+      pColorInput.value = '#88ccff';
+      pcountVal.textContent = pCountInput.value;
+      psizeVal.textContent = pSizeInput.value;
+      particleCount = 1000;
+      particleSize = 2.5;
+      particleColor = '#88ccff';
+      buildParticles(particleCount, particleSize, particleColor);
+    });
+
+    // panel toggle
+    const cog = document.getElementById('cog');
+    const panel = document.getElementById('panel');
+    cog.addEventListener('click', () => {
+      panel.classList.toggle('closed');
+    });
+
+    // --- Improved export function (inlines runtime CSS vars and input states) ---
     function exportSettingsAsDefault() {
-      // Create a clone of the current document
+      // 1. Clone the whole <html> element
       const clone = document.documentElement.cloneNode(true);
-      
-      // Remove dynamic content that shouldn't be in the exported file
+
+      // 2. Ensure any inline styles on the live <html> are copied to the clone
+      const liveHtmlStyle = document.documentElement.getAttribute('style') || document.documentElement.style.cssText || '';
+      if (liveHtmlStyle) clone.setAttribute('style', liveHtmlStyle);
+
+      // 3. Remove dynamic runtime content we don't want exported as live content
       const navListClone = clone.querySelector('#navList');
       if (navListClone) navListClone.innerHTML = '';
-      
+
       const fileContentClone = clone.querySelector('#file-content');
       if (fileContentClone) fileContentClone.innerHTML = '';
-      
-      // Close the panel in the exported version
+
       const panelClone = clone.querySelector('#panel');
       if (panelClone) panelClone.classList.remove('open');
-      
-      // Update all input values in the clone to match current settings
-      const inputs = clone.querySelectorAll('input, select');
+
+      // 4. Copy all input/select/checkbox current values into the clone
+      const inputs = clone.querySelectorAll('input, select, textarea');
       inputs.forEach(input => {
         const liveInput = document.getElementById(input.id);
         if (!liveInput) return;
-        
+
+        // checkboxes
         if (liveInput.type === 'checkbox') {
-          input.checked = liveInput.checked;
-        } else if (liveInput.type === 'color' || liveInput.type === 'range' || liveInput.tagName === 'SELECT') {
+          input.checked = !!liveInput.checked;
+          if (input.hasAttribute('value') === false) input.setAttribute('value', liveInput.value || 'on');
+          if (liveInput.checked) input.setAttribute('checked', 'checked'); else input.removeAttribute('checked');
+          return;
+        }
+
+        // radio buttons
+        if (liveInput.type === 'radio') {
+          input.checked = !!liveInput.checked;
+          if (liveInput.checked) input.setAttribute('checked', 'checked'); else input.removeAttribute('checked');
+          return;
+        }
+
+        // selects
+        if (liveInput.tagName === 'SELECT') {
           input.value = liveInput.value;
-          
-          // For select elements, update the selected option
-          if (liveInput.tagName === 'SELECT') {
-            const selectedOption = input.options[liveInput.selectedIndex];
-            Array.from(input.options).forEach(option => {
-              option.removeAttribute('selected');
-            });
-            if (selectedOption) {
-              selectedOption.setAttribute('selected', 'selected');
-            }
+          Array.from(input.options).forEach(opt => opt.removeAttribute('selected'));
+          const selectedIndex = liveInput.selectedIndex;
+          if (selectedIndex >= 0 && input.options[selectedIndex]) {
+            input.options[selectedIndex].setAttribute('selected', 'selected');
           }
+          return;
+        }
+
+        // ranges, color, text, number, textarea, etc.
+        input.value = liveInput.value;
+        if (input.tagName !== 'TEXTAREA') {
+          input.setAttribute('value', liveInput.value);
         } else {
-          input.value = liveInput.value;
+          input.textContent = liveInput.value;
         }
       });
-      
-      // Update the theme class
+
+      // 5. Copy theme class (dark / light)
       if (document.documentElement.classList.contains('light')) {
         clone.classList.add('light');
         clone.classList.remove('dark');
@@ -847,229 +343,70 @@
         clone.classList.add('dark');
         clone.classList.remove('light');
       }
-      
-      // Create the HTML string
-      const html = `<!doctype html>\n${clone.outerHTML}`;
-      
-      // Create a Blob and trigger download
+
+      // 6. Collect a list of CSS custom properties we want inlined (add more here as you expand)
+      const varsToCopy = [
+        '--bg','--content-bg','--text-color','--panel-bg','--cog-bg',
+        '--link-color','--link-hover-color','--h1-color','--h2-color','--h3-color',
+        '--code-bg','--code-color','--blockquote-border','--blockquote-bg',
+        '--nav-panel-bg-color-rgb','--nav-panel-bg-alpha','--nav-panel-blur',
+        '--dev-panel-bg-color-rgb','--dev-panel-bg-alpha','--dev-panel-blur',
+        '--content-bg-color-rgb','--content-bg-alpha','--content-bg-blur'
+      ];
+
+      // Build a :root {...} block from computed styles
+      const comp = getComputedStyle(document.documentElement);
+      let varsCss = ':root{\\n';
+      varsToCopy.forEach(v => {
+        const val = comp.getPropertyValue(v);
+        if (val && val.trim() !== '') {
+          varsCss += `  ${v}: ${val.trim()};\\n`;
+        }
+      });
+      varsCss += '}\\n';
+
+      // Insert the style block into the clone's <head> as the first child
+      let head = clone.querySelector('head');
+      if (!head) {
+        head = document.createElement('head');
+        clone.insertBefore(head, clone.firstChild);
+      }
+      const styleNode = document.createElement('style');
+      styleNode.id = 'exported-css-vars';
+      styleNode.appendChild(document.createTextNode(varsCss));
+      head.insertBefore(styleNode, head.firstChild);
+
+      // 7. Generate HTML string and download
+      const html = '<!doctype html>\\n' + clone.outerHTML;
+
       const blob = new Blob([html], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = 'particle_field_export.html';
+      document.body.appendChild(a);
       a.click();
+      a.remove();
       URL.revokeObjectURL(url);
     }
 
-    // handlers
-    speedInput.addEventListener('input', (e)=>{ settings.speed = parseFloat(e.target.value); speedVal.textContent = settings.speed.toFixed(2); });
-    orientationInput.addEventListener('change', (e)=>{ settings.orientation = e.target.value; });
+    // wire export button
+    document.getElementById('exportBtn').addEventListener('click', exportSettingsAsDefault);
 
-    particleSizeInput.addEventListener('input', (e)=>{ const v = parseFloat(e.target.value); if(mat) mat.size = v; sizeVal.textContent = v.toFixed(1); });
-    lightModeCheckbox.addEventListener('change', (e)=>{ 
-      settings.lightMode = e.target.checked; 
-      document.documentElement.classList.toggle('light', settings.lightMode); 
-      updateColorInputsForTheme();
-      resetBackgroundStyles(); // Reset background styles when theme changes
-    });
+    // ensure initial labels display correct values
+    pcountVal.textContent = pCountInput.value;
+    psizeVal.textContent = pSizeInput.value;
 
-    colorPreset.addEventListener('change', (e)=>{ const val = e.target.value; if(val === 'custom'){ customColorRow.classList.remove('hidden'); applyCustomColor(colorPicker.value); } else { customColorRow.classList.add('hidden'); applyColorPreset(val); } });
-    colorPicker.addEventListener('input', (e)=>{ if(colorPreset.value === 'custom') applyCustomColor(e.target.value); });
-
-    particleCountInput.addEventListener('input', (e)=>{ const val = parseInt(e.target.value); countVal.textContent = val; createPoints(val); if(mat) mat.size = parseFloat(particleSizeInput.value) || mat.size; });
-
-    cameraZoomInput.addEventListener('input', (e)=>{ orbitRadius = parseFloat(e.target.value); zoomVal.textContent = orbitRadius; });
-
-    // Update camera pan handlers
-    cameraPanXInput.addEventListener('input', (e)=>{ 
-      cameraPan.x = parseFloat(e.target.value); 
-      panXVal.textContent = cameraPan.x; 
-    });
-    
-    cameraPanYInput.addEventListener('input', (e)=>{ 
-      cameraPan.y = parseFloat(e.target.value); 
-      panYVal.textContent = cameraPan.y; 
-    });
-    
-    // New content style handlers
-    contentBgColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--content-bg', e.target.value);
-    });
-    
-    textColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--text-color', e.target.value);
-    });
-    
-    linkColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--link-color', e.target.value);
-    });
-    
-    linkHoverColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--link-hover-color', e.target.value);
-    });
-    
-    h1ColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--h1-color', e.target.value);
-    });
-    
-    h2ColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--h2-color', e.target.value);
-    });
-    
-    h3ColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--h3-color', e.target.value);
-    });
-    
-    resetContentStylesBtn.addEventListener('click', () => {
-      // Reset to default values based on current theme
-      if (document.documentElement.classList.contains('light')) {
-        document.documentElement.style.setProperty('--content-bg', 'linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4))');
-        document.documentElement.style.setProperty('--text-color', '#111');
-        document.documentElement.style.setProperty('--link-color', '#0066cc');
-        document.documentElement.style.setProperty('--link-hover-color', '#004499');
-        document.documentElement.style.setProperty('--h1-color', '#000000');
-        document.documentElement.style.setProperty('--h2-color', '#111111');
-        document.documentElement.style.setProperty('--h3-color', '#222222');
-        
-        // Update input values
-        contentBgColorInput.value = '#ffffff';
-        textColorInput.value = '#111111';
-        linkColorInput.value = '#0066cc';
-        linkHoverColorInput.value = '#004499';
-        h1ColorInput.value = '#000000';
-        h2ColorInput.value = '#111111';
-        h3ColorInput.value = '#222222';
-      } else {
-        document.documentElement.style.setProperty('--content-bg', 'linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4))');
-        document.documentElement.style.setProperty('--text-color', '#e6eef8');
-        document.documentElement.style.setProperty('--link-color', '#93d6ff');
-        document.documentElement.style.setProperty('--link-hover-color', '#c2e4ff');
-        document.documentElement.style.setProperty('--h1-color', '#ffffff');
-        document.documentElement.style.setProperty('--h2-color', '#e6eef8');
-        document.documentElement.style.setProperty('--h3-color', '#d0d8e2');
-        
-        // Update input values
-        contentBgColorInput.value = '#0f1218';
-        textColorInput.value = '#e6eef8';
-        linkColorInput.value = '#93d6ff';
-        linkHoverColorInput.value = '#c2e4ff';
-        h1ColorInput.value = '#ffffff';
-        h2ColorInput.value = '#e6eef8';
-        h3ColorInput.value = '#d0d8e2';
+    // minimal cleanup when leaving page
+    window.addEventListener('beforeunload', () => {
+      cancelAnimationFrame(rafId);
+      if (points) {
+        try { points.geometry.dispose(); points.material.dispose(); } catch(e) {}
       }
     });
-    
-    // New background customization handlers
-    navPanelColorInput.addEventListener('input', updateBackgroundStyles);
-    navPanelAlphaInput.addEventListener('input', (e) => {
-      navPanelAlphaVal.textContent = `${e.target.value}%`;
-      updateBackgroundStyles();
-    });
-    navPanelBlurInput.addEventListener('input', (e) => {
-      navPanelBlurVal.textContent = `${e.target.value}px`;
-      updateBackgroundStyles();
-    });
-    
-    devPanelColorInput.addEventListener('input', updateBackgroundStyles);
-    devPanelAlphaInput.addEventListener('input', (e) => {
-      devPanelAlphaVal.textContent = `${e.target.value}%`;
-      updateBackgroundStyles();
-    });
-    devPanelBlurInput.addEventListener('input', (e) => {
-      devPanelBlurVal.textContent = `${e.target.value}px`;
-      updateBackgroundStyles();
-    });
-    
-    contentBgSolidColorInput.addEventListener('input', updateBackgroundStyles);
-    contentBgAlphaInput.addEventListener('input', (e) => {
-      contentBgAlphaVal.textContent = `${e.target.value}%`;
-      updateBackgroundStyles();
-    });
-    contentBgBlurInput.addEventListener('input', (e) => {
-      contentBgBlurVal.textContent = `${e.target.value}px`;
-      updateBackgroundStyles();
-    });
-    
-    resetBackgroundStylesBtn.addEventListener('click', resetBackgroundStyles);
-    
-    // Export settings button handler
-    exportSettingsBtn.addEventListener('click', exportSettingsAsDefault);
-    
-    function updateColorInputsForTheme() {
-      if (document.documentElement.classList.contains('light')) {
-        contentBgColorInput.value = '#ffffff';
-        textColorInput.value = '#111111';
-        linkColorInput.value = '#0066cc';
-        linkHoverColorInput.value = '#004499';
-        h1ColorInput.value = '#000000';
-        h2ColorInput.value = '#111111';
-        h3ColorInput.value = '#222222';
-      } else {
-        contentBgColorInput.value = '#0f1218';
-        textColorInput.value = '#e6eef8';
-        linkColorInput.value = '#93d6ff';
-        linkHoverColorInput.value = '#c2e4ff';
-        h1ColorInput.value = '#ffffff';
-        h2ColorInput.value = '#e6eef8';
-        h3ColorInput.value = '#d0d8e2';
-      }
-    }
-
-    function hexToRgbNorm(hex){ const parsed = hex.replace('#',''); const bigint = parseInt(parsed,16); const r = ((bigint >> 16) & 255)/255; const g = ((bigint >> 8) & 255)/255; const b = (bigint & 255)/255; return [r,g,b]; }
-
-    function applyColorPreset(preset){ if(!geo) return; const arr = geo.attributes.color.array; for(let i=0;i<particleCount;i++){ const i3 = i*3; if(preset === 'warm'){ arr[i3+0] = 0.7 + Math.random()*0.3; arr[i3+1] = 0.35 + Math.random()*0.4; arr[i3+2] = 0.1 + Math.random()*0.25; } else if(preset === 'cool'){ arr[i3+0] = 0.2 + Math.random()*0.35; arr[i3+1] = 0.5 + Math.random()*0.45; arr[i3+2] = 0.7 + Math.random()*0.3; } else if(preset === 'mono'){ const v = 0.55 + Math.random()*0.45; arr[i3+0] = v; arr[i3+1] = v; arr[i3+2] = v; } else { arr[i3+0] = 0.5 + Math.random()*0.5; arr[i3+1] = 0.5 + Math.random()*0.5; arr[i3+2] = 0.6 + Math.random()*0.4; } } geo.attributes.color.needsUpdate = true; }
-
-    function applyCustomColor(hex){ if(!geo) return; const [r,g,b] = hexToRgbNorm(hex); const arr = geo.attributes.color.array; for(let i=0;i<particleCount;i++){ const i3 = i*3; arr[i3+0] = Math.min(1, r * (0.9 + Math.random()*0.2)); arr[i3+1] = Math.min(1, g * (0.9 + Math.random()*0.2)); arr[i3+2] = Math.min(1, b * (0.9 + Math.random()*0.2)); } geo.attributes.color.needsUpdate = true; }
-
-    function onScroll(){ 
-      const y = window.scrollY; 
-      const dy = y - lastScrollY; 
-      lastScrollY = y; 
-      targetAngle += dy * settings.speed * 0.0025; 
-    }
-    window.addEventListener('scroll', onScroll, {passive:true});
-
-    const autoRotSpeed = 0.0006;
-
-    function animate(){ 
-      requestAnimationFrame(animate); 
-      if(points) points.rotation.y += autoRotSpeed; 
-      currentAngle += (targetAngle - currentAngle) * 0.08;
-
-      // Calculate the orbit position
-      const orbitX = orbitRadius * Math.sin(currentAngle);
-      const orbitZ = orbitRadius * Math.cos(currentAngle);
-      
-      // Position camera with pan offset
-      if (settings.orientation === 'horizontal') {
-        // Horizontal orbit (around Y axis)
-        camera.position.x = orbitX + cameraPan.x;
-        camera.position.y = (Math.sin(currentAngle*0.3) * 8) + cameraPan.y;
-        camera.position.z = orbitZ;
-      } else {
-        // Vertical orbit (around X axis)
-        camera.position.x = (Math.sin(currentAngle*0.3) * 8) + cameraPan.x;
-        camera.position.y = orbitX + cameraPan.y;
-        camera.position.z = orbitZ;
-      }
-
-      // Always look at the center of the particle cloud (with pan offset)
-      camera.lookAt(cameraPan.x, cameraPan.y, 0);
-
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    cogBtn.addEventListener('click', ()=>{ panel.classList.toggle('open'); });
-    closePanel.addEventListener('click', ()=>{ panel.classList.remove('open'); });
-
-    // Initialize the navigation and markdown rendering
-    initNavigation();
-    
-    // Initialize background styles
-    resetBackgroundStyles();
-
-    window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
   </script>
+
+  <!-- THREE.js from CDN - consider inlining for fully standalone exports -->
+  <script src="https://unpkg.com/three@0.153.0/build/three.min.js"></script>
 </body>
 </html>
