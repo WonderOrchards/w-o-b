@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="dark" style="--nav-panel-bg-color-rgb: 68, 68, 68; --nav-panel-bg-alpha: 0.14; --nav-panel-blur: 8px; --dev-panel-bg-color-rgb: 68, 68, 68; --dev-panel-bg-alpha: 0.14; --dev-panel-blur: 8px; --content-bg-color-rgb: 68, 68, 68; --content-bg-alpha: 0.15; --content-bg-blur: 8px; --link-color: #008cb4; --link-hover-color: #c4bc00; --h1-color: #666100; --h2-color: #666100; --text-color: #ffffff; --h3-color: #a77b00;"><head>
+<html lang="en" class="dark" style="--nav-panel-bg-color-rgb: 145, 145, 145; --nav-panel-bg-alpha: 0.06; --nav-panel-blur: 8px; --dev-panel-bg-color-rgb: 145, 145, 145; --dev-panel-bg-alpha: 0.06; --dev-panel-blur: 8px; --content-bg-color-rgb: 145, 145, 145; --content-bg-alpha: 0.06; --content-bg-blur: 8px; --link-color: #006d8f; --link-hover-color: #666100; --h1-color: #666100; --h2-color: #666100;"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Three.js Particle Field + Dynamic Navigation</title>
@@ -223,7 +223,7 @@
 
     <div class="row">
       <label for="speed">Orbit rotation speed (per scroll)</label>
-      <div class="small" id="speedVal">0.40</div>
+      <div class="small" id="speedVal">0.15</div>
     </div>
     <input id="speed" type="range" min="0" max="5" step="0.05" value="1">
 
@@ -244,7 +244,7 @@
 
     <div class="row">
       <label for="particleSize">Particle size</label>
-      <div class="small" id="sizeVal">0.7</div>
+      <div class="small" id="sizeVal">0.2</div>
     </div>
     <input id="particleSize" type="range" min="0.2" max="6" step="0.1" value="1.8">
 
@@ -274,19 +274,19 @@
 
     <div class="row" style="margin-top:8px">
       <label for="cameraZoom">Camera zoom (distance)</label>
-      <div class="small" id="zoomVal">176</div>
+      <div class="small" id="zoomVal">151</div>
     </div>
     <input id="cameraZoom" type="range" min="20" max="220" step="1" value="60">
 
     <div class="row" style="margin-top:8px">
       <label for="cameraPanX">Camera pan X (left / right)</label>
-      <div class="small" id="panXVal">66</div>
+      <div class="small" id="panXVal">2</div>
     </div>
     <input id="cameraPanX" type="range" min="-200" max="200" step="1" value="0">
 
     <div class="row" style="margin-top:8px">
       <label for="cameraPanY">Camera pan Y (up / down)</label>
-      <div class="small" id="panYVal">0</div>
+      <div class="small" id="panYVal">38</div>
     </div>
     <input id="cameraPanY" type="range" min="-200" max="200" step="1" value="0">
 
@@ -353,7 +353,7 @@
     
     <div class="row">
       <label for="navPanelAlpha">Transparency</label>
-      <div class="small" id="navPanelAlphaVal">14%</div>
+      <div class="small" id="navPanelAlphaVal">6%</div>
     </div>
     <input id="navPanelAlpha" type="range" min="0" max="100" step="1" value="100">
     
@@ -374,7 +374,7 @@
     
     <div class="row">
       <label for="devPanelAlpha">Transparency</label>
-      <div class="small" id="devPanelAlphaVal">14%</div>
+      <div class="small" id="devPanelAlphaVal">6%</div>
     </div>
     <input id="devPanelAlpha" type="range" min="0" max="100" step="1" value="100">
     
@@ -395,7 +395,7 @@
     
     <div class="row">
       <label for="contentBgAlpha">Transparency</label>
-      <div class="small" id="contentBgAlphaVal">15%</div>
+      <div class="small" id="contentBgAlphaVal">6%</div>
     </div>
     <input id="contentBgAlpha" type="range" min="0" max="100" step="1" value="100">
     
@@ -414,7 +414,7 @@
     <div class="panel-section-title">Export Settings</div>
     
     <div class="row" style="margin-top:10px">
-      <button id="exportSettings" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05;color:var(--text-color);cursor:pointer">Export as Default Settings</button>
+      <button id="exportSettings" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Export as Default Settings</button>
     </div>
   </aside>
 
@@ -846,10 +846,6 @@
         clone.classList.remove('light');
       }
       
-      // Update the inline style attribute with current CSS variable values
-      const currentStyle = document.documentElement.getAttribute('style') || '';
-      clone.setAttribute('style', currentStyle);
-      
       // Create the HTML string
       const html = `<!doctype html>\n${clone.outerHTML}`;
       
@@ -1073,7 +1069,6 @@
 
     window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
   </script>
-
 
 
 </body></html>
