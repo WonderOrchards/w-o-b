@@ -1,9 +1,35 @@
 <!doctype html>
-<html lang="en" class="dark" style="--nav-panel-bg-color-rgb: 15, 23, 36; --nav-panel-bg-alpha: 0.42; --nav-panel-blur: 8px; --dev-panel-bg-color-rgb: 15, 23, 36; --dev-panel-bg-alpha: 0.42; --dev-panel-blur: 8px; --content-bg-color-rgb: 68, 68, 68; --content-bg-alpha: 0.08; --content-bg-blur: 8px;"><head>
+<html lang="en" class="dark" style="--nav-panel-bg-color-rgb: 15, 23, 36; --nav-panel-bg-alpha: 0.5; --nav-panel-blur: 3px; --dev-panel-bg-color-rgb: 15, 23, 36; --dev-panel-bg-alpha: 0.5; --dev-panel-blur: 3px; --content-bg-color-rgb: 15, 23, 36; --content-bg-alpha: 0.5; --content-bg-blur: 3px; --link-color: #008cb4; --link-hover-color: #a96800; --h1-color: #4f5503; --h2-color: #666100; --h3-color: #a96800;"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Three.js Particle Field + Dynamic Navigation</title>
   <style>:root {
+  --bg: #071026;
+  --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
+  --text-color: #e6eef8;
+  --panel-bg: #0f1724;
+  --cog-bg: rgba(14,18,24,0.95);
+  --link-color: #008cb4;
+  --link-hover-color: #a96800;
+  --h1-color: #4f5503;
+  --h2-color: #666100;
+  --h3-color: #a96800;
+  --code-bg: rgba(0,0,0,0.2);
+  --code-color: #ff9d9d;
+  --blockquote-border: rgba(93, 173, 255, 0.5);
+  --blockquote-bg: rgba(93, 173, 255, 0.08);
+  --nav-panel-bg-color-rgb: 15, 23, 36;
+  --nav-panel-bg-alpha: 0.5;
+  --nav-panel-blur: 3px;
+  --dev-panel-bg-color-rgb: 15, 23, 36;
+  --dev-panel-bg-alpha: 0.5;
+  --dev-panel-blur: 3px;
+  --content-bg-color-rgb: 15, 23, 36;
+  --content-bg-alpha: 0.5;
+  --content-bg-blur: 3px;
+}
+
+:root {
   --bg: #071026;
   --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
   --text-color: #e6eef8;
@@ -249,7 +275,7 @@
 
     <div class="row">
       <label for="speed">Orbit rotation speed (per scroll)</label>
-      <div class="small" id="speedVal">0.35</div>
+      <div class="small" id="speedVal">1.0</div>
     </div>
     <input id="speed" type="range" min="0" max="5" step="0.05" value="1">
 
@@ -300,19 +326,19 @@
 
     <div class="row" style="margin-top:8px">
       <label for="cameraZoom">Camera zoom (distance)</label>
-      <div class="small" id="zoomVal">220</div>
+      <div class="small" id="zoomVal">60</div>
     </div>
     <input id="cameraZoom" type="range" min="20" max="220" step="1" value="220">
 
     <div class="row" style="margin-top:8px">
       <label for="cameraPanX">Camera pan X (left / right)</label>
-      <div class="small" id="panXVal">88</div>
+      <div class="small" id="panXVal">0</div>
     </div>
     <input id="cameraPanX" type="range" min="-200" max="200" step="1" value="0">
 
     <div class="row" style="margin-top:8px">
       <label for="cameraPanY">Camera pan Y (up / down)</label>
-      <div class="small" id="panYVal">63</div>
+      <div class="small" id="panYVal">0</div>
     </div>
     <input id="cameraPanY" type="range" min="-200" max="200" step="1" value="0">
 
@@ -379,13 +405,13 @@
     
     <div class="row">
       <label for="navPanelAlpha">Transparency</label>
-      <div class="small" id="navPanelAlphaVal">42%</div>
+      <div class="small" id="navPanelAlphaVal">50%</div>
     </div>
     <input id="navPanelAlpha" type="range" min="0" max="100" step="1" value="100">
     
     <div class="row">
       <label for="navPanelBlur">Blur</label>
-      <div class="small" id="navPanelBlurVal">8px</div>
+      <div class="small" id="navPanelBlurVal">3px</div>
     </div>
     <input id="navPanelBlur" type="range" min="0" max="20" step="1" value="0">
     
@@ -400,13 +426,13 @@
     
     <div class="row">
       <label for="devPanelAlpha">Transparency</label>
-      <div class="small" id="devPanelAlphaVal">42%</div>
+      <div class="small" id="devPanelAlphaVal">50%</div>
     </div>
     <input id="devPanelAlpha" type="range" min="0" max="100" step="1" value="100">
     
     <div class="row">
       <label for="devPanelBlur">Blur</label>
-      <div class="small" id="devPanelBlurVal">8px</div>
+      <div class="small" id="devPanelBlurVal">3px</div>
     </div>
     <input id="devPanelBlur" type="range" min="0" max="20" step="1" value="0">
     
@@ -421,13 +447,13 @@
     
     <div class="row">
       <label for="contentBgAlpha">Transparency</label>
-      <div class="small" id="contentBgAlphaVal">8%</div>
+      <div class="small" id="contentBgAlphaVal">50%</div>
     </div>
     <input id="contentBgAlpha" type="range" min="0" max="100" step="1" value="100">
     
     <div class="row">
       <label for="contentBgBlur">Blur</label>
-      <div class="small" id="contentBgBlurVal">8px</div>
+      <div class="small" id="contentBgBlurVal">3px</div>
     </div>
     <input id="contentBgBlur" type="range" min="0" max="20" step="1" value="6">
     
@@ -786,27 +812,27 @@ renderer.setPixelRatio(clampedPixelRatio);
         // Light theme defaults
         navPanelColorInput.value = '#ffffff';
         navPanelAlphaInput.value = 42;
-        navPanelBlurInput.value = 8;
+        navPanelBlurInput.value = 3;
         
         devPanelColorInput.value = '#ffffff';
         devPanelAlphaInput.value = 42;
-        devPanelBlurInput.value = 8;
+        devPanelBlurInput.value = 3;
         
         contentBgSolidColorInput.value = '#ffffff';
         contentBgAlphaInput.value = 42;
-        contentBgBlurInput.value = 8;
+        contentBgBlurInput.value = 3;
       } else {
         // Dark theme defaults
         navPanelColorInput.value = '#0f1724';
-        navPanelAlphaInput.value = 14;
+        navPanelAlphaInput.value = 50;
         navPanelBlurInput.value = 3;
         
         devPanelColorInput.value = '#0f1724';
-        devPanelAlphaInput.value = 14;
+        devPanelAlphaInput.value = 50;
         devPanelBlurInput.value = 3;
         
         contentBgSolidColorInput.value = '#0f1724';
-        contentBgAlphaInput.value = 14;
+        contentBgAlphaInput.value = 50;
         contentBgBlurInput.value = 3;
       }
       
@@ -1154,6 +1180,7 @@ function exportSettingsAsDefault() {
 
     window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
   </script>
+
 
 
 </body></html>
