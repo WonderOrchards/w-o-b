@@ -270,9 +270,9 @@
 
     <div class="row">
       <label for="particleSize">Particle size</label>
-      <div class="small" id="sizeVal">0.2</div>
+      <div class="small" id="sizeVal">0.1</div>
     </div>
-    <input id="particleSize" type="range" min="0.2" max="6" step="0.1" value="1.8">
+    <input id="particleSize" type="range" min="0.1" max="6" step="0.1" value="0.1">
 
     <div class="row" style="margin-top:8px">
       <label for="colorPreset">Particle colors</label>
@@ -296,13 +296,13 @@
       <label for="particleCount">Particle count</label>
       <div class="small" id="countVal">6000</div>
     </div>
-    <input id="particleCount" type="range" min="200" max="6000" step="50" value="1200">
+    <input id="particleCount" type="range" min="200" max="6000" step="50" value="6000">
 
     <div class="row" style="margin-top:8px">
       <label for="cameraZoom">Camera zoom (distance)</label>
       <div class="small" id="zoomVal">220</div>
     </div>
-    <input id="cameraZoom" type="range" min="20" max="220" step="1" value="60">
+    <input id="cameraZoom" type="range" min="20" max="220" step="1" value="220">
 
     <div class="row" style="margin-top:8px">
       <label for="cameraPanX">Camera pan X (left / right)</label>
@@ -621,7 +621,7 @@ renderer.setPixelRatio(clampedPixelRatio);
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 2000);
 
-    let particleCount = 1200;
+    let particleCount = 6000;
     let orbitRadius = 60;
     let geo = null, mat = null, points = null;
 
@@ -657,7 +657,7 @@ renderer.setPixelRatio(clampedPixelRatio);
       geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
       geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
 
-      mat = new THREE.PointsMaterial({size:parseFloat(document.getElementById('particleSize').value)||1.8,vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});
+      mat = new THREE.PointsMaterial({size:parseFloat(document.getElementById('particleSize').value)||0.1,vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});
 
       points = new THREE.Points(geo, mat);
       // Keep the particle cloud at the origin
@@ -741,10 +741,10 @@ renderer.setPixelRatio(clampedPixelRatio);
     document.querySelector('.row.small div:last-child').textContent = "Pan the camera to view the particle field from different angles.";
 
     // initial UI values
-    speedVal.textContent = settings.speed.toFixed(2); 
+    speedVal.textContent = settings.speed.toFixed(1); 
     countVal.textContent = particleCount; 
     zoomVal.textContent = orbitRadius; 
-    sizeVal.textContent = (1.8).toFixed(1); 
+    sizeVal.textContent = (0.1).toFixed(1); 
     panXVal.textContent = cameraPan.x; 
     panYVal.textContent = cameraPan.y; 
     customColorRow.classList.add('hidden');
