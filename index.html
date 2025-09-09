@@ -296,9 +296,9 @@
 
     <div class="row">
       <label for="particleSize">Particle size</label>
-      <div class="small" id="sizeVal">0.09</div>
+      <div class="small" id="sizeVal">0.1</div>
     </div>
-    <input id="particleSize" type="range" min="0.05" max="6" step="0.1" value="0.09">
+    <input id="particleSize" type="range" min="0.1" max="6" step="0.1" value="0.1">
 
     <div class="row" style="margin-top:8px">
       <label for="colorPreset">Particle colors</label>
@@ -683,7 +683,7 @@ renderer.setPixelRatio(clampedPixelRatio);
       geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
       geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
 
-      mat = new THREE.PointsMaterial({size:parseFloat(document.getElementById('particleSize').value)||0.09,vertexColors:true,transparent:true,opacity:100,depthWrite:false});
+      mat = new THREE.PointsMaterial({size:parseFloat(document.getElementById('particleSize').value)||0.1,vertexColors:true,transparent:false,opacity:100,depthWrite:false});
 
       points = new THREE.Points(geo, mat);
       // Keep the particle cloud at the origin
