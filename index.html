@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en" class="dark">
 
@@ -799,68 +798,125 @@
     }
     
     // Function to export current settings as default values
-    function exportSettingsAsDefault() {
-      // Create a clone of the current document
-      const clone = document.documentElement.cloneNode(true);
+function exportSettingsAsDefault() {
+  // Create a clone of the current document
+  const clone = document.documentElement.cloneNode(true);
+  
+  // Remove dynamic content that shouldn't be in the exported file
+  const navListClone = clone.querySelector('#navList');
+  if (navListClone) navListClone.innerHTML = '';
+  
+  const fileContentClone = clone.querySelector('#file-content');
+  if (fileContentClone) fileContentClone.innerHTML = '';
+  
+  // Close the panel in the exported version
+  const panelClone = clone.querySelector('#panel');
+  if (panelClone) panelClone.classList.remove('open');
+  
+  // Update all input values in the clone to match current settings
+  const inputs = clone.querySelectorAll('input, select');
+  inputs.forEach(input => {
+    const liveInput = document.getElementById(input.id);
+    if (!liveInput) return;
+    
+    if (liveInput.type === 'checkbox') {
+      input.checked = liveInput.checked;
+    } else if (liveInput.type === 'color' || liveInput.type === 'range' || liveInput.tagName === 'SELECT') {
+      input.value = liveInput.value;
       
-      // Remove dynamic content that shouldn't be in the exported file
-      const navListClone = clone.querySelector('#navList');
-      if (navListClone) navListClone.innerHTML = '';
-      
-      const fileContentClone = clone.querySelector('#file-content');
-      if (fileContentClone) fileContentClone.innerHTML = '';
-      
-      // Close the panel in the exported version
-      const panelClone = clone.querySelector('#panel');
-      if (panelClone) panelClone.classList.remove('open');
-      
-      // Update all input values in the clone to match current settings
-      const inputs = clone.querySelectorAll('input, select');
-      inputs.forEach(input => {
-        const liveInput = document.getElementById(input.id);
-        if (!liveInput) return;
-        
-        if (liveInput.type === 'checkbox') {
-          input.checked = liveInput.checked;
-        } else if (liveInput.type === 'color' || liveInput.type === 'range' || liveInput.tagName === 'SELECT') {
-          input.value = liveInput.value;
-          
-          // For select elements, update the selected option
-          if (liveInput.tagName === 'SELECT') {
-            const selectedOption = input.options[liveInput.selectedIndex];
-            Array.from(input.options).forEach(option => {
-              option.removeAttribute('selected');
-            });
-            if (selectedOption) {
-              selectedOption.setAttribute('selected', 'selected');
-            }
-          }
-        } else {
-          input.value = liveInput.value;
+      // For select elements, update the selected option
+      if (liveInput.tagName === 'SELECT') {
+        const selectedOption = input.options[liveInput.selectedIndex];
+        Array.from(input.options).forEach(option => {
+          option.removeAttribute('selected');
+        });
+        if (selectedOption) {
+          selectedOption.setAttribute('selected', 'selected');
         }
-      });
-      
-      // Update the theme class
-      if (document.documentElement.classList.contains('light')) {
-        clone.classList.add('light');
-        clone.classList.remove('dark');
-      } else {
-        clone.classList.add('dark');
-        clone.classList.remove('light');
       }
-      
-      // Create the HTML string
-      const html = `<!doctype html>\n${clone.outerHTML}`;
-      
-      // Create a Blob and trigger download
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'particle_field_export.html';
-      a.click();
-      URL.revokeObjectURL(url);
+    } else {
+      input.value = liveInput.value;
     }
+  });
+  
+  // Update the theme class
+  if (document.documentElement.classList.contains('light')) {
+    clone.classList.add('light');
+    clone.classList.remove('dark');
+  } else {
+    clone.classList.add('dark');
+    clone.classList.remove('light');
+  }
+  
+  // Get all computed CSS variables
+  const computedStyles = getComputedStyle(document.documentElement);
+  let cssVariables = ':root {\n';
+  
+  // List of CSS variables we want to capture
+  const cssVarsToCapture = [
+    '--bg', '--content-bg', '--text-color', '--panel-bg', '--cog-bg', 
+    '--link-color', '--link-hover-color', '--h1-color', '--h2-color', 
+    '--h3-color', '--code-bg', '--code-color', '--blockquote-border', 
+    '--blockquote-bg', '--nav-panel-bg-color-rgb', '--nav-panel-bg-alpha',
+    '--nav-panel-blur', '--dev-panel-bg-color-rgb', '--dev-panel-bg-alpha',
+    '--dev-panel-blur', '--content-bg-color-rgb', '--content-bg-alpha',
+    '--content-bg-blur'
+  ];
+  
+  // Capture each variable
+  cssVarsToCapture.forEach(variable => {
+    const value = computedStyles.getPropertyValue(variable).trim();
+    if (value) {
+      cssVariables += `  ${variable}: ${value};\n`;
+    }
+  });
+  
+  cssVariables += '}\n\n';
+  
+  // Add light theme variables if needed
+  if (document.documentElement.classList.contains('light')) {
+    cssVariables += '.light {\n';
+    cssVarsToCapture.forEach(variable => {
+      const value = computedStyles.getPropertyValue(variable).trim();
+      if (value) {
+        cssVariables += `  ${variable}: ${value};\n`;
+      }
+    });
+    cssVariables += '}\n';
+  }
+  
+  // Find the style tag and prepend our variables
+  const styleTag = clone.querySelector('style');
+  if (styleTag) {
+    styleTag.textContent = cssVariables + styleTag.textContent;
+  }
+  
+  // Add devicePixelRatio clamping for mobile safety
+  const scripts = clone.querySelectorAll('script');
+  scripts.forEach(script => {
+    if (script.textContent.includes('renderer.setPixelRatio')) {
+      // Replace the devicePixelRatio setting with a clamped version
+      script.textContent = script.textContent.replace(
+        /renderer\.setPixelRatio\(window\.devicePixelRatio\);/,
+        '// Clamp devicePixelRatio for mobile safety\n' +
+        'const clampedPixelRatio = Math.min(window.devicePixelRatio, 2);\n' +
+        'renderer.setPixelRatio(clampedPixelRatio);'
+      );
+    }
+  });
+  
+  // Create the HTML string
+  const html = `<!doctype html>\n${clone.outerHTML}`;
+  
+  // Create a Blob and trigger download
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'particle_field_export.html';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
     // handlers
     speedInput.addEventListener('input', (e)=>{ settings.speed = parseFloat(e.target.value); speedVal.textContent = settings.speed.toFixed(2); });
