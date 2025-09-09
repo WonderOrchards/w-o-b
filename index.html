@@ -1,4 +1,4 @@
-I want to add a button in the dev settings panel that will export the current settings as the default values. so in other words, I want to be able to set the dev settings the way I want them in the dev settings menu, then press export and the browser downloads the full html with the current settings as the default values. here is my html: <!doctype html>
+<!doctype html>
 <html lang="en" class="dark">
 
 <head>
@@ -410,6 +410,14 @@ I want to add a button in the dev settings panel that will export the current se
     <div class="row" style="margin-top:10px">
       <button id="resetBackgroundStyles" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Reset Background Styles</button>
     </div>
+    
+    <hr>
+    
+    <div class="panel-section-title">Export Settings</div>
+    
+    <div class="row" style="margin-top:10px">
+      <button id="exportSettings" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Export as Default Settings</button>
+    </div>
   </aside>
 
   <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
@@ -697,6 +705,9 @@ I want to add a button in the dev settings panel that will export the current se
     const contentBgBlurVal = document.getElementById('contentBgBlurVal');
     
     const resetBackgroundStylesBtn = document.getElementById('resetBackgroundStyles');
+    
+    // Export settings button
+    const exportSettingsBtn = document.getElementById('exportSettings');
 
     // Update labels to reflect pan functionality
     document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";
@@ -784,6 +795,70 @@ I want to add a button in the dev settings panel that will export the current se
       contentBgBlurVal.textContent = `${contentBgBlurInput.value}px`;
       
       updateBackgroundStyles();
+    }
+    
+    // Function to export current settings as default values
+    function exportSettingsAsDefault() {
+      // Create a clone of the current document
+      const clone = document.documentElement.cloneNode(true);
+      
+      // Remove dynamic content that shouldn't be in the exported file
+      const navListClone = clone.querySelector('#navList');
+      if (navListClone) navListClone.innerHTML = '';
+      
+      const fileContentClone = clone.querySelector('#file-content');
+      if (fileContentClone) fileContentClone.innerHTML = '';
+      
+      // Close the panel in the exported version
+      const panelClone = clone.querySelector('#panel');
+      if (panelClone) panelClone.classList.remove('open');
+      
+      // Update all input values in the clone to match current settings
+      const inputs = clone.querySelectorAll('input, select');
+      inputs.forEach(input => {
+        const liveInput = document.getElementById(input.id);
+        if (!liveInput) return;
+        
+        if (liveInput.type === 'checkbox') {
+          input.checked = liveInput.checked;
+        } else if (liveInput.type === 'color' || liveInput.type === 'range' || liveInput.tagName === 'SELECT') {
+          input.value = liveInput.value;
+          
+          // For select elements, update the selected option
+          if (liveInput.tagName === 'SELECT') {
+            const selectedOption = input.options[liveInput.selectedIndex];
+            Array.from(input.options).forEach(option => {
+              option.removeAttribute('selected');
+            });
+            if (selectedOption) {
+              selectedOption.setAttribute('selected', 'selected');
+            }
+          }
+        } else {
+          input.value = liveInput.value;
+        }
+      });
+      
+      // Update the theme class
+      if (document.documentElement.classList.contains('light')) {
+        clone.classList.add('light');
+        clone.classList.remove('dark');
+      } else {
+        clone.classList.add('dark');
+        clone.classList.remove('light');
+      }
+      
+      // Create the HTML string
+      const html = `<!doctype html>\n${clone.outerHTML}`;
+      
+      // Create a Blob and trigger download
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'particle_field_export.html';
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     // handlers
@@ -916,6 +991,9 @@ I want to add a button in the dev settings panel that will export the current se
     });
     
     resetBackgroundStylesBtn.addEventListener('click', resetBackgroundStyles);
+    
+    // Export settings button handler
+    exportSettingsBtn.addEventListener('click', exportSettingsAsDefault);
     
     function updateColorInputsForTheme() {
       if (document.documentElement.classList.contains('light')) {
