@@ -1,1074 +1,789 @@
-<!doctype html>
-<html lang="en" class="dark" style="--nav-panel-bg-color-rgb: 145, 145, 145; --nav-panel-bg-alpha: 0.06; --nav-panel-blur: 8px; --dev-panel-bg-color-rgb: 145, 145, 145; --dev-panel-bg-alpha: 0.06; --dev-panel-blur: 8px; --content-bg-color-rgb: 145, 145, 145; --content-bg-alpha: 0.06; --content-bg-blur: 8px; --link-color: #006d8f; --link-hover-color: #666100; --h1-color: #666100; --h2-color: #666100;"><head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Three.js Particle Field + Dynamic Navigation</title>
-  <style>
-    :root{
-      --bg: #071026;
-      --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
-      --text-color: #e6eef8;
-      --panel-bg: #0f1724;
-      --cog-bg: rgba(14,18,24,0.95);
-      --link-color: #93d6ff;
-      --link-hover-color: #c2e4ff;
-      --h1-color: #ffffff;
-      --h2-color: #e6eef8;
-      --h3-color: #d0d8e2;
-      --code-bg: rgba(0,0,0,0.2);
-      --code-color: #ff9d9d;
-      --blockquote-border: rgba(93, 173, 255, 0.5);
-      --blockquote-bg: rgba(93, 173, 255, 0.08);
-      
-      /* New variables for background customization */
-      --nav-panel-bg-color: #0f1218;
-      --nav-panel-bg-alpha: 1;
-      --nav-panel-blur: 8px;
-      
-      --dev-panel-bg-color: #0f1218;
-      --dev-panel-bg-alpha: 1;
-      --dev-panel-blur: 8px;
-      
-      --content-bg-color: #0f1218;
-      --content-bg-alpha: 1;
-      --content-bg-blur: 8px;
-    } 
-
-    .light{
-      --bg: rgba(255,255,255,0.0);
-      --content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
-      --text-color: #111;
-      --panel-bg: #ffffff;
-      --cog-bg: rgba(255,255,255,0.9);
-      --link-color: #0066cc;
-      --link-hover-color: #004499;
-      --h1-color: #000000;
-      --h2-color: #111111;
-      --h3-color: #222222;
-      --code-bg: rgba(0,0,0,0.06);
-      --code-color: #d73038;
-      --blockquote-border: rgba(0, 102, 204, 0.4);
-      --blockquote-bg: rgba(0, 102, 204, 0.06);
-      
-      /* Light theme defaults for background customization */
-      --nav-panel-bg-color: #ffffff;
-      --dev-panel-bg-color: #ffffff;
-      --content-bg-color: #ffffff;
-    } 
-
-    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text-color)}
-    #bg {position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
-    
-    /* Navigation styles */
-    .nav-container {
-      position: fixed;
-      left: 20px;
-      top: 20px;
-      z-index: 2;
-      background: rgba(var(--nav-panel-bg-color-rgb), var(--nav-panel-bg-alpha));
-      border-radius: 12px;
-      padding: 14px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.12);
-      max-height: calc(100vh - 40px);
-      overflow-y: auto;
-      width: 240px;
-      backdrop-filter: blur(var(--nav-panel-blur));
-    }
-    
-    .nav-header {
-      font-weight: bold;
-      margin-bottom: 12px;
-      color: var(--h2-color);
-    }
-    
-    .nav-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .nav-list li {
-      margin-bottom: 6px;
-    }
-    
-    .nav-list a {
-      color: var(--link-color);
-      text-decoration: none;
-      display: block;
-      padding: 6px 8px;
-      border-radius: 6px;
-      transition: background 0.2s ease;
-    }
-    
-    .nav-list a:hover {
-      color: var(--link-hover-color);
-      background: rgba(255,255,255,0.05);
-    }
-    
-    .nav-list a.active {
-      background: rgba(93, 173, 255, 0.15);
-      color: var(--link-hover-color);
-    }
-    
-    /* Content area */
-    .content{
-      position:relative;
-      z-index:1;
-      max-width:900px;
-      margin: 40px auto 40px 300px;
-      padding:30px;
-      background: rgba(var(--content-bg-color-rgb), var(--content-bg-alpha));
-      border-radius:12px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
-      backdrop-filter: blur(var(--content-bg-blur));
-      min-height: 400px;
-    }
-    
-    /* Markdown content styles */
-    #file-content h1{font-size:clamp(26px,4vw,40px);margin:0 0 12px;color:var(--h1-color)}
-    #file-content h2{color:var(--h2-color); margin-top: 1.8em; margin-bottom: 0.8em;}
-    #file-content h3{color:var(--h3-color); margin-top: 1.5em; margin-bottom: 0.7em;}
-    #file-content p{line-height:1.6;color:var(--text-color); margin-bottom: 1em;}
-    #file-content a{color:var(--link-color);text-decoration:none;transition:color 0.2s ease}
-    #file-content a:hover{color:var(--link-hover-color)}
-    #file-content ul, #file-content ol {margin-bottom: 1em; padding-left: 1.8em;}
-    #file-content li {margin-bottom: 0.4em; line-height: 1.5;}
-    #file-content code {background: var(--code-bg); color: var(--code-color); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em;}
-    #file-content pre {background: var(--code-bg); padding: 1em; border-radius: 8px; overflow: auto; margin-bottom: 1.5em;}
-    #file-content pre code {background: none; padding: 0; color: inherit;}
-    #file-content blockquote {border-left: 4px solid var(--blockquote-border); background: var(--blockquote-bg); padding: 1em 1.5em; margin: 1.5em 0; border-radius: 0 8px 8px 0;}
-    #file-content table {width: 100%; border-collapse: collapse; margin-bottom: 1.5em;}
-    #file-content th, #file-content td {padding: 0.5em 1em; text-align: left; border: 1px solid rgba(255,255,255,0.1);}
-    #file-content th {background: rgba(255,255,255,0.05);}
-    
-    /* Loading state */
-    #loading {
-      text-align: center;
-      padding: 2em;
-      color: var(--text-color);
-      opacity: 0.7;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 1024px) {
-      .nav-container {
-        width: 200px;
-      }
-      
-      .content {
-        margin-left: 260px;
-        max-width: calc(100% - 280px);
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .nav-container {
-        position: relative;
-        width: auto;
-        left: auto;
-        top: auto;
-        margin: 20px 20px 0;
-        max-height: none;
-      }
-      
-      .content {
-        margin: 20px;
-        max-width: calc(100% - 40px);
-      }
-    }
-
-    .floating-shape{width:120px;height:120px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin:10px;background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);color:var(--text-color)}
-    .cog {position:fixed;right:16px;bottom:16px;z-index:3;width:36px;height:36px;border-radius:999px;display:grid;place-items:center;background:var(--cog-bg);box-shadow:0 6px 18px rgba(0,0,0,0.12);cursor:pointer;border:1px solid rgba(0,0,0,0.06)}
-    .cog svg{width:18px;height:18px}
-    .panel{position:fixed;right:16px;bottom:64px;z-index:4;width:360px;background: rgba(var(--dev-panel-bg-color-rgb), var(--dev-panel-bg-alpha));border-radius:12px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,0.12);display:none;color:var(--text-color);max-height:80vh;overflow-y:auto;backdrop-filter: blur(var(--dev-panel-blur))}
-    .panel.open{display:block}
-    .panel label{font-size:13px;color:var(--text-color)}
-    .row{display:flex;align-items:center;justify-content:space-between;margin:8px 0}
-    .small{font-size:13px;color:rgba(100,100,120,1)}
-    .control-inline{display:flex;gap:8px;align-items:center}
-    .color-input{width:24px;height:24px;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.2)}
-    .color-input input{width:100%;height:100%;border:none;padding:0;cursor:pointer;background:transparent}
-    @media (max-width:520px){.panel{width:92%;right:4%;bottom:80px}} .hidden{display:none} hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0}
-    .panel-section-title{margin:12px 0 6px;font-weight:bold;font-size:14px}
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2113.65">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #000000; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; color: #000000; -webkit-text-stroke: #000000; min-height: 14.0px}
+    span.s1 {font-kerning: none}
+    span.s2 {font: 12.0px 'Zapf Dingbats'; font-kerning: none}
   </style>
 </head>
-
 <body>
-  <canvas id="bg" data-engine="three.js r155" width="3360" height="1890"></canvas>
-
-  <!-- Navigation sidebar -->
-  <aside class="nav-container">
-    <div class="nav-header">Documentation</div>
-    <ul class="nav-list" id="navList"></ul>
-  </aside>
-
-  <main>
-    <div class="content">
-      <article id="file-content"></article>
-    </div>
-  </main>
-
-  <button class="cog" id="cogBtn" aria-label="Open settings" title="Open settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"></path>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.28 17.9l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09c.7 0 1.32-.39 1.51-1a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 0 1 6.1 2.28l.06.06c.45.45 1.07.66 1.67.51.58-.14 1.05-.59 1.2-1.17L9.5 2A2 2 0 0 1 13.5 2l.07.09c.15.58.62 1.03 1.2 1.17.6.15 1.22-.06 1.67-.51l.06-.06A2 2 0 0 1 21.72 6.1l-.06.06c-.45.45-.66 1.07-.51 1.67.14.58.59 1.05 1.17 1.2L22 9.5a2 2 0 0 1 0 4l-.09.07c-.58.15-1.03.62-1.17 1.2-.15.6.06 1.22.51 1.67z"></path>
-    </svg>
-  </button>
-
-  <aside class="panel" id="panel" role="dialog" aria-label="Dev settings">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <strong>Dev Settings</strong>
-      <button id="closePanel" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:var(--text-color)">✕</button>
-    </div>
-
-    <div class="row">
-      <label for="speed">Orbit rotation speed (per scroll)</label>
-      <div class="small" id="speedVal">0.15</div>
-    </div>
-    <input id="speed" type="range" min="0" max="5" step="0.05" value="1">
-
-    <div class="row" style="margin-top:8px">
-      <label for="orientation">Orbit orientation</label>
-      <select id="orientation">
-        <option value="horizontal" selected="selected">Horizontal (Y axis)</option>
-        <option value="vertical">Vertical (X axis)</option>
-      </select>
-    </div>
-
-    <hr>
-
-    <div class="row">
-      <label for="lightMode">Light mode</label>
-      <div class="control-inline"><input id="lightMode" type="checkbox"><span class="small">Toggle</span></div>
-    </div>
-
-    <div class="row">
-      <label for="particleSize">Particle size</label>
-      <div class="small" id="sizeVal">0.2</div>
-    </div>
-    <input id="particleSize" type="range" min="0.2" max="6" step="0.1" value="1.8">
-
-    <div class="row" style="margin-top:8px">
-      <label for="colorPreset">Particle colors</label>
-      <select id="colorPreset">
-        <option value="soft">Soft (default)</option>
-        <option value="warm" selected="selected">Warm</option>
-        <option value="cool">Cool</option>
-        <option value="mono">Monochrome</option>
-        <option value="custom">Custom</option>
-      </select>
-    </div>
-
-    <div class="row hidden" id="customColorRow" style="margin-top:6px">
-      <label for="colorPicker">Custom color</label>
-      <input id="colorPicker" type="color" value="#93d6ff">
-    </div>
-
-    <hr>
-
-    <div class="row">
-      <label for="particleCount">Particle count</label>
-      <div class="small" id="countVal">6000</div>
-    </div>
-    <input id="particleCount" type="range" min="200" max="6000" step="50" value="1200">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraZoom">Camera zoom (distance)</label>
-      <div class="small" id="zoomVal">151</div>
-    </div>
-    <input id="cameraZoom" type="range" min="20" max="220" step="1" value="60">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraPanX">Camera pan X (left / right)</label>
-      <div class="small" id="panXVal">2</div>
-    </div>
-    <input id="cameraPanX" type="range" min="-200" max="200" step="1" value="0">
-
-    <div class="row" style="margin-top:8px">
-      <label for="cameraPanY">Camera pan Y (up / down)</label>
-      <div class="small" id="panYVal">38</div>
-    </div>
-    <input id="cameraPanY" type="range" min="-200" max="200" step="1" value="0">
-
-    <div class="row small" style="margin-top:10px">
-      <div>Tip:</div>
-      <div>Pan the camera to view the particle field from different angles.</div>
-    </div>
-    
-    <hr>
-    
-    <div class="panel-section-title">Content Styles</div>
-    
-    <div class="row">
-      <label for="contentBgColor">Content background</label>
-      <div class="color-input"><input id="contentBgColor" type="color" value="#0f1218"></div>
-    </div>
-    
-    <div class="row">
-      <label for="textColor">Text color</label>
-      <div class="color-input"><input id="textColor" type="color" value="#e6eef8"></div>
-    </div>
-    
-    <div class="row">
-      <label for="linkColor">Link color</label>
-      <div class="color-input"><input id="linkColor" type="color" value="#93d6ff"></div>
-    </div>
-    
-    <div class="row">
-      <label for="linkHoverColor">Link hover color</label>
-      <div class="color-input"><input id="linkHoverColor" type="color" value="#c2e4ff"></div>
-    </div>
-    
-    <div class="row">
-      <label for="h1Color">H1 heading color</label>
-      <div class="color-input"><input id="h1Color" type="color" value="#ffffff"></div>
-    </div>
-    
-    <div class="row">
-      <label for="h2Color">H2 heading color</label>
-      <div class="color-input"><input id="h2Color" type="color" value="#e6eef8"></div>
-    </div>
-    
-    <div class="row">
-      <label for="h3Color">H3 heading color</label>
-      <div class="color-input"><input id="h3Color" type="color" value="#d0d8e2"></div>
-    </div>
-    
-    <div class="row" style="margin-top:10px">
-      <button id="resetContentStyles" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Reset Content Styles</button>
-    </div>
-    
-    <hr>
-    
-    <div class="panel-section-title">Background Customization</div>
-    
-    <div class="row">
-      <label>Navigation Panel</label>
-    </div>
-    
-    <div class="row">
-      <label for="navPanelColor">Color</label>
-      <div class="color-input"><input id="navPanelColor" type="color" value="#0f1724"></div>
-    </div>
-    
-    <div class="row">
-      <label for="navPanelAlpha">Transparency</label>
-      <div class="small" id="navPanelAlphaVal">6%</div>
-    </div>
-    <input id="navPanelAlpha" type="range" min="0" max="100" step="1" value="100">
-    
-    <div class="row">
-      <label for="navPanelBlur">Blur</label>
-      <div class="small" id="navPanelBlurVal">8px</div>
-    </div>
-    <input id="navPanelBlur" type="range" min="0" max="20" step="1" value="0">
-    
-    <div class="row">
-      <label>Dev Settings Panel</label>
-    </div>
-    
-    <div class="row">
-      <label for="devPanelColor">Color</label>
-      <div class="color-input"><input id="devPanelColor" type="color" value="#0f1724"></div>
-    </div>
-    
-    <div class="row">
-      <label for="devPanelAlpha">Transparency</label>
-      <div class="small" id="devPanelAlphaVal">6%</div>
-    </div>
-    <input id="devPanelAlpha" type="range" min="0" max="100" step="1" value="100">
-    
-    <div class="row">
-      <label for="devPanelBlur">Blur</label>
-      <div class="small" id="devPanelBlurVal">8px</div>
-    </div>
-    <input id="devPanelBlur" type="range" min="0" max="20" step="1" value="0">
-    
-    <div class="row">
-      <label>Content Background</label>
-    </div>
-    
-    <div class="row">
-      <label for="contentBgSolidColor">Color</label>
-      <div class="color-input"><input id="contentBgSolidColor" type="color" value="#0f1218"></div>
-    </div>
-    
-    <div class="row">
-      <label for="contentBgAlpha">Transparency</label>
-      <div class="small" id="contentBgAlphaVal">6%</div>
-    </div>
-    <input id="contentBgAlpha" type="range" min="0" max="100" step="1" value="100">
-    
-    <div class="row">
-      <label for="contentBgBlur">Blur</label>
-      <div class="small" id="contentBgBlurVal">8px</div>
-    </div>
-    <input id="contentBgBlur" type="range" min="0" max="20" step="1" value="6">
-    
-    <div class="row" style="margin-top:10px">
-      <button id="resetBackgroundStyles" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Reset Background Styles</button>
-    </div>
-    
-    <hr>
-    
-    <div class="panel-section-title">Export Settings</div>
-    
-    <div class="row" style="margin-top:10px">
-      <button id="exportSettings" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer">Export as Default Settings</button>
-    </div>
-  </aside>
-
-  <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
-  <script>
-    // This will be populated dynamically from README links
-    let fileStructure = [];
-
-    // DOM elements
-    const navList = document.getElementById('navList');
-    const fileContent = document.getElementById('file-content');
-
-    // Extract links from README content
-    function extractLinksFromReadme(content) {
-      const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-      const links = [];
-      let match;
-      
-      while ((match = linkRegex.exec(content)) !== null) {
-        const name = match[1];
-        const path = match[2];
-        
-        // Only include .md files and exclude external URLs
-        if (path.endsWith('.md') && !path.startsWith('http')) {
-          // Check if this is a relative path to a directory with a README
-          let finalPath = path;
-          if (!path.endsWith('.md') && path.endsWith('/')) {
-            finalPath = path + 'README.md';
-          }
-          
-          links.push({ name, path: finalPath });
-        }
-      }
-      
-      return links;
-    }
-
-    // Render navigation
-    function renderNavigation() {
-      navList.innerHTML = '';
-      fileStructure.forEach(file => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = '#';
-        a.textContent = file.name;
-        a.dataset.path = file.path;
-        a.addEventListener('click', (e) => {
-          e.preventDefault();
-          // Remove active class from all links
-          document.querySelectorAll('#navList a').forEach(link => {
-            link.classList.remove('active');
-          });
-          // Add active class to clicked link
-          a.classList.add('active');
-          loadFile(file.path);
-        });
-        li.appendChild(a);
-        navList.appendChild(li);
-      });
-    }
-
-    // Load file function
-    async function loadFile(filePath) {
-      fileContent.innerHTML = '<div id="loading">Loading file...</div>';
-      try {
-        const response = await fetch(filePath);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
-        let content = await response.text();
-        
-        // Remove YAML frontmatter if present
-        if (content.startsWith('---')) {
-          const frontmatterEnd = content.indexOf('---', 3);
-          if (frontmatterEnd !== -1) {
-            content = content.substring(frontmatterEnd + 3).trim();
-          }
-        }
-        
-        renderFile(content, filePath);
-        
-        // If this is the README, extract links and update navigation
-        if (filePath === 'README.md') {
-          const links = extractLinksFromReadme(content);
-          fileStructure = [
-            { name: "README", path: "README.md" },
-            ...links
-          ];
-          renderNavigation();
-          
-          // Set active class to README link
-          document.querySelectorAll('#navList a').forEach(link => {
-            if (link.dataset.path === 'README.md') {
-              link.classList.add('active');
-            }
-          });
-        }
-      } catch (error) {
-        fileContent.innerHTML = `<div class="error">Error loading file: ${error.message}</div>`;
-        console.error('Error loading file:', error);
-      }
-    }
-
-    // Render file function with markdown parsing
-    function renderFile(content, filePath) {
-      const markdownToHtml = (text) => {
-        return text
-          // Headers
-          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-          .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
-          .replace(/^##### (.*$)/gim, '<h5>$1</h5>')
-          .replace(/^###### (.*$)/gim, '<h6>$1</h6>')
-          // Bold
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-          .replace(/__(.*?)__/g, '<strong>$1</strong>')
-          // Italic
-          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-          .replace(/_(.*?)_/g, '<em>$1</em>')
-          // Strikethrough
-          .replace(/~~(.*?)~~/g, '<del>$1</del>')
-          // Links
-          .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
-          // Images
-          .replace(/!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2" />')
-          // Blockquotes
-          .replace(/^>\s(.*$)/gim, '<blockquote>$1</blockquote>')
-          // Horizontal rule
-          .replace(/^\-\-\-\-*$/gim, '<hr />')
-          // Unordered lists
-          .replace(/^\s*[\-\*\+]\s(.*$)/gim, '<li>$1</li>')
-          .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-          // Ordered lists
-          .replace(/^\s*\d+\.\s(.*$)/gim, '<li>$1</li>')
-          .replace(/(<li>.*<\/li>)/gs, function(match) {
-            return /<li>.*<\/li>/.test(match) ? '<ol>' + match + '</ol>' : match;
-          })
-          // Paragraphs
-          .replace(/^\s*(\n)?(.+)/gim, function(m){
-            return /\<(\/)?(h\d|ul|ol|li|blockquote|pre|img|hr)/.test(m) ? m : '<p>'+m+'</p>';
-          })
-          // Code blocks
-          .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code class="$1">$2</code></pre>')
-          // Inline code
-          .replace(/`(.*?)`/g, '<code>$1</code>')
-          // Tables (basic support)
-          .replace(/^\|(.+)\|$/gm, function(match, row) {
-            if (match.startsWith('|--')) return ''; // Skip separator rows for now
-            const cells = row.split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
-            return `<tr>${cells}</tr>`;
-          })
-          .replace(/(<tr>.*<\/tr>)/gs, function(match) {
-            return /<tr>.*<\/tr>/.test(match) ? '<table>' + match + '</table>' : match;
-          });
-      };
-      
-      const html = markdownToHtml(content);
-      fileContent.innerHTML = html;
-      
-      // Update browser history
-      history.pushState({ path: filePath }, '', `#${filePath}`);
-    }
-
-    // Initialize navigation and load README
-    function initNavigation() {
-      // Start by loading the README
-      loadFile('README.md');
-    }
-
-    // Three.js code (unchanged from your original)
-    const canvas = document.getElementById('bg');
-    const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 2000);
-
-    let particleCount = 1200;
-    let orbitRadius = 60;
-    let geo = null, mat = null, points = null;
-
-    // Camera pan offset (we'll adjust the camera position for panning)
-    const cameraPan = {x:0, y:0};
-
-    function createPoints(count){
-      if(points){
-        scene.remove(points);
-        geo.dispose && geo.dispose();
-        mat.dispose && mat.dispose();
-      }
-
-      particleCount = Math.max(10, Math.floor(count));
-      const positions = new Float32Array(particleCount * 3);
-      const colors = new Float32Array(particleCount * 3);
-
-      for(let i=0;i<particleCount;i++){
-        const i3 = i*3;
-        const r = 10 + Math.random()*200;
-        const theta = Math.random()*Math.PI*2;
-        const phi = Math.acos(2*Math.random()-1);
-        positions[i3+0] = r*Math.sin(phi)*Math.cos(theta);
-        positions[i3+1] = r*Math.sin(phi)*Math.sin(theta);
-        positions[i3+2] = r*Math.cos(phi);
-
-        colors[i3+0] = 0.5 + Math.random()*0.5;
-        colors[i3+1] = 0.5 + Math.random()*0.5;
-        colors[i3+2] = 0.6 + Math.random()*0.4;
-      }
-
-      geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(positions,3));
-      geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
-
-      mat = new THREE.PointsMaterial({size:parseFloat(document.getElementById('particleSize').value)||1.8,vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});
-
-      points = new THREE.Points(geo, mat);
-      // Keep the particle cloud at the origin
-      points.position.set(0, 0, 0);
-
-      scene.add(points);
-    }
-
-    createPoints(particleCount);
-
-    const light = new THREE.DirectionalLight(0xffffff,0.4);
-    light.position.set(1,1,1);
-    scene.add(light);
-
-    window.addEventListener('resize', ()=>{ renderer.setSize(window.innerWidth, window.innerHeight, false); camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); });
-
-    let lastScrollY = window.scrollY; 
-    let targetAngle = 0; 
-    let currentAngle = 0;
-    const settings = {speed:1.0, orientation:'horizontal', lightMode:false};
-
-    // UI refs
-    const speedInput = document.getElementById('speed'); 
-    const speedVal = document.getElementById('speedVal'); 
-    const orientationInput = document.getElementById('orientation');
-    const cogBtn = document.getElementById('cogBtn'); 
-    const panel = document.getElementById('panel'); 
-    const closePanel = document.getElementById('closePanel');
-    const lightModeCheckbox = document.getElementById('lightMode'); 
-    const particleSizeInput = document.getElementById('particleSize'); 
-    const sizeVal = document.getElementById('sizeVal');
-    const colorPreset = document.getElementById('colorPreset'); 
-    const colorPicker = document.getElementById('colorPicker'); 
-    const customColorRow = document.getElementById('customColorRow');
-    const particleCountInput = document.getElementById('particleCount'); 
-    const countVal = document.getElementById('countVal');
-    const cameraZoomInput = document.getElementById('cameraZoom'); 
-    const zoomVal = document.getElementById('zoomVal');
-    const cameraPanXInput = document.getElementById('cameraPanX'); 
-    const panXVal = document.getElementById('panXVal');
-    const cameraPanYInput = document.getElementById('cameraPanY'); 
-    const panYVal = document.getElementById('panYVal');
-    
-    // New content style controls
-    const contentBgColorInput = document.getElementById('contentBgColor');
-    const textColorInput = document.getElementById('textColor');
-    const linkColorInput = document.getElementById('linkColor');
-    const linkHoverColorInput = document.getElementById('linkHoverColor');
-    const h1ColorInput = document.getElementById('h1Color');
-    const h2ColorInput = document.getElementById('h2Color');
-    const h3ColorInput = document.getElementById('h3Color');
-    const resetContentStylesBtn = document.getElementById('resetContentStyles');
-    
-    // New background customization controls
-    const navPanelColorInput = document.getElementById('navPanelColor');
-    const navPanelAlphaInput = document.getElementById('navPanelAlpha');
-    const navPanelAlphaVal = document.getElementById('navPanelAlphaVal');
-    const navPanelBlurInput = document.getElementById('navPanelBlur');
-    const navPanelBlurVal = document.getElementById('navPanelBlurVal');
-    
-    const devPanelColorInput = document.getElementById('devPanelColor');
-    const devPanelAlphaInput = document.getElementById('devPanelAlpha');
-    const devPanelAlphaVal = document.getElementById('devPanelAlphaVal');
-    const devPanelBlurInput = document.getElementById('devPanelBlur');
-    const devPanelBlurVal = document.getElementById('devPanelBlurVal');
-    
-    const contentBgSolidColorInput = document.getElementById('contentBgSolidColor');
-    const contentBgAlphaInput = document.getElementById('contentBgAlpha');
-    const contentBgAlphaVal = document.getElementById('contentBgAlphaVal');
-    const contentBgBlurInput = document.getElementById('contentBgBlur');
-    const contentBgBlurVal = document.getElementById('contentBgBlurVal');
-    
-    const resetBackgroundStylesBtn = document.getElementById('resetBackgroundStyles');
-    
-    // Export settings button
-    const exportSettingsBtn = document.getElementById('exportSettings');
-
-    // Update labels to reflect pan functionality
-    document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";
-    document.querySelector('label[for="cameraPanY"]').textContent = "Camera pan Y (up / down)";
-    document.querySelector('.row.small div:last-child').textContent = "Pan the camera to view the particle field from different angles.";
-
-    // initial UI values
-    speedVal.textContent = settings.speed.toFixed(2); 
-    countVal.textContent = particleCount; 
-    zoomVal.textContent = orbitRadius; 
-    sizeVal.textContent = (1.8).toFixed(1); 
-    panXVal.textContent = cameraPan.x; 
-    panYVal.textContent = cameraPan.y; 
-    customColorRow.classList.add('hidden');
-    
-    // Convert hex color to RGB format for CSS
-    function hexToRgb(hex) {
-      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : null;
-    }
-    
-    // Update background styles based on inputs
-    function updateBackgroundStyles() {
-      // Navigation panel
-      const navColor = hexToRgb(navPanelColorInput.value);
-      document.documentElement.style.setProperty('--nav-panel-bg-color-rgb', `${navColor.r}, ${navColor.g}, ${navColor.b}`);
-      document.documentElement.style.setProperty('--nav-panel-bg-alpha', navPanelAlphaInput.value / 100);
-      document.documentElement.style.setProperty('--nav-panel-blur', `${navPanelBlurInput.value}px`);
-      
-      // Dev settings panel
-      const devColor = hexToRgb(devPanelColorInput.value);
-      document.documentElement.style.setProperty('--dev-panel-bg-color-rgb', `${devColor.r}, ${devColor.g}, ${devColor.b}`);
-      document.documentElement.style.setProperty('--dev-panel-bg-alpha', devPanelAlphaInput.value / 100);
-      document.documentElement.style.setProperty('--dev-panel-blur', `${devPanelBlurInput.value}px`);
-      
-      // Content background
-      const contentColor = hexToRgb(contentBgSolidColorInput.value);
-      document.documentElement.style.setProperty('--content-bg-color-rgb', `${contentColor.r}, ${contentColor.g}, ${contentColor.b}`);
-      document.documentElement.style.setProperty('--content-bg-alpha', contentBgAlphaInput.value / 100);
-      document.documentElement.style.setProperty('--content-bg-blur', `${contentBgBlurInput.value}px`);
-    }
-    
-    // Reset background styles to defaults
-    function resetBackgroundStyles() {
-      if (document.documentElement.classList.contains('light')) {
-        // Light theme defaults
-        navPanelColorInput.value = '#ffffff';
-        navPanelAlphaInput.value = 100;
-        navPanelBlurInput.value = 0;
-        
-        devPanelColorInput.value = '#ffffff';
-        devPanelAlphaInput.value = 100;
-        devPanelBlurInput.value = 0;
-        
-        contentBgSolidColorInput.value = '#ffffff';
-        contentBgAlphaInput.value = 100;
-        contentBgBlurInput.value = 6;
-      } else {
-        // Dark theme defaults
-        navPanelColorInput.value = '#0f1724';
-        navPanelAlphaInput.value = 100;
-        navPanelBlurInput.value = 0;
-        
-        devPanelColorInput.value = '#0f1724';
-        devPanelAlphaInput.value = 100;
-        devPanelBlurInput.value = 0;
-        
-        contentBgSolidColorInput.value = '#0f1218';
-        contentBgAlphaInput.value = 100;
-        contentBgBlurInput.value = 6;
-      }
-      
-      // Update display values
-      navPanelAlphaVal.textContent = `${navPanelAlphaInput.value}%`;
-      navPanelBlurVal.textContent = `${navPanelBlurInput.value}px`;
-      
-      devPanelAlphaVal.textContent = `${devPanelAlphaInput.value}%`;
-      devPanelBlurVal.textContent = `${devPanelBlurInput.value}px`;
-      
-      contentBgAlphaVal.textContent = `${contentBgAlphaInput.value}%`;
-      contentBgBlurVal.textContent = `${contentBgBlurInput.value}px`;
-      
-      updateBackgroundStyles();
-    }
-    
-    // Function to export current settings as default values
-    function exportSettingsAsDefault() {
-      // Create a clone of the current document
-      const clone = document.documentElement.cloneNode(true);
-      
-      // Remove dynamic content that shouldn't be in the exported file
-      const navListClone = clone.querySelector('#navList');
-      if (navListClone) navListClone.innerHTML = '';
-      
-      const fileContentClone = clone.querySelector('#file-content');
-      if (fileContentClone) fileContentClone.innerHTML = '';
-      
-      // Close the panel in the exported version
-      const panelClone = clone.querySelector('#panel');
-      if (panelClone) panelClone.classList.remove('open');
-      
-      // Update all input values in the clone to match current settings
-      const inputs = clone.querySelectorAll('input, select');
-      inputs.forEach(input => {
-        const liveInput = document.getElementById(input.id);
-        if (!liveInput) return;
-        
-        if (liveInput.type === 'checkbox') {
-          input.checked = liveInput.checked;
-        } else if (liveInput.type === 'color' || liveInput.type === 'range' || liveInput.tagName === 'SELECT') {
-          input.value = liveInput.value;
-          
-          // For select elements, update the selected option
-          if (liveInput.tagName === 'SELECT') {
-            const selectedOption = input.options[liveInput.selectedIndex];
-            Array.from(input.options).forEach(option => {
-              option.removeAttribute('selected');
-            });
-            if (selectedOption) {
-              selectedOption.setAttribute('selected', 'selected');
-            }
-          }
-        } else {
-          input.value = liveInput.value;
-        }
-      });
-      
-      // Update the theme class
-      if (document.documentElement.classList.contains('light')) {
-        clone.classList.add('light');
-        clone.classList.remove('dark');
-      } else {
-        clone.classList.add('dark');
-        clone.classList.remove('light');
-      }
-      
-      // Create the HTML string
-      const html = `<!doctype html>\n${clone.outerHTML}`;
-      
-      // Create a Blob and trigger download
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'particle_field_export.html';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    // handlers
-    speedInput.addEventListener('input', (e)=>{ settings.speed = parseFloat(e.target.value); speedVal.textContent = settings.speed.toFixed(2); });
-    orientationInput.addEventListener('change', (e)=>{ settings.orientation = e.target.value; });
-
-    particleSizeInput.addEventListener('input', (e)=>{ const v = parseFloat(e.target.value); if(mat) mat.size = v; sizeVal.textContent = v.toFixed(1); });
-    lightModeCheckbox.addEventListener('change', (e)=>{ 
-      settings.lightMode = e.target.checked; 
-      document.documentElement.classList.toggle('light', settings.lightMode); 
-      updateColorInputsForTheme();
-      resetBackgroundStyles(); // Reset background styles when theme changes
-    });
-
-    colorPreset.addEventListener('change', (e)=>{ const val = e.target.value; if(val === 'custom'){ customColorRow.classList.remove('hidden'); applyCustomColor(colorPicker.value); } else { customColorRow.classList.add('hidden'); applyColorPreset(val); } });
-    colorPicker.addEventListener('input', (e)=>{ if(colorPreset.value === 'custom') applyCustomColor(e.target.value); });
-
-    particleCountInput.addEventListener('input', (e)=>{ const val = parseInt(e.target.value); countVal.textContent = val; createPoints(val); if(mat) mat.size = parseFloat(particleSizeInput.value) || mat.size; });
-
-    cameraZoomInput.addEventListener('input', (e)=>{ orbitRadius = parseFloat(e.target.value); zoomVal.textContent = orbitRadius; });
-
-    // Update camera pan handlers
-    cameraPanXInput.addEventListener('input', (e)=>{ 
-      cameraPan.x = parseFloat(e.target.value); 
-      panXVal.textContent = cameraPan.x; 
-    });
-    
-    cameraPanYInput.addEventListener('input', (e)=>{ 
-      cameraPan.y = parseFloat(e.target.value); 
-      panYVal.textContent = cameraPan.y; 
-    });
-    
-    // New content style handlers
-    contentBgColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--content-bg', e.target.value);
-    });
-    
-    textColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--text-color', e.target.value);
-    });
-    
-    linkColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--link-color', e.target.value);
-    });
-    
-    linkHoverColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--link-hover-color', e.target.value);
-    });
-    
-    h1ColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--h1-color', e.target.value);
-    });
-    
-    h2ColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--h2-color', e.target.value);
-    });
-    
-    h3ColorInput.addEventListener('input', (e) => {
-      document.documentElement.style.setProperty('--h3-color', e.target.value);
-    });
-    
-    resetContentStylesBtn.addEventListener('click', () => {
-      // Reset to default values based on current theme
-      if (document.documentElement.classList.contains('light')) {
-        document.documentElement.style.setProperty('--content-bg', 'linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4))');
-        document.documentElement.style.setProperty('--text-color', '#111');
-        document.documentElement.style.setProperty('--link-color', '#0066cc');
-        document.documentElement.style.setProperty('--link-hover-color', '#004499');
-        document.documentElement.style.setProperty('--h1-color', '#000000');
-        document.documentElement.style.setProperty('--h2-color', '#111111');
-        document.documentElement.style.setProperty('--h3-color', '#222222');
-        
-        // Update input values
-        contentBgColorInput.value = '#ffffff';
-        textColorInput.value = '#111111';
-        linkColorInput.value = '#0066cc';
-        linkHoverColorInput.value = '#004499';
-        h1ColorInput.value = '#000000';
-        h2ColorInput.value = '#111111';
-        h3ColorInput.value = '#222222';
-      } else {
-        document.documentElement.style.setProperty('--content-bg', 'linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4))');
-        document.documentElement.style.setProperty('--text-color', '#e6eef8');
-        document.documentElement.style.setProperty('--link-color', '#93d6ff');
-        document.documentElement.style.setProperty('--link-hover-color', '#c2e4ff');
-        document.documentElement.style.setProperty('--h1-color', '#ffffff');
-        document.documentElement.style.setProperty('--h2-color', '#e6eef8');
-        document.documentElement.style.setProperty('--h3-color', '#d0d8e2');
-        
-        // Update input values
-        contentBgColorInput.value = '#0f1218';
-        textColorInput.value = '#e6eef8';
-        linkColorInput.value = '#93d6ff';
-        linkHoverColorInput.value = '#c2e4ff';
-        h1ColorInput.value = '#ffffff';
-        h2ColorInput.value = '#e6eef8';
-        h3ColorInput.value = '#d0d8e2';
-      }
-    });
-    
-    // New background customization handlers
-    navPanelColorInput.addEventListener('input', updateBackgroundStyles);
-    navPanelAlphaInput.addEventListener('input', (e) => {
-      navPanelAlphaVal.textContent = `${e.target.value}%`;
-      updateBackgroundStyles();
-    });
-    navPanelBlurInput.addEventListener('input', (e) => {
-      navPanelBlurVal.textContent = `${e.target.value}px`;
-      updateBackgroundStyles();
-    });
-    
-    devPanelColorInput.addEventListener('input', updateBackgroundStyles);
-    devPanelAlphaInput.addEventListener('input', (e) => {
-      devPanelAlphaVal.textContent = `${e.target.value}%`;
-      updateBackgroundStyles();
-    });
-    devPanelBlurInput.addEventListener('input', (e) => {
-      devPanelBlurVal.textContent = `${e.target.value}px`;
-      updateBackgroundStyles();
-    });
-    
-    contentBgSolidColorInput.addEventListener('input', updateBackgroundStyles);
-    contentBgAlphaInput.addEventListener('input', (e) => {
-      contentBgAlphaVal.textContent = `${e.target.value}%`;
-      updateBackgroundStyles();
-    });
-    contentBgBlurInput.addEventListener('input', (e) => {
-      contentBgBlurVal.textContent = `${e.target.value}px`;
-      updateBackgroundStyles();
-    });
-    
-    resetBackgroundStylesBtn.addEventListener('click', resetBackgroundStyles);
-    
-    // Export settings button handler
-    exportSettingsBtn.addEventListener('click', exportSettingsAsDefault);
-    
-    function updateColorInputsForTheme() {
-      if (document.documentElement.classList.contains('light')) {
-        contentBgColorInput.value = '#ffffff';
-        textColorInput.value = '#111111';
-        linkColorInput.value = '#0066cc';
-        linkHoverColorInput.value = '#004499';
-        h1ColorInput.value = '#000000';
-        h2ColorInput.value = '#111111';
-        h3ColorInput.value = '#222222';
-      } else {
-        contentBgColorInput.value = '#0f1218';
-        textColorInput.value = '#e6eef8';
-        linkColorInput.value = '#93d6ff';
-        linkHoverColorInput.value = '#c2e4ff';
-        h1ColorInput.value = '#ffffff';
-        h2ColorInput.value = '#e6eef8';
-        h3ColorInput.value = '#d0d8e2';
-      }
-    }
-
-    function hexToRgbNorm(hex){ const parsed = hex.replace('#',''); const bigint = parseInt(parsed,16); const r = ((bigint >> 16) & 255)/255; const g = ((bigint >> 8) & 255)/255; const b = (bigint & 255)/255; return [r,g,b]; }
-
-    function applyColorPreset(preset){ if(!geo) return; const arr = geo.attributes.color.array; for(let i=0;i<particleCount;i++){ const i3 = i*3; if(preset === 'warm'){ arr[i3+0] = 0.7 + Math.random()*0.3; arr[i3+1] = 0.35 + Math.random()*0.4; arr[i3+2] = 0.1 + Math.random()*0.25; } else if(preset === 'cool'){ arr[i3+0] = 0.2 + Math.random()*0.35; arr[i3+1] = 0.5 + Math.random()*0.45; arr[i3+2] = 0.7 + Math.random()*0.3; } else if(preset === 'mono'){ const v = 0.55 + Math.random()*0.45; arr[i3+0] = v; arr[i3+1] = v; arr[i3+2] = v; } else { arr[i3+0] = 0.5 + Math.random()*0.5; arr[i3+1] = 0.5 + Math.random()*0.5; arr[i3+2] = 0.6 + Math.random()*0.4; } } geo.attributes.color.needsUpdate = true; }
-
-    function applyCustomColor(hex){ if(!geo) return; const [r,g,b] = hexToRgbNorm(hex); const arr = geo.attributes.color.array; for(let i=0;i<particleCount;i++){ const i3 = i*3; arr[i3+0] = Math.min(1, r * (0.9 + Math.random()*0.2)); arr[i3+1] = Math.min(1, g * (0.9 + Math.random()*0.2)); arr[i3+2] = Math.min(1, b * (0.9 + Math.random()*0.2)); } geo.attributes.color.needsUpdate = true; }
-
-    function onScroll(){ 
-      const y = window.scrollY; 
-      const dy = y - lastScrollY; 
-      lastScrollY = y; 
-      targetAngle += dy * settings.speed * 0.0025; 
-    }
-    window.addEventListener('scroll', onScroll, {passive:true});
-
-    const autoRotSpeed = 0.0006;
-
-    function animate(){ 
-      requestAnimationFrame(animate); 
-      if(points) points.rotation.y += autoRotSpeed; 
-      currentAngle += (targetAngle - currentAngle) * 0.08;
-
-      // Calculate the orbit position
-      const orbitX = orbitRadius * Math.sin(currentAngle);
-      const orbitZ = orbitRadius * Math.cos(currentAngle);
-      
-      // Position camera with pan offset
-      if (settings.orientation === 'horizontal') {
-        // Horizontal orbit (around Y axis)
-        camera.position.x = orbitX + cameraPan.x;
-        camera.position.y = (Math.sin(currentAngle*0.3) * 8) + cameraPan.y;
-        camera.position.z = orbitZ;
-      } else {
-        // Vertical orbit (around X axis)
-        camera.position.x = (Math.sin(currentAngle*0.3) * 8) + cameraPan.x;
-        camera.position.y = orbitX + cameraPan.y;
-        camera.position.z = orbitZ;
-      }
-
-      // Always look at the center of the particle cloud (with pan offset)
-      camera.lookAt(cameraPan.x, cameraPan.y, 0);
-
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    cogBtn.addEventListener('click', ()=>{ panel.classList.toggle('open'); });
-    closePanel.addEventListener('click', ()=>{ panel.classList.remove('open'); });
-
-    // Initialize the navigation and markdown rendering
-    initNavigation();
-    
-    // Initialize background styles
-    resetBackgroundStyles();
-
-    window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
-  </script>
-
-
-</body></html>
+<p class="p1"><span class="s1">&lt;!doctype html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html lang="en" class="dark"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;meta charset="utf-8" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width,initial-scale=1" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;title&gt;Three.js Particle Field + Dynamic Navigation&lt;/title&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>:root{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--bg: #071026;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--text-color: #e6eef8;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--panel-bg: #0f1724;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--cog-bg: rgba(14,18,24,0.95);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--link-color: #93d6ff;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--link-hover-color: #c2e4ff;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--h1-color: #ffffff;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--h2-color: #e6eef8;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--h3-color: #d0d8e2;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--code-bg: rgba(0,0,0,0.2);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--code-color: #ff9d9d;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--blockquote-border: rgba(93, 173, 255, 0.5);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--blockquote-bg: rgba(93, 173, 255, 0.08);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.light{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--bg: rgba(255,255,255,0.0);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--content-bg: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--text-color: #111;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--panel-bg: #ffffff;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--cog-bg: rgba(255,255,255,0.9);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--link-color: #0066cc;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--link-hover-color: #004499;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--h1-color: #000000;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--h2-color: #111111;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--h3-color: #222222;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--code-bg: rgba(0,0,0,0.06);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--code-color: #d73038;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--blockquote-border: rgba(0, 102, 204, 0.4);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--blockquote-bg: rgba(0, 102, 204, 0.06);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);color:var(--text-color)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#bg {position:fixed;inset:0;z-index:0;pointer-events:none;display:block}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>/* Navigation styles */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.nav-container {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>position: fixed;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>left: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>top: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>z-index: 2;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>background: var(--panel-bg);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>border-radius: 12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 14px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>box-shadow: 0 14px 40px rgba(0,0,0,0.12);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>max-height: calc(100vh - 40px);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>overflow-y: auto;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>width: 240px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.nav-header {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>font-weight: bold;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>margin-bottom: 12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>color: var(--h2-color);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.nav-list {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>list-style: none;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>margin: 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.nav-list li {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>margin-bottom: 6px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.nav-list a {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>color: var(--link-color);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>text-decoration: none;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>display: block;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 6px 8px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>border-radius: 6px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>transition: background 0.2s ease;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.nav-list a:hover {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>color: var(--link-hover-color);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>background: rgba(255,255,255,0.05);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.nav-list a.active {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>background: rgba(93, 173, 255, 0.15);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>color: var(--link-hover-color);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>/* Content area */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.content{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>position:relative;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>z-index:1;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>max-width:900px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>margin: 40px auto 40px 300px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding:30px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>background:var(--content-bg);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>border-radius:12px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>box-shadow:0 10px 30px rgba(0,0,0,0.08);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>backdrop-filter: blur(6px);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>min-height: 400px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>/* Markdown content styles */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content h1{font-size:clamp(26px,4vw,40px);margin:0 0 12px;color:var(--h1-color)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content h2{color:var(--h2-color); margin-top: 1.8em; margin-bottom: 0.8em;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content h3{color:var(--h3-color); margin-top: 1.5em; margin-bottom: 0.7em;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content p{line-height:1.6;color:var(--text-color); margin-bottom: 1em;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content a{color:var(--link-color);text-decoration:none;transition:color 0.2s ease}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content a:hover{color:var(--link-hover-color)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content ul, #file-content ol {margin-bottom: 1em; padding-left: 1.8em;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content li {margin-bottom: 0.4em; line-height: 1.5;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content code {background: var(--code-bg); color: var(--code-color); padding: 0.2em 0.4em; border-radius: 4px; font-size: 0.9em;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content pre {background: var(--code-bg); padding: 1em; border-radius: 8px; overflow: auto; margin-bottom: 1.5em;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content pre code {background: none; padding: 0; color: inherit;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content blockquote {border-left: 4px solid var(--blockquote-border); background: var(--blockquote-bg); padding: 1em 1.5em; margin: 1.5em 0; border-radius: 0 8px 8px 0;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content table {width: 100%; border-collapse: collapse; margin-bottom: 1.5em;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content th, #file-content td {padding: 0.5em 1em; text-align: left; border: 1px solid rgba(255,255,255,0.1);}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#file-content th {background: rgba(255,255,255,0.05);}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>/* Loading state */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#loading {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>text-align: center;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 2em;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>color: var(--text-color);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>opacity: 0.7;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>/* Responsive adjustments */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>@media (max-width: 1024px) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.nav-container {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>width: 200px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.content {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>margin-left: 260px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>max-width: calc(100% - 280px);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>@media (max-width: 768px) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.nav-container {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>position: relative;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>width: auto;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>left: auto;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>top: auto;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>margin: 20px 20px 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>max-height: none;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>.content {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>margin: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>max-width: calc(100% - 40px);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.floating-shape{width:120px;height:120px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;margin:10px;background:rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);color:var(--text-color)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.cog {position:fixed;right:16px;bottom:16px;z-index:3;width:36px;height:36px;border-radius:999px;display:grid;place-items:center;background:var(--cog-bg);box-shadow:0 6px 18px rgba(0,0,0,0.12);cursor:pointer;border:1px solid rgba(0,0,0,0.06)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.cog svg{width:18px;height:18px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.panel{position:fixed;right:16px;bottom:64px;z-index:4;width:360px;background:var(--panel-bg);border-radius:12px;padding:14px;box-shadow:0 14px 40px rgba(0,0,0,0.12);display:none;color:var(--text-color);max-height:80vh;overflow-y:auto}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.panel.open{display:block}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.panel label{font-size:13px;color:var(--text-color)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.row{display:flex;align-items:center;justify-content:space-between;margin:8px 0}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.small{font-size:13px;color:rgba(100,100,120,1)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.control-inline{display:flex;gap:8px;align-items:center}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.color-input{width:24px;height:24px;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.2)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.color-input input{width:100%;height:100%;border:none;padding:0;cursor:pointer;background:transparent}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>@media (max-width:520px){.panel{width:92%;right:4%;bottom:80px}} .hidden{display:none} hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.panel-section-title{margin:12px 0 6px;font-weight:bold;font-size:14px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;canvas id="bg"&gt;&lt;/canvas&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- Navigation sidebar --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;aside class="nav-container"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="nav-header"&gt;Documentation&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;ul class="nav-list" id="navList"&gt;&lt;/ul&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/aside&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;main&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="content"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;article id="file-content"&gt;&lt;/article&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/main&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;button class="cog" id="cogBtn" aria-label="Open settings" title="Open settings"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"&gt;&lt;/path&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 0 1 2.28 17.9l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09c.7 0 1.32-.39 1.51-1a1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 0 1 6.1 2.28l.06.06c.45.45 1.07.66 1.67.51.58-.14 1.05-.59 1.2-1.17L9.5 2A2 2 0 0 1 13.5 2l.07.09c.15.58.62 1.03 1.2 1.17.6.15 1.22-.06 1.67-.51l.06-.06A2 2 0 0 1 21.72 6.1l-.06.06c-.45.45-.66 1.07-.51 1.67.14.58.59 1.05 1.17 1.2L22 9.5a2 2 0 0 1 0 4l-.09.07c-.58.15-1.03.62-1.17 1.2-.15.6.06 1.22.51 1.67z"/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/svg&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/button&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;aside class="panel" id="panel" role="dialog" aria-label="Dev settings"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;strong&gt;Dev Settings&lt;/strong&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;button id="closePanel" style="border:none;background:transparent;cursor:pointer;font-size:16px;color:var(--text-color)"&gt;</span><span class="s2">✕</span><span class="s1">&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="speed"&gt;Orbit rotation speed (per scroll)&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="small" id="speedVal"&gt;1.0&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input id="speed" type="range" min="0" max="5" step="0.05" value="1"&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row" style="margin-top:8px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="orientation"&gt;Orbit orientation&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;select id="orientation"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;option value="horizontal"&gt;Horizontal (Y axis)&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;option value="vertical"&gt;Vertical (X axis)&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/select&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;hr&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="lightMode"&gt;Light mode&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="control-inline"&gt;&lt;input id="lightMode" type="checkbox"&gt;&lt;span class="small"&gt;Toggle&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="particleSize"&gt;Particle size&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="small" id="sizeVal"&gt;1.8&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input id="particleSize" type="range" min="0.2" max="6" step="0.1" value="1.8"&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row" style="margin-top:8px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="colorPreset"&gt;Particle colors&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;select id="colorPreset"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;option value="soft"&gt;Soft (default)&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;option value="warm"&gt;Warm&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;option value="cool"&gt;Cool&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;option value="mono"&gt;Monochrome&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;option value="custom"&gt;Custom&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/select&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row" id="customColorRow" style="margin-top:6px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="colorPicker"&gt;Custom color&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;input id="colorPicker" type="color" value="#93d6ff"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;hr&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="particleCount"&gt;Particle count&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="small" id="countVal"&gt;1200&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input id="particleCount" type="range" min="200" max="6000" step="50" value="1200"&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row" style="margin-top:8px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="cameraZoom"&gt;Camera zoom (distance)&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="small" id="zoomVal"&gt;60&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input id="cameraZoom" type="range" min="20" max="220" step="1" value="60"&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row" style="margin-top:8px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="cameraPanX"&gt;Camera pan X (left / right)&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="small" id="panXVal"&gt;0&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input id="cameraPanX" type="range" min="-200" max="200" step="1" value="0"&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row" style="margin-top:8px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="cameraPanY"&gt;Camera pan Y (up / down)&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="small" id="panYVal"&gt;0&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;input id="cameraPanY" type="range" min="-200" max="200" step="1" value="0"&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row small" style="margin-top:10px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div&gt;Tip:&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div&gt;Pan the camera to view the particle field from different angles.&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;hr&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="panel-section-title"&gt;Content Styles&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="contentBgColor"&gt;Content background&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="color-input"&gt;&lt;input id="contentBgColor" type="color" value="#0f1218"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="textColor"&gt;Text color&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="color-input"&gt;&lt;input id="textColor" type="color" value="#e6eef8"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="linkColor"&gt;Link color&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="color-input"&gt;&lt;input id="linkColor" type="color" value="#93d6ff"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="linkHoverColor"&gt;Link hover color&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="color-input"&gt;&lt;input id="linkHoverColor" type="color" value="#c2e4ff"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="h1Color"&gt;H1 heading color&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="color-input"&gt;&lt;input id="h1Color" type="color" value="#ffffff"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="h2Color"&gt;H2 heading color&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="color-input"&gt;&lt;input id="h2Color" type="color" value="#e6eef8"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;label for="h3Color"&gt;H3 heading color&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="color-input"&gt;&lt;input id="h3Color" type="color" value="#d0d8e2"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="row" style="margin-top:10px"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;button id="resetContentStyles" style="padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--text-color);cursor:pointer"&gt;Reset Content Styles&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/aside&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script src="https://unpkg.com/three@0.155.0/build/three.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// This will be populated dynamically from README links</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let fileStructure = [];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// DOM elements</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const navList = document.getElementById('navList');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const fileContent = document.getElementById('file-content');</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Extract links from README content</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function extractLinksFromReadme(content) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const links = [];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let match;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>while ((match = linkRegex.exec(content)) !== null) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const name = match[1];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const path = match[2];</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Only include .md files and exclude external URLs</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if (path.endsWith('.md') &amp;&amp; !path.startsWith('http')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Check if this is a relative path to a directory with a README</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>let finalPath = path;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>if (!path.endsWith('.md') &amp;&amp; path.endsWith('/')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>finalPath = path + 'README.md';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">          </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>links.push({ name, path: finalPath });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return links;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Render navigation</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function renderNavigation() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>navList.innerHTML = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>fileStructure.forEach(file =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const li = document.createElement('li');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const a = document.createElement('a');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>a.href = '#';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>a.textContent = file.name;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>a.dataset.path = file.path;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>a.addEventListener('click', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Remove active class from all links</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>document.querySelectorAll('#navList a').forEach(link =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>link.classList.remove('active');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Add active class to clicked link</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>a.classList.add('active');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>loadFile(file.path);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>li.appendChild(a);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>navList.appendChild(li);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Load file function</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>async function loadFile(filePath) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>fileContent.innerHTML = '&lt;div id="loading"&gt;Loading file...&lt;/div&gt;';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const response = await fetch(filePath);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let content = await response.text();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Remove YAML frontmatter if present</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if (content.startsWith('---')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>const frontmatterEnd = content.indexOf('---', 3);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>if (frontmatterEnd !== -1) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>content = content.substring(frontmatterEnd + 3).trim();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>renderFile(content, filePath);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// If this is the README, extract links and update navigation</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>if (filePath === 'README.md') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>const links = extractLinksFromReadme(content);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>fileStructure = [</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>{ name: "README", path: "README.md" },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>...links</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>renderNavigation();</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">          </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Set active class to README link</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>document.querySelectorAll('#navList a').forEach(link =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (link.dataset.path === 'README.md') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">              </span>link.classList.add('active');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} catch (error) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>fileContent.innerHTML = `&lt;div class="error"&gt;Error loading file: ${error.message}&lt;/div&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>console.error('Error loading file:', error);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Render file function with markdown parsing</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function renderFile(content, filePath) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const markdownToHtml = (text) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return text</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Headers</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^# (.*$)/gim, '&lt;h1&gt;$1&lt;/h1&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^## (.*$)/gim, '&lt;h2&gt;$1&lt;/h2&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^### (.*$)/gim, '&lt;h3&gt;$1&lt;/h3&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^#### (.*$)/gim, '&lt;h4&gt;$1&lt;/h4&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^##### (.*$)/gim, '&lt;h5&gt;$1&lt;/h5&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^###### (.*$)/gim, '&lt;h6&gt;$1&lt;/h6&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Bold</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/\*\*(.*?)\*\*/g, '&lt;strong&gt;$1&lt;/strong&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/__(.*?)__/g, '&lt;strong&gt;$1&lt;/strong&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Italic</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/\*(.*?)\*/g, '&lt;em&gt;$1&lt;/em&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/_(.*?)_/g, '&lt;em&gt;$1&lt;/em&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Strikethrough</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/~~(.*?)~~/g, '&lt;del&gt;$1&lt;/del&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Links</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/\[(.*?)\]\((.*?)\)/g, '&lt;a href="$2"&gt;$1&lt;/a&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Images</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/!\[(.*?)\]\((.*?)\)/g, '&lt;img alt="$1" src="$2" /&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Blockquotes</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^&gt;\s(.*$)/gim, '&lt;blockquote&gt;$1&lt;/blockquote&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Horizontal rule</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^\-\-\-\-*$/gim, '&lt;hr /&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Unordered lists</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^\s*[\-\*\+]\s(.*$)/gim, '&lt;li&gt;$1&lt;/li&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/(&lt;li&gt;.*&lt;\/li&gt;)/gs, '&lt;ul&gt;$1&lt;/ul&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Ordered lists</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^\s*\d+\.\s(.*$)/gim, '&lt;li&gt;$1&lt;/li&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/(&lt;li&gt;.*&lt;\/li&gt;)/gs, function(match) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>return /&lt;li&gt;.*&lt;\/li&gt;/.test(match) ? '&lt;ol&gt;' + match + '&lt;/ol&gt;' : match;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>})</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Paragraphs</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^\s*(\n)?(.+)/gim, function(m){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>return /\&lt;(\/)?(h\d|ul|ol|li|blockquote|pre|img|hr)/.test(m) ? m : '&lt;p&gt;'+m+'&lt;/p&gt;';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>})</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Code blocks</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/```(\w+)?\n([\s\S]*?)```/g, '&lt;pre&gt;&lt;code class="$1"&gt;$2&lt;/code&gt;&lt;/pre&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Inline code</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/`(.*?)`/g, '&lt;code&gt;$1&lt;/code&gt;')</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>// Tables (basic support)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/^\|(.+)\|$/gm, function(match, row) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (match.startsWith('|--')) return ''; // Skip separator rows for now</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const cells = row.split('|').map(cell =&gt; `&lt;td&gt;${cell.trim()}&lt;/td&gt;`).join('');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>return `&lt;tr&gt;${cells}&lt;/tr&gt;`;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>})</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.replace(/(&lt;tr&gt;.*&lt;\/tr&gt;)/gs, function(match) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>return /&lt;tr&gt;.*&lt;\/tr&gt;/.test(match) ? '&lt;table&gt;' + match + '&lt;/table&gt;' : match;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const html = markdownToHtml(content);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>fileContent.innerHTML = html;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Update browser history</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>history.pushState({ path: filePath }, '', `#${filePath}`);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Initialize navigation and load README</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function initNavigation() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Start by loading the README</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>loadFile('README.md');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Three.js code (unchanged from your original)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const canvas = document.getElementById('bg');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>renderer.setPixelRatio(window.devicePixelRatio);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>renderer.setSize(window.innerWidth, window.innerHeight, false);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const scene = new THREE.Scene();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 2000);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let particleCount = 1200;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let orbitRadius = 60;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let geo = null, mat = null, points = null;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Camera pan offset (we'll adjust the camera position for panning)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const cameraPan = {x:0, y:0};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function createPoints(count){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if(points){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>scene.remove(points);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>geo.dispose &amp;&amp; geo.dispose();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>mat.dispose &amp;&amp; mat.dispose();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>particleCount = Math.max(10, Math.floor(count));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const positions = new Float32Array(particleCount * 3);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const colors = new Float32Array(particleCount * 3);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>for(let i=0;i&lt;particleCount;i++){</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const i3 = i*3;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const r = 10 + Math.random()*200;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const theta = Math.random()*Math.PI*2;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const phi = Math.acos(2*Math.random()-1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>positions[i3+0] = r*Math.sin(phi)*Math.cos(theta);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>positions[i3+1] = r*Math.sin(phi)*Math.sin(theta);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>positions[i3+2] = r*Math.cos(phi);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>colors[i3+0] = 0.5 + Math.random()*0.5;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>colors[i3+1] = 0.5 + Math.random()*0.5;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>colors[i3+2] = 0.6 + Math.random()*0.4;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>geo = new THREE.BufferGeometry();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>geo.setAttribute('position', new THREE.BufferAttribute(positions,3));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>geo.setAttribute('color', new THREE.BufferAttribute(colors,3));</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>mat = new THREE.PointsMaterial({size:parseFloat(document.getElementById('particleSize').value)||1.8,vertexColors:true,transparent:true,opacity:0.95,depthWrite:false});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>points = new THREE.Points(geo, mat);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Keep the particle cloud at the origin</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>points.position.set(0, 0, 0);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>scene.add(points);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>createPoints(particleCount);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const light = new THREE.DirectionalLight(0xffffff,0.4);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>light.position.set(1,1,1);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>scene.add(light);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>window.addEventListener('resize', ()=&gt;{ renderer.setSize(window.innerWidth, window.innerHeight, false); camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let lastScrollY = window.scrollY;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let targetAngle = 0;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let currentAngle = 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const settings = {speed:1.0, orientation:'horizontal', lightMode:false};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// UI refs</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const speedInput = document.getElementById('speed');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const speedVal = document.getElementById('speedVal');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const orientationInput = document.getElementById('orientation');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const cogBtn = document.getElementById('cogBtn');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const panel = document.getElementById('panel');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const closePanel = document.getElementById('closePanel');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const lightModeCheckbox = document.getElementById('lightMode');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const particleSizeInput = document.getElementById('particleSize');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const sizeVal = document.getElementById('sizeVal');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const colorPreset = document.getElementById('colorPreset');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const colorPicker = document.getElementById('colorPicker');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const customColorRow = document.getElementById('customColorRow');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const particleCountInput = document.getElementById('particleCount');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const countVal = document.getElementById('countVal');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const cameraZoomInput = document.getElementById('cameraZoom');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const zoomVal = document.getElementById('zoomVal');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const cameraPanXInput = document.getElementById('cameraPanX');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const panXVal = document.getElementById('panXVal');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const cameraPanYInput = document.getElementById('cameraPanY');<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const panYVal = document.getElementById('panYVal');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// New content style controls</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const contentBgColorInput = document.getElementById('contentBgColor');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const textColorInput = document.getElementById('textColor');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const linkColorInput = document.getElementById('linkColor');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const linkHoverColorInput = document.getElementById('linkHoverColor');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const h1ColorInput = document.getElementById('h1Color');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const h2ColorInput = document.getElementById('h2Color');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const h3ColorInput = document.getElementById('h3Color');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const resetContentStylesBtn = document.getElementById('resetContentStyles');</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Update labels to reflect pan functionality</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.querySelector('label[for="cameraPanX"]').textContent = "Camera pan X (left / right)";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.querySelector('label[for="cameraPanY"]').textContent = "Camera pan Y (up / down)";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>document.querySelector('.row.small div:last-child').textContent = "Pan the camera to view the particle field from different angles.";</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// initial UI values</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>speedVal.textContent = settings.speed.toFixed(2);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>countVal.textContent = particleCount;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>zoomVal.textContent = orbitRadius;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>sizeVal.textContent = (1.8).toFixed(1);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>panXVal.textContent = cameraPan.x;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>panYVal.textContent = cameraPan.y;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>customColorRow.classList.add('hidden');</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// handlers</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>speedInput.addEventListener('input', (e)=&gt;{ settings.speed = parseFloat(e.target.value); speedVal.textContent = settings.speed.toFixed(2); });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>orientationInput.addEventListener('change', (e)=&gt;{ settings.orientation = e.target.value; });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>particleSizeInput.addEventListener('input', (e)=&gt;{ const v = parseFloat(e.target.value); if(mat) mat.size = v; sizeVal.textContent = v.toFixed(1); });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>lightModeCheckbox.addEventListener('change', (e)=&gt;{<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>settings.lightMode = e.target.checked;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.documentElement.classList.toggle('light', settings.lightMode);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>updateColorInputsForTheme();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>colorPreset.addEventListener('change', (e)=&gt;{ const val = e.target.value; if(val === 'custom'){ customColorRow.classList.remove('hidden'); applyCustomColor(colorPicker.value); } else { customColorRow.classList.add('hidden'); applyColorPreset(val); } });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>colorPicker.addEventListener('input', (e)=&gt;{ if(colorPreset.value === 'custom') applyCustomColor(e.target.value); });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>particleCountInput.addEventListener('input', (e)=&gt;{ const val = parseInt(e.target.value); countVal.textContent = val; createPoints(val); if(mat) mat.size = parseFloat(particleSizeInput.value) || mat.size; });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>cameraZoomInput.addEventListener('input', (e)=&gt;{ orbitRadius = parseFloat(e.target.value); zoomVal.textContent = orbitRadius; });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Update camera pan handlers</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>cameraPanXInput.addEventListener('input', (e)=&gt;{<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>cameraPan.x = parseFloat(e.target.value);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>panXVal.textContent = cameraPan.x;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>cameraPanYInput.addEventListener('input', (e)=&gt;{<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>cameraPan.y = parseFloat(e.target.value);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>panYVal.textContent = cameraPan.y;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// New content style handlers</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>contentBgColorInput.addEventListener('input', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.documentElement.style.setProperty('--content-bg', e.target.value);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>textColorInput.addEventListener('input', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.documentElement.style.setProperty('--text-color', e.target.value);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>linkColorInput.addEventListener('input', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.documentElement.style.setProperty('--link-color', e.target.value);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>linkHoverColorInput.addEventListener('input', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.documentElement.style.setProperty('--link-hover-color', e.target.value);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>h1ColorInput.addEventListener('input', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.documentElement.style.setProperty('--h1-color', e.target.value);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>h2ColorInput.addEventListener('input', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.documentElement.style.setProperty('--h2-color', e.target.value);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>h3ColorInput.addEventListener('input', (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.documentElement.style.setProperty('--h3-color', e.target.value);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>resetContentStylesBtn.addEventListener('click', () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Reset to default values based on current theme</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (document.documentElement.classList.contains('light')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--content-bg', 'linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4))');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--text-color', '#111');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--link-color', '#0066cc');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--link-hover-color', '#004499');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--h1-color', '#000000');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--h2-color', '#111111');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--h3-color', '#222222');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Update input values</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>contentBgColorInput.value = '#ffffff';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>textColorInput.value = '#111111';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>linkColorInput.value = '#0066cc';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>linkHoverColorInput.value = '#004499';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h1ColorInput.value = '#000000';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h2ColorInput.value = '#111111';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h3ColorInput.value = '#222222';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--content-bg', 'linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4))');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--text-color', '#e6eef8');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--link-color', '#93d6ff');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--link-hover-color', '#c2e4ff');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--h1-color', '#ffffff');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--h2-color', '#e6eef8');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>document.documentElement.style.setProperty('--h3-color', '#d0d8e2');</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">        </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Update input values</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>contentBgColorInput.value = '#0f1218';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>textColorInput.value = '#e6eef8';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>linkColorInput.value = '#93d6ff';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>linkHoverColorInput.value = '#c2e4ff';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h1ColorInput.value = '#ffffff';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h2ColorInput.value = '#e6eef8';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h3ColorInput.value = '#d0d8e2';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function updateColorInputsForTheme() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (document.documentElement.classList.contains('light')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>contentBgColorInput.value = '#ffffff';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>textColorInput.value = '#111111';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>linkColorInput.value = '#0066cc';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>linkHoverColorInput.value = '#004499';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h1ColorInput.value = '#000000';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h2ColorInput.value = '#111111';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h3ColorInput.value = '#222222';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>contentBgColorInput.value = '#0f1218';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>textColorInput.value = '#e6eef8';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>linkColorInput.value = '#93d6ff';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>linkHoverColorInput.value = '#c2e4ff';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h1ColorInput.value = '#ffffff';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h2ColorInput.value = '#e6eef8';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>h3ColorInput.value = '#d0d8e2';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function hexToRgbNorm(hex){ const parsed = hex.replace('#',''); const bigint = parseInt(parsed,16); const r = ((bigint &gt;&gt; 16) &amp; 255)/255; const g = ((bigint &gt;&gt; 8) &amp; 255)/255; const b = (bigint &amp; 255)/255; return [r,g,b]; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function applyColorPreset(preset){ if(!geo) return; const arr = geo.attributes.color.array; for(let i=0;i&lt;particleCount;i++){ const i3 = i*3; if(preset === 'warm'){ arr[i3+0] = 0.7 + Math.random()*0.3; arr[i3+1] = 0.35 + Math.random()*0.4; arr[i3+2] = 0.1 + Math.random()*0.25; } else if(preset === 'cool'){ arr[i3+0] = 0.2 + Math.random()*0.35; arr[i3+1] = 0.5 + Math.random()*0.45; arr[i3+2] = 0.7 + Math.random()*0.3; } else if(preset === 'mono'){ const v = 0.55 + Math.random()*0.45; arr[i3+0] = v; arr[i3+1] = v; arr[i3+2] = v; } else { arr[i3+0] = 0.5 + Math.random()*0.5; arr[i3+1] = 0.5 + Math.random()*0.5; arr[i3+2] = 0.6 + Math.random()*0.4; } } geo.attributes.color.needsUpdate = true; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function applyCustomColor(hex){ if(!geo) return; const [r,g,b] = hexToRgbNorm(hex); const arr = geo.attributes.color.array; for(let i=0;i&lt;particleCount;i++){ const i3 = i*3; arr[i3+0] = Math.min(1, r * (0.9 + Math.random()*0.2)); arr[i3+1] = Math.min(1, g * (0.9 + Math.random()*0.2)); arr[i3+2] = Math.min(1, b * (0.9 + Math.random()*0.2)); } geo.attributes.color.needsUpdate = true; }</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function onScroll(){<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const y = window.scrollY;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const dy = y - lastScrollY;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>lastScrollY = y;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>targetAngle += dy * settings.speed * 0.0025;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>window.addEventListener('scroll', onScroll, {passive:true});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const autoRotSpeed = 0.0006;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function animate(){<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>requestAnimationFrame(animate);<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if(points) points.rotation.y += autoRotSpeed;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>currentAngle += (targetAngle - currentAngle) * 0.08;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Calculate the orbit position</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const orbitX = orbitRadius * Math.sin(currentAngle);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>const orbitZ = orbitRadius * Math.cos(currentAngle);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">      </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Position camera with pan offset</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>if (settings.orientation === 'horizontal') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Horizontal orbit (around Y axis)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>camera.position.x = orbitX + cameraPan.x;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>camera.position.y = (Math.sin(currentAngle*0.3) * 8) + cameraPan.y;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>camera.position.z = orbitZ;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Vertical orbit (around X axis)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>camera.position.x = (Math.sin(currentAngle*0.3) * 8) + cameraPan.x;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>camera.position.y = orbitX + cameraPan.y;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>camera.position.z = orbitZ;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Always look at the center of the particle cloud (with pan offset)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>camera.lookAt(cameraPan.x, cameraPan.y, 0);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>renderer.render(scene, camera);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>animate();</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>cogBtn.addEventListener('click', ()=&gt;{ panel.classList.toggle('open'); });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>closePanel.addEventListener('click', ()=&gt;{ panel.classList.remove('open'); });</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Initialize the navigation and markdown rendering</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>initNavigation();</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=&gt;({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=&gt;{ cameraPan.x = x||0; cameraPan.y = y||0; }};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+</body>
+</html>
