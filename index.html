@@ -264,11 +264,15 @@
         position: fixed;
         left: 20px;
         top: 80px;
-        width: calc(100% - 40px);
+        /* Make nav panel 15% narrower on mobile */
+        width: calc(85% - 40px);
         transform: translateX(-100%);
         opacity: 0;
         visibility: hidden;
         transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+        /* Make nav panel scrollable */
+        overflow-y: auto;
+        max-height: calc(100vh - 100px);
       }
       
       .nav-container.active {
@@ -282,9 +286,9 @@
         max-width: calc(100% - 40px);
       }
       
-      /* Adjust dev panel for mobile */
+      /* Adjust dev panel for mobile - 15% narrower */
       .panel {
-        width: 92%;
+        width: 85%;
         right: 4%;
         bottom: 80px;
         max-height: 70vh;
@@ -307,7 +311,7 @@
     .control-inline{display:flex;gap:8px;align-items:center}
     .color-input{width:24px;height:24px;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.2)}
     .color-input input{width:100%;height:100%;border:none;padding:0;cursor:pointer;background:transparent}
-    @media (max-width:520px){.panel{width:92%;right:4%;bottom:80px}} .hidden{display:none} hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0}
+    @media (max-width:520px){.panel{width:85%;right:4%;bottom:80px}} .hidden{display:none} hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:12px 0}
     .panel-section-title{margin:12px 0 6px;font-weight:bold;font-size:14px}
   </style>
 </head>
@@ -502,7 +506,7 @@
       <label for="devPanelAlpha">Transparency</label>
       <div class="small" id="devPanelAlphaVal">50%</div>
     </div>
-    <input id="devPanelAlpha" type="range" min="0" max="100" step="1" value="100">
+    <input id="devPanelAlpha" type="range" min="0" max="100, step="1" value="100">
     
     <div class="row">
       <label for="devPanelBlur">Blur</label>
@@ -680,8 +684,16 @@
           .replace(/_(.*?)_/g, '<em>$1</em>')
           // Strikethrough
           .replace(/~~(.*?)~~/g, '<del>$1</del>')
-          // Links
-          .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>')
+          // Links - modified to handle internal markdown files
+          .replace(/\[(.*?)\]\((.*?)\)/g, function(match, text, url) {
+            // Check if it's an external link
+            if (url.includes('://') || url.startsWith('#') || url.startsWith('mailto:')) {
+              return '<a href="' + url + '">' + text + '</a>';
+            } else {
+              // Internal markdown file - use our router
+              return '<a href="#" class="internal-link" data-path="' + url + '">' + text + '</a>';
+            }
+          })
           // Images
           .replace(/!\[(.*?)\]\((.*?)\)/g, '<img alt="$1" src="$2" />')
           // Blockquotes
@@ -717,6 +729,23 @@
       
       const html = markdownToHtml(content);
       fileContent.innerHTML = html;
+      
+      // Add event listeners to internal links
+      document.querySelectorAll('.internal-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          const path = link.getAttribute('data-path');
+          loadFile(path);
+          
+          // Update active link in navigation
+          document.querySelectorAll('#navList a').forEach(navLink => {
+            navLink.classList.remove('active');
+            if (navLink.dataset.path === path) {
+              navLink.classList.add('active');
+            }
+          });
+        });
+      });
       
       // Update browser history
       history.pushState({ path: filePath }, '', `#${filePath}`);
