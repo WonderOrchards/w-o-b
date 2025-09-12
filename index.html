@@ -1,60 +1,61 @@
-<!doctype html>
-<html lang="en" class="dark" style="--nav-panel-bg-color-rgb: 15, 23, 36; --nav-panel-bg-alpha: 0.5; --nav-panel-blur: 3px; --dev-panel-bg-color-rgb: 15, 23, 36; --dev-panel-bg-alpha: 0.5; --dev-panel-blur: 3px; --content-bg-color-rgb: 15, 23, 36; --content-bg-alpha: 0.5; --content-bg-blur: 3px; --link-color: #008cb4; --link-hover-color: #a96800; --h1-color: #a09d3a; --h2-color: #ao9d3a; --h3-color: #a09d3a;"><head>
+<!DOCTYPE html>
+<html lang="en" class="dark" style="--nav-panel-bg-color-rgb: 15, 23, 36; --nav-panel-bg-alpha: 0.5; --nav-panel-blur: 3px; --dev-panel-bg-color-rgb: 15, 23, 36; --dev-panel-bg-alpha: 0.5; --dev-panel-blur: 3px; --content-bg-color-rgb: 15, 23, 36; --content-bg-alpha: 0.5; --content-bg-blur: 3px; --link-color: #008cb4; --link-hover-color: #a96800; --h1-color: #a09d3a; --h2-color: #a09d3a; --h3-color: #a09d3a;">
+<head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Three.js Particle Field + Dynamic Navigation</title>
-  <style>:root {
-  --bg: #071026;
-  --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
-  --text-color: #e6eef8;
-  --panel-bg: #0f1724;
-  --cog-bg: rgba(14,18,24,0.95);
-  --link-color: #4ca08d;
-  --link-hover-color: #a5c25c;
-  --h1-color: #4f5503;
-  --h2-color: #666100;
-  --h3-color: #a96800;
-  --code-bg: rgba(0,0,0,0.2);
-  --code-color: #ff9d9d;
-  --blockquote-border: rgba(93, 173, 255, 0.5);
-  --blockquote-bg: rgba(93, 173, 255, 0.08);
-  --nav-panel-bg-color-rgb: 15, 23, 36;
-  --nav-panel-bg-alpha: 0.5;
-  --nav-panel-blur: 3px;
-  --dev-panel-bg-color-rgb: 15, 23, 36;
-  --dev-panel-bg-alpha: 0.5;
-  --dev-panel-blur: 3px;
-  --content-bg-color-rgb: 15, 23, 36;
-  --content-bg-alpha: 0.5;
-  --content-bg-blur: 3px;
-}
+  <style>
+    :root {
+      --bg: #071026;
+      --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
+      --text-color: #e6eef8;
+      --panel-bg: #0f1724;
+      --cog-bg: rgba(14,18,24,0.95);
+      --link-color: #4ca08d;
+      --link-hover-color: #a5c25c;
+      --h1-color: #4f5503;
+      --h2-color: #666100;
+      --h3-color: #a96800;
+      --code-bg: rgba(0,0,0,0.2);
+      --code-color: #ff9d9d;
+      --blockquote-border: rgba(93, 173, 255, 0.5);
+      --blockquote-bg: rgba(93, 173, 255, 0.08);
+      --nav-panel-bg-color-rgb: 15, 23, 36;
+      --nav-panel-bg-alpha: 0.5;
+      --nav-panel-blur: 3px;
+      --dev-panel-bg-color-rgb: 15, 23, 36;
+      --dev-panel-bg-alpha: 0.5;
+      --dev-panel-blur: 3px;
+      --content-bg-color-rgb: 15, 23, 36;
+      --content-bg-alpha: 0.5;
+      --content-bg-blur: 3px;
+    }
 
-:root {
-  --bg: #071026;
-  --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
-  --text-color: #e6eef8;
-  --panel-bg: #0f1724;
-  --cog-bg: rgba(14,18,24,0.95);
-  --link-color: #93d6ff;
-  --link-hover-color: #c2e4ff;
-  --h1-color: #ffffff;
-  --h2-color: #e6eef8;
-  --h3-color: #d0d8e2;
-  --code-bg: rgba(0,0,0,0.2);
-  --code-color: #ff9d9d;
-  --blockquote-border: rgba(93, 173, 255, 0.5);
-  --blockquote-bg: rgba(93, 173, 255, 0.08);
-  --nav-panel-bg-color-rgb: 15, 23, 36;
-  --nav-panel-bg-alpha: 0.42;
-  --nav-panel-blur: 8px;
-  --dev-panel-bg-color-rgb: 15, 23, 36;
-  --dev-panel-bg-alpha: 0.42;
-  --dev-panel-blur: 8px;
-  --content-bg-color-rgb: 68, 68, 68;
-  --content-bg-alpha: 0.08;
-  --content-bg-blur: 8px;
-}
-
+    :root {
+      --bg: #071026;
+      --content-bg: linear-gradient(180deg, rgba(15,18,24,0.6), rgba(10,12,16,0.4));
+      --text-color: #e6eef8;
+      --panel-bg: #0f1724;
+      --cog-bg: rgba(14,18,24,0.95);
+      --link-color: #93d6ff;
+      --link-hover-color: #c2e4ff;
+      --h1-color: #ffffff;
+      --h2-color: #e6eef8;
+      --h3-color: #d0d8e2;
+      --code-bg: rgba(0,0,0,0.2);
+      --code-color: #ff9d9d;
+      --blockquote-border: rgba(93, 173, 255, 0.5);
+      --blockquote-bg: rgba(93, 173, 255, 0.08);
+      --nav-panel-bg-color-rgb: 15, 23, 36;
+      --nav-panel-bg-alpha: 0.42;
+      --nav-panel-blur: 8px;
+      --dev-panel-bg-color-rgb: 15, 23, 36;
+      --dev-panel-bg-alpha: 0.42;
+      --dev-panel-blur: 8px;
+      --content-bg-color-rgb: 68, 68, 68;
+      --content-bg-alpha: 0.08;
+      --content-bg-blur: 8px;
+    }
 
     :root{
       --bg: #071026;
@@ -125,6 +126,7 @@
       overflow-y: auto;
       width: 240px;
       backdrop-filter: blur(var(--nav-panel-blur));
+      transition: transform 0.3s ease;
     }
     
     .nav-header {
@@ -160,6 +162,46 @@
     .nav-list a.active {
       background: rgba(93, 173, 255, 0.15);
       color: var(--link-hover-color);
+    }
+    
+    /* Hamburger menu button */
+    .hamburger {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      z-index: 10;
+      background: rgba(var(--nav-panel-bg-color-rgb), var(--nav-panel-bg-alpha));
+      border-radius: 8px;
+      border: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      backdrop-filter: blur(var(--nav-panel-blur));
+    }
+    
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background-color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+    
+    .hamburger.active span:nth-child(1) {
+      transform: translateY(7px) rotate(45deg);
+    }
+    
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .hamburger.active span:nth-child(3) {
+      transform: translateY(-7px) rotate(-45deg);
     }
     
     /* Content area */
@@ -214,18 +256,43 @@
     }
     
     @media (max-width: 768px) {
+      .hamburger {
+        display: flex;
+      }
+      
       .nav-container {
-        position: relative;
-        width: auto;
-        left: auto;
-        top: auto;
-        margin: 20px 20px 0;
-        max-height: none;
+        position: fixed;
+        left: 20px;
+        top: 80px;
+        width: calc(100% - 40px);
+        transform: translateX(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+      }
+      
+      .nav-container.active {
+        transform: translateX(0);
+        opacity: 1;
+        visibility: visible;
       }
       
       .content {
-        margin: 20px;
+        margin: 100px 20px 20px;
         max-width: calc(100% - 40px);
+      }
+      
+      /* Adjust dev panel for mobile */
+      .panel {
+        width: 92%;
+        right: 4%;
+        bottom: 80px;
+        max-height: 70vh;
+      }
+      
+      .cog {
+        bottom: 20px;
+        right: 20px;
       }
     }
 
@@ -248,8 +315,15 @@
 <body>
   <canvas id="bg" data-engine="three.js r155" width="3360" height="1890"></canvas>
 
+  <!-- Hamburger menu button for mobile -->
+  <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
   <!-- Navigation sidebar -->
-  <aside class="nav-container">
+  <aside class="nav-container" id="navContainer">
     <div class="nav-header">Documentation</div>
     <ul class="nav-list" id="navList"></ul>
   </aside>
@@ -478,6 +552,24 @@
     // DOM elements
     const navList = document.getElementById('navList');
     const fileContent = document.getElementById('file-content');
+    const hamburger = document.getElementById('hamburger');
+    const navContainer = document.getElementById('navContainer');
+
+    // Toggle mobile navigation
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navContainer.classList.toggle('active');
+    });
+
+    // Close navigation when clicking on a link (mobile)
+    document.querySelectorAll('.nav-list a').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          hamburger.classList.remove('active');
+          navContainer.classList.remove('active');
+        }
+      });
+    });
 
     // Extract links from README content
     function extractLinksFromReadme(content) {
@@ -640,8 +732,8 @@
     const canvas = document.getElementById('bg');
     const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
     // Clamp devicePixelRatio for mobile safety
-const clampedPixelRatio = Math.min(window.devicePixelRatio, 2);
-renderer.setPixelRatio(clampedPixelRatio);
+    const clampedPixelRatio = Math.min(window.devicePixelRatio, 2);
+    renderer.setPixelRatio(clampedPixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight, false);
 
     const scene = new THREE.Scene();
@@ -850,125 +942,125 @@ renderer.setPixelRatio(clampedPixelRatio);
     }
     
     // Function to export current settings as default values
-function exportSettingsAsDefault() {
-  // Create a clone of the current document
-  const clone = document.documentElement.cloneNode(true);
-  
-  // Remove dynamic content that shouldn't be in the exported file
-  const navListClone = clone.querySelector('#navList');
-  if (navListClone) navListClone.innerHTML = '';
-  
-  const fileContentClone = clone.querySelector('#file-content');
-  if (fileContentClone) fileContentClone.innerHTML = '';
-  
-  // Close the panel in the exported version
-  const panelClone = clone.querySelector('#panel');
-  if (panelClone) panelClone.classList.remove('open');
-  
-  // Update all input values in the clone to match current settings
-  const inputs = clone.querySelectorAll('input, select');
-  inputs.forEach(input => {
-    const liveInput = document.getElementById(input.id);
-    if (!liveInput) return;
-    
-    if (liveInput.type === 'checkbox') {
-      input.checked = liveInput.checked;
-    } else if (liveInput.type === 'color' || liveInput.type === 'range' || liveInput.tagName === 'SELECT') {
-      input.value = liveInput.value;
+    function exportSettingsAsDefault() {
+      // Create a clone of the current document
+      const clone = document.documentElement.cloneNode(true);
       
-      // For select elements, update the selected option
-      if (liveInput.tagName === 'SELECT') {
-        const selectedOption = input.options[liveInput.selectedIndex];
-        Array.from(input.options).forEach(option => {
-          option.removeAttribute('selected');
-        });
-        if (selectedOption) {
-          selectedOption.setAttribute('selected', 'selected');
+      // Remove dynamic content that shouldn't be in the exported file
+      const navListClone = clone.querySelector('#navList');
+      if (navListClone) navListClone.innerHTML = '';
+      
+      const fileContentClone = clone.querySelector('#file-content');
+      if (fileContentClone) fileContentClone.innerHTML = '';
+      
+      // Close the panel in the exported version
+      const panelClone = clone.querySelector('#panel');
+      if (panelClone) panelClone.classList.remove('open');
+      
+      // Update all input values in the clone to match current settings
+      const inputs = clone.querySelectorAll('input, select');
+      inputs.forEach(input => {
+        const liveInput = document.getElementById(input.id);
+        if (!liveInput) return;
+        
+        if (liveInput.type === 'checkbox') {
+          input.checked = liveInput.checked;
+        } else if (liveInput.type === 'color' || liveInput.type === 'range' || liveInput.tagName === 'SELECT') {
+          input.value = liveInput.value;
+          
+          // For select elements, update the selected option
+          if (liveInput.tagName === 'SELECT') {
+            const selectedOption = input.options[liveInput.selectedIndex];
+            Array.from(input.options).forEach(option => {
+              option.removeAttribute('selected');
+            });
+            if (selectedOption) {
+              selectedOption.setAttribute('selected', 'selected');
+            }
+          }
+        } else {
+          input.value = liveInput.value;
         }
+      });
+      
+      // Update the theme class
+      if (document.documentElement.classList.contains('light')) {
+        clone.classList.add('light');
+        clone.classList.remove('dark');
+      } else {
+        clone.classList.add('dark');
+        clone.classList.remove('light');
       }
-    } else {
-      input.value = liveInput.value;
-    }
-  });
-  
-  // Update the theme class
-  if (document.documentElement.classList.contains('light')) {
-    clone.classList.add('light');
-    clone.classList.remove('dark');
-  } else {
-    clone.classList.add('dark');
-    clone.classList.remove('light');
-  }
-  
-  // Get all computed CSS variables
-  const computedStyles = getComputedStyle(document.documentElement);
-  let cssVariables = ':root {\n';
-  
-  // List of CSS variables we want to capture
-  const cssVarsToCapture = [
-    '--bg', '--content-bg', '--text-color', '--panel-bg', '--cog-bg', 
-    '--link-color', '--link-hover-color', '--h1-color', '--h2-color', 
-    '--h3-color', '--code-bg', '--code-color', '--blockquote-border', 
-    '--blockquote-bg', '--nav-panel-bg-color-rgb', '--nav-panel-bg-alpha',
-    '--nav-panel-blur', '--dev-panel-bg-color-rgb', '--dev-panel-bg-alpha',
-    '--dev-panel-blur', '--content-bg-color-rgb', '--content-bg-alpha',
-    '--content-bg-blur'
-  ];
-  
-  // Capture each variable
-  cssVarsToCapture.forEach(variable => {
-    const value = computedStyles.getPropertyValue(variable).trim();
-    if (value) {
-      cssVariables += `  ${variable}: ${value};\n`;
-    }
-  });
-  
-  cssVariables += '}\n\n';
-  
-  // Add light theme variables if needed
-  if (document.documentElement.classList.contains('light')) {
-    cssVariables += '.light {\n';
-    cssVarsToCapture.forEach(variable => {
-      const value = computedStyles.getPropertyValue(variable).trim();
-      if (value) {
-        cssVariables += `  ${variable}: ${value};\n`;
+      
+      // Get all computed CSS variables
+      const computedStyles = getComputedStyle(document.documentElement);
+      let cssVariables = ':root {\n';
+      
+      // List of CSS variables we want to capture
+      const cssVarsToCapture = [
+        '--bg', '--content-bg', '--text-color', '--panel-bg', '--cog-bg', 
+        '--link-color', '--link-hover-color', '--h1-color', '--h2-color', 
+        '--h3-color', '--code-bg', '--code-color', '--blockquote-border', 
+        '--blockquote-bg', '--nav-panel-bg-color-rgb', '--nav-panel-bg-alpha',
+        '--nav-panel-blur', '--dev-panel-bg-color-rgb', '--dev-panel-bg-alpha',
+        '--dev-panel-blur', '--content-bg-color-rgb', '--content-bg-alpha',
+        '--content-bg-blur'
+      ];
+      
+      // Capture each variable
+      cssVarsToCapture.forEach(variable => {
+        const value = computedStyles.getPropertyValue(variable).trim();
+        if (value) {
+          cssVariables += `  ${variable}: ${value};\n`;
+        }
+      });
+      
+      cssVariables += '}\n\n';
+      
+      // Add light theme variables if needed
+      if (document.documentElement.classList.contains('light')) {
+        cssVariables += '.light {\n';
+        cssVarsToCapture.forEach(variable => {
+          const value = computedStyles.getPropertyValue(variable).trim();
+          if (value) {
+            cssVariables += `  ${variable}: ${value};\n`;
+          }
+        });
+        cssVariables += '}\n';
       }
-    });
-    cssVariables += '}\n';
-  }
-  
-  // Find the style tag and prepend our variables
-  const styleTag = clone.querySelector('style');
-  if (styleTag) {
-    styleTag.textContent = cssVariables + styleTag.textContent;
-  }
-  
-  // Add devicePixelRatio clamping for mobile safety
-  const scripts = clone.querySelectorAll('script');
-  scripts.forEach(script => {
-    if (script.textContent.includes('renderer.setPixelRatio')) {
-      // Replace the devicePixelRatio setting with a clamped version
-      script.textContent = script.textContent.replace(
-        /renderer\.setPixelRatio\(window\.devicePixelRatio\);/,
-        '// Clamp devicePixelRatio for mobile safety\n' +
-        'const clampedPixelRatio = Math.min(window.devicePixelRatio, 2);\n' +
-        'renderer.setPixelRatio(clampedPixelRatio);'
-      );
+      
+      // Find the style tag and prepend our variables
+      const styleTag = clone.querySelector('style');
+      if (styleTag) {
+        styleTag.textContent = cssVariables + styleTag.textContent;
+      }
+      
+      // Add devicePixelRatio clamping for mobile safety
+      const scripts = clone.querySelectorAll('script');
+      scripts.forEach(script => {
+        if (script.textContent.includes('renderer.setPixelRatio')) {
+          // Replace the devicePixelRatio setting with a clamped version
+          script.textContent = script.textContent.replace(
+            /renderer\.setPixelRatio\(window\.devicePixelRatio\);/,
+            '// Clamp devicePixelRatio for mobile safety\n' +
+            'const clampedPixelRatio = Math.min(window.devicePixelRatio, 2);\n' +
+            'renderer.setPixelRatio(clampedPixelRatio);'
+          );
+        }
+      });
+      
+      // Create the HTML string
+      const html = `<!doctype html>\n${clone.outerHTML}`;
+      
+      // Create a Blob and trigger download
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'particle_field_export.html';
+      a.click();
+      URL.revokeObjectURL(url);
     }
-  });
-  
-  // Create the HTML string
-  const html = `<!doctype html>\n${clone.outerHTML}`;
-  
-  // Create a Blob and trigger download
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'particle_field_export.html';
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
     // handlers
     speedInput.addEventListener('input', (e)=>{ settings.speed = parseFloat(e.target.value); speedVal.textContent = settings.speed.toFixed(2); });
@@ -1180,7 +1272,5 @@ function exportSettingsAsDefault() {
 
     window.__three_demo = {createPoints, applyColorPreset, applyCustomColor, getCameraPan: ()=>({x:cameraPan.x,y:cameraPan.y}), setCameraPan: (x,y)=>{ cameraPan.x = x||0; cameraPan.y = y||0; }};
   </script>
-
-
-
-</body></html>
+</body>
+</html>
