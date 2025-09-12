@@ -511,6 +511,31 @@
       }
     }
 
+    // ---------- Scroll smoothing / rotation improvements ----------
+    // Make automatic (idle) rotation 20% slower than prior default
+    const autoRotSpeed = 0.00048; // was 0.0006 before (20% slower)
+
+    // robust scroll vars
+    let lastScrollY = window.scrollY || 0;
+    let targetAngle = 0;
+    let currentAngle = 0;
+
+    // Robust scroll handler: clamp very large deltas and invert direction
+    function onScroll() {
+      const y = window.scrollY || 0;
+      let dy = y - lastScrollY;
+
+      // Clamp huge deltas (caused by programmatic scrolling or mobile UI changes)
+      const MAX_DY = 80; // pixels per event — adjust if needed
+      if (Math.abs(dy) > MAX_DY) dy = Math.sign(dy) * MAX_DY;
+
+      lastScrollY = y;
+
+      // Inverted sign to reverse scrolling-driven rotation direction
+      targetAngle += (-dy) * (settings.speed || 1.0) * 0.0025;
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+
     function renderFile(content, filePath) {
       // Temporarily extract code blocks
       const codeBlocks = [];
@@ -573,11 +598,20 @@
             hamburger.classList.remove('active');
             navContainer.classList.remove('active');
           }
-          fileContent.scrollIntoView({ behavior: 'auto', block: 'start' });
+          // keep behavior: scroll content into view, but we'll sync lastScrollY shortly after pushState
+          try { fileContent.scrollIntoView({ behavior: 'auto', block: 'start' }); } catch (err) {}
         });
       });
 
-      try { history.pushState({ path: filePath }, '', `#${filePath}`); } catch (e) { location.hash = filePath; }
+      // Update browser history without causing jump problems:
+      try {
+        history.pushState({ path: filePath }, '', `#${filePath}`);
+      } catch (e) {
+        location.hash = filePath;
+      }
+
+      // Small timeout to sync lastScrollY after a programmatic jump (prevents one large dy)
+      setTimeout(() => { lastScrollY = window.scrollY || 0; }, 40);
     }
 
     function initNavigation() { loadFile('README.md'); }
@@ -644,12 +678,9 @@
       camera.updateProjectionMatrix();
     });
 
-    let lastScrollY = window.scrollY;
-    let targetAngle = 0;
-    let currentAngle = 0;
-    const settings = { speed: 1.0, orientation: 'horizontal', lightMode: false };
+    let lastScrollY_init = lastScrollY; // just to avoid lint noise
 
-    // ---------- UI refs & handlers ----------
+    // ---------- UI refs & handlers (rest unchanged) ----------
     const speedInput = document.getElementById('speed');
     const speedVal = document.getElementById('speedVal');
     const orientationInput = document.getElementById('orientation');
@@ -964,15 +995,9 @@
       geo.attributes.color.needsUpdate = true;
     }
 
-    function onScroll() {
-      const y = window.scrollY;
-      const dy = y - lastScrollY;
-      lastScrollY = y;
-      targetAngle += dy * settings.speed * 0.0025;
+    function onScrollHandlerFallback() {
+      // fallback kept empty — main handler already attached earlier
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
-
-    const autoRotSpeed = 0.0006;
 
     function animate() {
       requestAnimationFrame(animate);
