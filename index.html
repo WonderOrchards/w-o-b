@@ -573,16 +573,17 @@
             hamburger.classList.remove('active');
             navContainer.classList.remove('active');
           }
-          // programmatic scroll - keep auto behavior but we'll sync lastScrollY after history update
+          // programmatic scroll - keep auto behavior but sync scroll baseline afterward
           try { fileContent.scrollIntoView({ behavior: 'auto', block: 'start' }); } catch (err) {}
+          // sync baseline after small delay
+          setTimeout(() => { lastScrollY = getScrollPos(); }, 60);
         });
       });
 
       try { history.pushState({ path: filePath }, '', `#${filePath}`); } catch (e) { location.hash = filePath; }
 
       // Sync lastScrollY after programmatic navigation to avoid a big first-scroll delta.
-      // Small timeout to let the browser settle (address bar bounce on mobile etc.)
-      setTimeout(() => { lastScrollY = window.scrollY || 0; }, 40);
+      setTimeout(() => { lastScrollY = getScrollPos(); }, 60);
     }
 
     function initNavigation() { loadFile('README.md'); }
@@ -649,31 +650,59 @@
       camera.updateProjectionMatrix();
     });
 
-    // ---------- scroll/rotation improvements ----------
-    // Keep these vars in the same scope as before
-    let lastScrollY = window.scrollY || 0;
+    // ---------- Improved mobile-safe scroll handling ----------
+    // Use visualViewport when available
+    const useVisualViewport = !!window.visualViewport;
+    function getScrollPos() {
+      if (useVisualViewport) {
+        // visualViewport may provide pageTop / offsetTop in various browsers — fallback to scrollY
+        return (window.visualViewport.pageTop ?? window.visualViewport.offsetTop ?? window.scrollY ?? 0);
+      }
+      return window.scrollY || 0;
+    }
+
+    // state for scroll-driven rotation
+    let lastScrollY = getScrollPos();
     let targetAngle = 0;
     let currentAngle = 0;
     const settings = { speed: 1.0, orientation: 'horizontal', lightMode: false };
 
-    // Robust scroll handler: clamp very large deltas and invert direction
-    function onScroll() {
-      const y = window.scrollY || 0;
-      let dy = y - lastScrollY;
+    // Tunables
+    const MAX_DY = 60;         // clamp large jumps (adjust if needed)
+    const SMOOTH_FACTOR = 0.88; // smoothing factor to reduce single-event jumps
 
-      // Clamp huge deltas (programmatic jumps, mobile address bar, etc.)
-      const MAX_DY = 80; // pixels per event — tune if needed
+    function onScrollImproved() {
+      const pos = getScrollPos();
+      let dy = pos - lastScrollY;
+
+      // Clamp huge jumps caused by address bar/hardware UI changes
       if (Math.abs(dy) > MAX_DY) dy = Math.sign(dy) * MAX_DY;
 
-      lastScrollY = y;
+      lastScrollY = pos;
 
-      // Invert sign to reverse scrolling-driven rotation direction
-      targetAngle += (dy) * settings.speed * 0.0025;
+      // Apply slight smoothing
+      const smoothed = dy * SMOOTH_FACTOR;
+
+      // Invert direction: negative -> inverted scroll-driven rotation
+      // (this is where you flip the rotation direction)
+      targetAngle += (-smoothed) * settings.speed * 0.0025;
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
 
-    // Idle rotation 20% slower than previous default
-    const autoRotSpeed = 0.00048; // was 0.0006
+    // Hook listeners (visualViewport if available + fallback)
+    if (useVisualViewport) {
+      window.visualViewport.addEventListener('scroll', onScrollImproved, { passive: true });
+      window.visualViewport.addEventListener('resize', () => {
+        // when viewport changes (address bar hide/show) sync baseline after a short delay
+        setTimeout(() => { lastScrollY = getScrollPos(); }, 40);
+      });
+      // keep a window scroll listener as well (fallback)
+      window.addEventListener('scroll', onScrollImproved, { passive: true });
+    } else {
+      window.addEventListener('scroll', onScrollImproved, { passive: true });
+    }
+
+    // Idle rotation 20% slower than previous default (previous ~0.0006)
+    const autoRotSpeed = 0.00048;
 
     // ---------- UI refs & handlers ----------
     const speedInput = document.getElementById('speed');
