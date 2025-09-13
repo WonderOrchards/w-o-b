@@ -1,84 +1,513 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Wonder Orchards Database</title>
-  <style>
-    /* Consolidated CSS with simplified variables */
-    :root {
-      --nav-width: 200px;
-      --bg: #071026;
-      --text-color: #e6eef8;
-      --panel-bg: rgba(15, 23, 36, 0.42);
-      --link-color: #93d6ff;
-      --link-hover: #c2e4ff;
-      --h1-color: #ffffff;
-      --h2-color: #e6eef8;
-      --h3-color: #d0d8e2;
-      --blur-intensity: 8px;
-    }
-    
-    .light {
-      --bg: rgba(255,255,255,0.0);
-      --text-color: #111;
-      --panel-bg: rgba(255,255,255,0.9);
-      --link-color: #0066cc;
-      --link-hover: #004499;
-      --h1-color: #000000;
-      --h2-color: #111111;
-      --h3-color: #222222;
-    }
-    
-    /* Rest of optimized CSS */
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Site with Particle Background</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0a192f;
+            color: #e6f1ff;
+            overflow-x: hidden;
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+        }
+
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #64ffda;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .theme-toggle {
+            background: rgba(100, 255, 218, 0.1);
+            border: 1px solid #64ffda;
+            color: #64ffda;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(100, 255, 218, 0.2);
+        }
+
+        .sidebar {
+            background: rgba(23, 42, 69, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar h3 {
+            color: #64ffda;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.3);
+        }
+
+        .nav-links {
+            list-style: none;
+        }
+
+        .nav-links li {
+            margin-bottom: 10px;
+        }
+
+        .nav-links a {
+            color: #ccd6f6;
+            text-decoration: none;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(100, 255, 218, 0.1);
+            color: #64ffda;
+        }
+
+        .nav-links a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .content {
+            background: rgba(23, 42, 69, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        .content h1 {
+            color: #64ffda;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        .content p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #a8b2d1;
+        }
+
+        .content-box {
+            background: rgba(17, 34, 64, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .content-box h2 {
+            color: #64ffda;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .content-box h2 i {
+            font-size: 24px;
+        }
+
+        .code-block {
+            background: rgba(10, 25, 47, 0.8);
+            border-left: 4px solid #64ffda;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+            color: #8892b0;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        .control-group {
+            background: rgba(17, 34, 64, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .control-group h3 {
+            color: #64ffda;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ccd6f6;
+        }
+
+        .slider-value {
+            color: #64ffda;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #64ffda;
+        }
+
+        .btn {
+            background: rgba(100, 255, 218, 0.1);
+            border: 1px solid #64ffda;
+            color: #64ffda;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(100, 255, 218, 0.2);
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        footer {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+            color: #8892b0;
+            border-top: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <canvas id="bg"></canvas>
-  
-  <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
-    <span></span><span></span><span></span>
-  </button>
+    <canvas id="particle-canvas"></canvas>
+    
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-code"></i>
+                <span>DevDocs</span>
+            </div>
+            <button class="theme-toggle">
+                <i class="fas fa-moon"></i>
+                Dark Mode
+            </button>
+        </header>
+        
+        <aside class="sidebar">
+            <h3>Documentation</h3>
+            <ul class="nav-links">
+                <li><a href="#" class="active"><i class="fas fa-home"></i> Introduction</a></li>
+                <li><a href="#"><i class="fas fa-cube"></i> Getting Started</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> API Reference</a></li>
+                <li><a href="#"><i class="fas fa-book"></i> Tutorials</a></li>
+                <li><a href="#"><i class="fas fa-lightbulb"></i> Examples</a></li>
+                <li><a href="#"><i class="fas fa-question-circle"></i> FAQ</a></li>
+                <li><a href="#"><i class="fas fa-book-open"></i> Resources</a></li>
+            </ul>
+        </aside>
+        
+        <main class="content">
+            <h1>Developer Documentation</h1>
+            
+            <p>Welcome to the comprehensive developer documentation for our platform. Here you'll find everything you need to build amazing applications with our tools and APIs.</p>
+            
+            <div class="content-box">
+                <h2><i class="fas fa-rocket"></i> Getting Started</h2>
+                <p>To get started with our platform, follow these simple steps to set up your development environment and create your first application.</p>
+                
+                <div class="code-block">
+                    <pre># Install the CLI tool
+npm install -g platform-cli
 
-  <aside class="nav-container" id="navContainer" aria-label="Primary navigation">
-    <div class="nav-header">Documentation</div>
-    <ul class="nav-list" id="navList"></ul>
-  </aside>
+# Initialize a new project
+platform init my-project
 
-  <main>
-    <div class="content">
-      <article id="file-content"></article>
+# Navigate to your project directory
+cd my-project
+
+# Start the development server
+platform serve</pre>
+                </div>
+            </div>
+            
+            <div class="content-box">
+                <h2><i class="fas fa-cubes"></i> Core Concepts</h2>
+                <p>Our platform is built around a few key concepts that you should understand to make the most of our tools:</p>
+                
+                <ul>
+                    <li><strong>Components</strong> - Reusable UI elements that encapsulate functionality</li>
+                    <li><strong>Services</strong> - Shared functionality that can be used across your application</li>
+                    <li><strong>Data Stores</strong> - Centralized state management for your application data</li>
+                    <li><strong>API Connectors</strong> - Pre-built integrations with popular services</li>
+                </ul>
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <h3><i class="fas fa-sliders-h"></i> Particle Controls</h3>
+                    
+                    <div class="slider-container">
+                        <label>Particle Count <span class="slider-value" id="count-value">1500</span></label>
+                        <input type="range" id="particle-count" min="500" max="3000" value="1500" step="100">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>Particle Size <span class="slider-value" id="size-value">2</span></label>
+                        <input type="range" id="particle-size" min="1" max="5" value="2" step="0.5">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>Rotation Speed <span class="slider-value" id="speed-value">0.5</span></label>
+                        <input type="range" id="rotation-speed" min="0" max="2" value="0.5" step="0.1">
+                    </div>
+                    
+                    <button class="btn" id="reset-btn">
+                        <i class="fas fa-redo"></i> Reset Settings
+                    </button>
+                </div>
+                
+                <div class="control-group">
+                    <h3><i class="fas fa-palette"></i> Color Theme</h3>
+                    
+                    <div class="slider-container">
+                        <label>Primary Color</label>
+                        <input type="color" id="primary-color" value="#64ffda">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label>Background Intensity <span class="slider-value" id="bg-value">80%</span></label>
+                        <input type="range" id="bg-intensity" min="10" max="100" value="80">
+                    </div>
+                    
+                    <button class="btn">
+                        <i class="fas fa-download"></i> Export Settings
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2023 DevDocs - Comprehensive Developer Documentation</p>
+            <p>Powered by HTML, CSS, JavaScript and Three.js</p>
+        </footer>
     </div>
-  </main>
 
-  <button class="cog" id="cogBtn" aria-label="Open settings">
-    <!-- Cog SVG -->
-  </button>
-
-  <aside class="panel" id="panel" role="dialog" aria-label="Dev settings">
-    <!-- Simplified settings panel -->
-  </aside>
-
-  <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
-  <script>
-    // Modular JavaScript with better separation of concerns
-    import ParticleSystem from './particle-system.js';
-    import MarkdownRenderer from './markdown-renderer.js';
-    import UIManager from './ui-manager.js';
-    
-    // Initialize components
-    const particleSystem = new ParticleSystem();
-    const markdownRenderer = new MarkdownRenderer();
-    const uiManager = new UIManager();
-    
-    // Connect components
-    uiManager.onThemeChange(theme => {
-      document.documentElement.classList.toggle('light', theme === 'light');
-      particleSystem.updateColors(theme);
-    });
-    
-    // Initialization
-    markdownRenderer.loadNavigation('README.md');
-  </script>
+    <script>
+        // Initialize Three.js for particle background
+        const canvas = document.getElementById('particle-canvas');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        
+        // Set up Three.js scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+        renderer.setSize(width, height);
+        
+        // Create particles
+        const particleCount = 1500;
+        const particlesGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colors = new Float32Array(particleCount * 3);
+        
+        for (let i = 0; i < particleCount; i++) {
+            const i3 = i * 3;
+            positions[i3] = (Math.random() - 0.5) * 100;
+            positions[i3 + 1] = (Math.random() - 0.5) * 100;
+            positions[i3 + 2] = (Math.random() - 0.5) * 100;
+            
+            colors[i3] = Math.random();
+            colors[i3 + 1] = Math.random();
+            colors[i3 + 2] = Math.random();
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 2,
+            sizeAttenuation: true,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8
+        });
+        
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particles);
+        
+        camera.position.z = 50;
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+        
+        // Animation and scroll handling
+        let scrollY = window.scrollY;
+        let targetRotation = 0;
+        
+        const animate = () => {
+            requestAnimationFrame(animate);
+            
+            // Smooth rotation based on scroll
+            targetRotation = scrollY * 0.0001;
+            particles.rotation.x += (targetRotation - particles.rotation.x) * 0.05;
+            particles.rotation.y += (targetRotation - particles.rotation.y) * 0.05;
+            
+            // Gentle continuous rotation
+            particles.rotation.z += 0.001;
+            
+            renderer.render(scene, camera);
+        };
+        
+        window.addEventListener('scroll', () => {
+            scrollY = window.scrollY;
+        });
+        
+        animate();
+        
+        // UI Controls
+        document.getElementById('particle-count').addEventListener('input', (e) => {
+            document.getElementById('count-value').textContent = e.target.value;
+            // In a full implementation, this would update the particle count
+        });
+        
+        document.getElementById('particle-size').addEventListener('input', (e) => {
+            document.getElementById('size-value').textContent = e.target.value;
+            particlesMaterial.size = parseFloat(e.target.value);
+        });
+        
+        document.getElementById('rotation-speed').addEventListener('input', (e) => {
+            document.getElementById('speed-value').textContent = e.target.value;
+            // This would adjust the rotation speed in a full implementation
+        });
+        
+        document.getElementById('bg-intensity').addEventListener('input', (e) => {
+            document.getElementById('bg-value').textContent = e.target.value + '%';
+            // This would adjust background intensity in a full implementation
+        });
+        
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            document.getElementById('particle-count').value = 1500;
+            document.getElementById('count-value').textContent = 1500;
+            document.getElementById('particle-size').value = 2;
+            document.getElementById('size-value').textContent = 2;
+            document.getElementById('rotation-speed').value = 0.5;
+            document.getElementById('speed-value').textContent = 0.5;
+            document.getElementById('bg-intensity').value = 80;
+            document.getElementById('bg-value').textContent = '80%';
+            document.getElementById('primary-color').value = '#64ffda';
+            
+            particlesMaterial.size = 2;
+            
+            // Reset colors to theme default
+            document.documentElement.style.setProperty('--primary-color', '#64ffda');
+        });
+        
+        document.getElementById('primary-color').addEventListener('input', (e) => {
+            const color = e.target.value;
+            document.documentElement.style.setProperty('--primary-color', color);
+            
+            // Update materials with new color
+            // This would be more comprehensive in a full implementation
+        });
+        
+        // Theme toggle
+        document.querySelector('.theme-toggle').addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('light-theme');
+            document.querySelector('.theme-toggle i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            document.querySelector('.theme-toggle').textContent = isDark ? ' Light Mode' : ' Dark Mode';
+            document.querySelector('.theme-toggle').prepend(document.querySelector('.theme-toggle i'));
+        });
+        
+        // Navigation active state
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+    </script>
 </body>
 </html>
