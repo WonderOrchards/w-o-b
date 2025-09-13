@@ -511,31 +511,6 @@
       }
     }
 
-    // ---------- Scroll smoothing / rotation improvements ----------
-    // Make automatic (idle) rotation 20% slower than prior default
-    const autoRotSpeed = 0.00048; // was 0.0006 before (20% slower)
-
-    // robust scroll vars
-    let lastScrollY = window.scrollY || 0;
-    let targetAngle = 0;
-    let currentAngle = 0;
-
-    // Robust scroll handler: clamp very large deltas and invert direction
-    function onScroll() {
-      const y = window.scrollY || 0;
-      let dy = y - lastScrollY;
-
-      // Clamp huge deltas (caused by programmatic scrolling or mobile UI changes)
-      const MAX_DY = 80; // pixels per event — adjust if needed
-      if (Math.abs(dy) > MAX_DY) dy = Math.sign(dy) * MAX_DY;
-
-      lastScrollY = y;
-
-      // Inverted sign to reverse scrolling-driven rotation direction
-      targetAngle += (-dy) * (settings.speed || 1.0) * 0.0025;
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-
     function renderFile(content, filePath) {
       // Temporarily extract code blocks
       const codeBlocks = [];
@@ -598,19 +573,15 @@
             hamburger.classList.remove('active');
             navContainer.classList.remove('active');
           }
-          // keep behavior: scroll content into view, but we'll sync lastScrollY shortly after pushState
+          // programmatic scroll - keep auto behavior but we'll sync lastScrollY after history update
           try { fileContent.scrollIntoView({ behavior: 'auto', block: 'start' }); } catch (err) {}
         });
       });
 
-      // Update browser history without causing jump problems:
-      try {
-        history.pushState({ path: filePath }, '', `#${filePath}`);
-      } catch (e) {
-        location.hash = filePath;
-      }
+      try { history.pushState({ path: filePath }, '', `#${filePath}`); } catch (e) { location.hash = filePath; }
 
-      // Small timeout to sync lastScrollY after a programmatic jump (prevents one large dy)
+      // Sync lastScrollY after programmatic navigation to avoid a big first-scroll delta.
+      // Small timeout to let the browser settle (address bar bounce on mobile etc.)
       setTimeout(() => { lastScrollY = window.scrollY || 0; }, 40);
     }
 
@@ -678,9 +649,33 @@
       camera.updateProjectionMatrix();
     });
 
-    let lastScrollY_init = lastScrollY; // just to avoid lint noise
+    // ---------- scroll/rotation improvements ----------
+    // Keep these vars in the same scope as before
+    let lastScrollY = window.scrollY || 0;
+    let targetAngle = 0;
+    let currentAngle = 0;
+    const settings = { speed: 1.0, orientation: 'horizontal', lightMode: false };
 
-    // ---------- UI refs & handlers (rest unchanged) ----------
+    // Robust scroll handler: clamp very large deltas and invert direction
+    function onScroll() {
+      const y = window.scrollY || 0;
+      let dy = y - lastScrollY;
+
+      // Clamp huge deltas (programmatic jumps, mobile address bar, etc.)
+      const MAX_DY = 80; // pixels per event — tune if needed
+      if (Math.abs(dy) > MAX_DY) dy = Math.sign(dy) * MAX_DY;
+
+      lastScrollY = y;
+
+      // Invert sign to reverse scrolling-driven rotation direction
+      targetAngle += (-dy) * settings.speed * 0.0025;
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Idle rotation 20% slower than previous default
+    const autoRotSpeed = 0.00048; // was 0.0006
+
+    // ---------- UI refs & handlers ----------
     const speedInput = document.getElementById('speed');
     const speedVal = document.getElementById('speedVal');
     const orientationInput = document.getElementById('orientation');
@@ -993,10 +988,6 @@
         arr[i3+2] = Math.min(1, b * (0.9 + Math.random()*0.2));
       }
       geo.attributes.color.needsUpdate = true;
-    }
-
-    function onScrollHandlerFallback() {
-      // fallback kept empty — main handler already attached earlier
     }
 
     function animate() {
