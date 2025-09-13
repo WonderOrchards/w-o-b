@@ -668,7 +668,7 @@
       lastScrollY = y;
 
       // Invert sign to reverse scrolling-driven rotation direction
-      targetAngle += (-dy) * settings.speed * 0.0025;
+      targetAngle += (dy) * settings.speed * 0.0025;
     }
     window.addEventListener('scroll', onScroll, { passive: true });
 
