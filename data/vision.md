@@ -10,7 +10,7 @@ last_updated: 2025-09-07
 # Vision — Wonder Orchards (alpha-v2.2)
 
 ## Overview
-We imagine a world where fruit trees are part of daily life, offering nourishment, beauty, and wonder for everyone.  
+We imagine a world where fruit trees live where people are, offering nourishment, beauty, and wonder for everyone.  
 
 ---
 
