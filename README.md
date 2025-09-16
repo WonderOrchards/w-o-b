@@ -10,7 +10,7 @@ category: docs
 # Wonder Orchards Database (alpha-v2.2)
 
 This repository is the **beta-phase database** for **Wonder Orchards**,  
-a nonprofit organization dedicated to planting orchards for everyone to enjoy and benefit from.
+a nonprofit organization dedicated to planting fruit trees and orchards for everyone to enjoy and benefit from.
 
 ---
 
