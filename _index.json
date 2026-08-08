@@ -1,0 +1,71 @@
+{
+  "database": "Wonder Orchards",
+  "description": "Machine-readable map of Wonder Orchards knowledge documents.",
+  "knowledge": [
+    {
+      "path": "README.md",
+      "name": "README.md",
+      "section": "root"
+    },
+    {
+      "path": "data/accounts.md",
+      "name": "accounts.md",
+      "section": "data"
+    },
+    {
+      "path": "data/database-growth.md",
+      "name": "database-growth.md",
+      "section": "data"
+    },
+    {
+      "path": "data/dna.md",
+      "name": "dna.md",
+      "section": "data"
+    },
+    {
+      "path": "data/nursery/experiments/propagation-experiments-overview.md",
+      "name": "propagation-experiments-overview.md",
+      "section": "data"
+    },
+    {
+      "path": "data/vision.md",
+      "name": "vision.md",
+      "section": "data"
+    },
+    {
+      "path": "data/workflows.md",
+      "name": "workflows.md",
+      "section": "data"
+    },
+    {
+      "path": "dev/thread-header.md",
+      "name": "thread-header.md",
+      "section": "dev"
+    },
+    {
+      "path": "tasks/backlog.md",
+      "name": "backlog.md",
+      "section": "tasks"
+    },
+    {
+      "path": "tasks/completed.md",
+      "name": "completed.md",
+      "section": "tasks"
+    },
+    {
+      "path": "tasks/in-progress.md",
+      "name": "in-progress.md",
+      "section": "tasks"
+    },
+    {
+      "path": "versions/alpha-v2.2.md",
+      "name": "alpha-v2.2.md",
+      "section": "versions"
+    },
+    {
+      "path": "versions/history.md",
+      "name": "history.md",
+      "section": "versions"
+    }
+  ]
+}
