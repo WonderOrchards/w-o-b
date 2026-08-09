@@ -1,130 +1,169 @@
 ---
 title: Database Growth & Content Backlog
-version: alpha-v2.2
+version: alpha-v2.3
 status: active
 category: docs
 tags: [growth, backlog, questions, missing-info]
-last_updated: 2025-09-07
+last_updated: 2026-08-08
 ---
 
-# Database Growth & Content Backlog — Wonder Orchards (alpha-v2.2)
+# Database Growth & Content Backlog (alpha-v2.3)
 
 ## Overview
-This file tracks gaps, missing information, and content tasks to guide further building of the database.  
-It functions as a **backlog for documentation** and should be updated as items are resolved or moved into their permanent locations.
+
+This document tracks gaps, questions, ideas, and documentation work that can help Wonder Orchards continue to develop.
+
+It is intentionally a living backlog. Items should be refined, prioritized, completed, deferred, or replaced as the organization learns.
+
+Resolved knowledge should move into its appropriate permanent document rather than remaining indefinitely in the backlog.
 
 ---
 
-## 🎯 Identity & DNA (Backlog Items)
+## Identity & DNA
 
-**Task:** Write Wonder Orchards' origin story  
-- **Status:** Backlog  
-- **Effort:** 2d  
-- **Notes:** How did the idea form? Who was involved? What was the initial spark?  
+### Origin Story
+- **Status:** Backlog
+- **Purpose:** Capture how Wonder Orchards began, including the initial spark, early ideas, and people involved.
 
-**Task:** Define staff roles and responsibilities  
-- **Status:** Backlog  
-- **Effort:** 3d  
-- **Notes:** Outline potential early roles, even if not yet filled. Align with tree-inspired workflow stages.  
+### Distinctive Practices
+- **Status:** Backlog
+- **Purpose:** Identify the practices and behaviors that make Wonder Orchards recognizably itself beyond the foundational DNA.
 
-**Task:** Elaborate on principles or practices that distinguish us  
-- **Status:** Backlog  
-- **Effort:** 2d  
-- **Notes:** Expand beyond the core DNA. How do we operate day-to-day? How do we make decisions?  
+### Staff Roles
+- **Status:** Backlog
+- **Purpose:** Define potential early staff roles and responsibilities as the organization develops.
 
 ---
 
-## 🎯 Vision (Backlog Items)
+## Vision & Long-Term Direction
 
-**Task:** Define success metrics for 5 years and 20 years  
-- **Status:** Backlog  
-- **Effort:** 2d  
-- **Notes:** Quantitative (trees planted, orchards established) and qualitative (community impact) goals.  
+### Long-Term Success Measures
+- **Status:** Backlog
+- **Purpose:** Explore meaningful 5-year, 20-year, and longer-horizon measures of abundance and impact.
+- **Examples:** Trees planted, orchards established, households reached, fruit produced, participation, and community benefit.
 
-**Task:** Develop concept for orchards in urban planning and rural communities  
-- **Status:** Backlog  
-- **Effort:** 3d  
-- **Notes:** Different challenges and opportunities for each setting.  
+### Urban and Rural Orchard Models
+- **Status:** Backlog
+- **Purpose:** Explore how orchard systems might differ across urban, suburban, and rural environments.
 
-**Task:** Outline the educational role (schools, children, community workshops)  
-- **Status:** Backlog  
-- **Effort:** 3d  
-- **Notes:** Curriculum ideas, workshop structures, engagement strategies.  
+### Education
+- **Status:** Backlog
+- **Purpose:** Develop possible educational programs involving schools, children, families, and community learning.
 
 ---
 
-## 🎯 Workflows (Backlog Items)
+## Workflows & Programs
 
-**Task:** Define the project approval workflow (Seeds → Roots → Trunk → etc.)  
-- **Status:** Backlog  
-- **Effort:** 3d  
-- **Notes:** Create a clear, visual flowchart and descriptive text for each stage.  
+### Project Development Workflow
+- **Status:** Backlog
+- **Purpose:** Further develop the tree-inspired Seeds -> Roots -> Trunk -> Branches -> Leaves -> Flowers -> Fruit cycle into a practical project-development system.
 
-**Task:** Document examples of pilot projects (first Seeds)  
-- **Status:** Backlog  
-- **Effort:** 2d  
-- **Notes:** Hypothetical or real ideas to illustrate the workflow.  
+### Pilot Projects
+- **Status:** Backlog
+- **Purpose:** Document early projects and use them to test and improve the workflow.
 
-**Task:** Create a project failure/composting protocol  
-- **Status:** Backlog  
-- **Effort:** 2d  
-- **Notes:** How do we learn from and document projects that don't succeed?  
+### Learning / Composting Protocol
+- **Status:** Backlog
+- **Purpose:** Create a healthy way to document projects that fail, change direction, or are intentionally discontinued so useful knowledge is retained.
 
 ---
 
-## 🎯 Tasks & Operations (Backlog Items)
+## Operations
 
-**Task:** Identify missing operational accounts to be created  
-- **Status:** Backlog  
-- **Effort:** 1d  
-- **Notes:** e.g., Social media, accounting software, project management tools.  
+### Legal and Organizational Roadmap
+- **Status:** Backlog
+- **Purpose:** Document the remaining nonprofit formation, compliance, reporting, and organizational milestones.
 
-**Task:** Research and timeline priority legal filings (timelines, costs)  
-- **Status:** Backlog  
-- **Effort:** 3d  
-- **Notes:** Beyond initial setup. State registrations, annual reports, etc.  
+### Financial System
+- **Status:** Backlog
+- **Purpose:** Develop accounting, payroll, budgeting, transparency, and financial-management practices.
 
-**Task:** Design financial management system (accounting, payroll, transparency)  
-- **Status:** Backlog  
-- **Effort:** 5d  
-- **Notes:** Tools, processes, and reporting for financial health and transparency.  
+### Policies
+- **Status:** Backlog
+- **Purpose:** Determine which organizational policies become necessary as Wonder Orchards grows.
+- **Potential areas:** Staff, ethics, safety, community participation, privacy, property use, and governance.
 
 ---
 
-## 🎯 Logs & Decisions (Backlog Items)
+## Knowledge System
 
-**Task:** Define log frequency and format (daily, weekly, milestones)  
-- **Status:** Backlog  
-- **Effort:** 1d  
-- **Notes:** Decide on a standard template and cadence for logging.  
+### Decision Records
+- **Status:** Backlog
+- **Purpose:** Create a lightweight method for preserving significant decisions, their context, alternatives, and outcomes.
 
-**Task:** Create a decision record template  
-- **Status:** Backlog  
-- **Effort:** 1d  
-- **Notes:** Standardize how significant decisions are captured (context, options, outcome).  
+### Logs
+- **Status:** Backlog
+- **Purpose:** Determine useful formats and cadences for observations, experiments, milestones, and organizational logs.
+
+### Knowledge Relationships
+- **Status:** Backlog
+- **Purpose:** Explore richer relationships between documents as the database grows without prematurely imposing a rigid schema.
+
+### Machine Interface
+- **Status:** In Progress
+- **Current state:** GitHub-native generated knowledge index is operational.
+- **Next question:** Determine what additional machine-readable relationships or discovery capabilities become useful through actual use.
 
 ---
 
-## 🎯 Expansion (Backlog Items)
+## Nursery & Propagation
 
-**Task:** Identify new doc categories (e.g., partnerships, funding models)  
-- **Status:** Backlog  
-- **Effort:** 2d  
-- **Notes:** Brainstorm and create outlines for potential new documentation areas.  
+### Nursery Planning
+- **Status:** In Progress
+- **Purpose:** Continue documenting nursery experiments, species, propagation methods, layouts, and emerging protocols.
 
-**Task:** Plan for a `/policies/` folder (HR, ethics, community guidelines)  
-- **Status:** Backlog  
-- **Effort:** 4d  
-- **Notes:** Essential for scaling operations. Start with core principles.  
+### Standard Nursery Procedures
+- **Status:** Backlog
+- **Purpose:** Convert successful experiments into repeatable nursery practices when enough evidence exists.
 
-**Task:** Document nursery planning (site layouts, species lists, protocols)  
-- **Status:** In Progress (see `/nursery/` experiments)  
-- **Effort:** Ongoing  
-- **Notes:** Continue current experimentation and begin formalizing standard operating procedures.  
+---
+
+## Future Knowledge Areas
+
+Potential future categories may include:
+
+- Partnerships
+- Funding models
+- Orchard design
+- Species and cultivar knowledge
+- Planting standards
+- Tree care
+- Community programs
+- Education
+- Governance
+- Policies
+- Research
+- Experiments
+- Impact measurement
+
+These should become permanent structures only when there is enough useful knowledge to justify them.
+
+---
+
+## Backlog Principles
+
+- Keep the backlog useful rather than exhaustive.
+- Prefer unresolved questions over artificial task volume.
+- Move completed knowledge into permanent documents.
+- Do not create structure merely because it might someday be useful.
+- Let successful patterns propagate into the system.
+- Revisit priorities as Wonder Orchards changes.
 
 ---
 
 ## Usage
-- This file is to be used as a **prioritized backlog** for content creation.  
-- Resolved items should be migrated into their **permanent documentation folders**.  
-- Statuses and progress notes should be kept up to date for transparency.  
+
+This document is a living map of what the knowledge system does not yet fully know or has not yet fully developed.
+
+Items may be:
+
+- explored;
+- converted into tasks;
+- documented elsewhere;
+- combined with other items;
+- deferred;
+- or removed when no longer useful.
+
+The purpose of the backlog is not to finish everything.
+
+Its purpose is to help Wonder Orchards notice what wants to grow next.
