@@ -49,6 +49,27 @@ The basic flow is:
 5. `scripts/generate_index.py` discovers the current knowledge documents and generates `_index.json`.
 6. GitHub Pages publishes the human frontend and generated machine-readable index.
 
+## Living Learning Cycle
+
+Wonder Orchards cultivates knowledge through a simple recurring movement:
+
+**experience → observation → memory → relationship → insight → decision → action → experience**
+
+In repository practice:
+
+1. **Experience** happens in the orchard, nursery, organization, or community.
+2. **Observation** records what was actually noticed in [`data/observations.md`](observations.md).
+3. **Memory** preserves that observation in Git alongside experiments and organizational knowledge.
+4. **Relationship** uses ordinary Markdown links to connect the observation to the relevant experiment, task, or document.
+5. **Insight** develops through comparison and reflection. It remains an interpretation until supported and accepted.
+6. **Decision** records a consequential choice actually made by a human in [`data/decisions.md`](decisions.md).
+7. **Action** belongs in the relevant experiment, project, or task record.
+8. **Experience** produces the next real-world observation and continues the cycle.
+
+[`data/now.md`](now.md) is the brief current view across this cycle. It points to what is active, being learned, or awaiting attention without becoming a second source of truth.
+
+Keep the cycle proportional. Not every observation needs a decision, and not every action needs a new document. The Steward may notice relationships, preserve observations, surface possible insights, and propose changes, but consequential decisions remain human decisions.
+
 ## Human Access
 
 The browser frontend is published through GitHub Pages:

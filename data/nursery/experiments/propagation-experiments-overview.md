@@ -3,7 +3,7 @@ title: "The Wonder Nursery: Propagation Experiments"
 status: active
 category: nursery
 tags: [propagation, experiments, citrus, trees, nursery, research]
-last_updated: 2025-09-07
+last_updated: 2026-08-09
 ---
 
 # The Wonder Nursery: Propagation Experiments
@@ -11,31 +11,42 @@ last_updated: 2025-09-07
 ## Overview
 Welcome to the **Wonder Nursery**, where propagation experiments unfold with curiosity, enthusiasm, and the occasional happy accident.  
 
-Current methods explored:  
--  Cuttings (semi-hardwood, softwood)  
--  Air layering (across multiple tree species)  
+Current methods represented:
 
-Each experiment is logged separately but linked here for reference.
+- Cuttings (semi-hardwood, softwood)
+- Air layering (across multiple tree species)
+
+Each experiment is logged separately and linked here for continuation. The repository does not yet establish their present biological status or results.
+
+Use the lightweight sequence:
+
+**Question → Action → Observation → Result → Next**
+
+Record dated real-world notices in [Observations](../../observations.md), then link them back to the relevant experiment.
 
 ---
 
 ## Experiment Entries
 
 ### Meyer Lemon Cuttings
-- **File:** [`propagation-tests/meyer-lemon-cuttings.md`](propagation-tests/meyer-lemon-cuttings.md)  
-- **Started:** August 2025  
+
+- **File:** [Meyer Lemon Cuttings](propagation-tests/meyer-lemon-cuttings.md)
+- **Started:** August 2025
+- **Present status:** Unknown
 - **Methods:**
-- Semi-hardwood cuttings in pots  
-- Softwood cuttings on sand  
-- All dipped in rooting hormone  
+  - Semi-hardwood cuttings in pots
+  - Softwood cuttings on sand
+  - All dipped in rooting hormone
 
 ---
 
 ### Air Layering Experiments – Multiple Trees
-- **File:** [`propagation-tests/air-layering-experiments.md`](propagation-tests/air-layering-experiments.md)  
-- **Started:** September 2025  
-- **Trees:** Juniper-like, Redbud, Pecan, Holly, Red/Sugar Maple  
-- **Method:** Bark removal, rooting hormone, damp soil wrap, foil coverage  
+
+- **File:** [Air Layering Experiments](propagation-tests/air-layering-experiments.md)
+- **Started:** September 2025
+- **Present status:** Unknown
+- **Trees:** Juniper-like, Redbud, Pecan, Holly, Red/Sugar Maple
+- **Method:** Bark removal, rooting hormone, damp soil wrap, foil coverage
 
 **Variation:**  
 - One Red/Sugar Maple branch experimented on with **partial bark removal** (sliced nodes and lines) instead of full girdling.  
@@ -44,18 +55,18 @@ Each experiment is logged separately but linked here for reference.
 ---
 
 ### Accidental Oak Cutting Experiment
-- **File:** [`propagation-tests/accidental-oak-cutting.md`](propagation-tests/accidental-oak-cutting.md)  
-- **Started:** September 2025  
-- **Method:** Bark removal, rooting hormone, planted directly into **dense, moist soil** in yard.  
+
+- **File:** [Accidental Oak Cutting](propagation-tests/accidental-oak-cutting.md)
+- **Started:** September 2025
+- **Present status:** Unknown
+- **Method:** Bark removal, rooting hormone, planted directly into **dense, moist soil** in yard.
 
 ---
 
 ## Notes
-- This overview serves as the **central index** for all propagation tests.  
-- Progress and results will be **cross-referenced** here for quick access.  
-- Updates should include:  
-  - Status changes  
-  - Root successes or failures  
-  - Scheduled observation dates to track progress consistently  
+- This overview serves as the central index for propagation tests.
+- Progress and results should be cross-referenced here for quick access.
+- Do not infer success or failure from the age of an experiment; record an observation.
+- Updates should include status changes, root successes or failures, and useful next observations.
 
 ---

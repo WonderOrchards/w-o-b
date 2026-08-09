@@ -39,6 +39,9 @@ The index is generated automatically during every GitHub Pages deployment from t
 
 ## Knowledge
 
+- data/now.md - Current attention, learning, experiments, and recent change
+- data/observations.md - Append-friendly real-world observation log
+- data/decisions.md - Append-friendly record of consequential human decisions
 - data/vision.md - Vision and guiding direction
 - data/dna.md - Core essence and identity
 - data/workflows.md - Tree-inspired workflows and processes
