@@ -12,6 +12,12 @@ EXCLUDED_DIRS = {
     "templates",
 }
 
+EXCLUDED_PATH_PREFIXES = {
+    ("inbox", "drop"),
+    ("inbox", "records"),
+    ("inbox", "archive"),
+}
+
 
 def parse_value(value):
     value = value.strip()
@@ -36,7 +42,18 @@ def parse_value(value):
     ):
         return value[1:-1]
 
+    if value == "true":
+        return True
+
+    if value == "false":
+        return False
+
     return value
+
+
+assert parse_value("false") is False
+assert parse_value("true") is True
+assert parse_value('"false"') == "false"
 
 
 def parse_frontmatter(text):
@@ -69,6 +86,12 @@ for path in ROOT.rglob("*.md"):
     relative = path.relative_to(ROOT)
 
     if any(part in EXCLUDED_DIRS for part in relative.parts):
+        continue
+
+    if any(
+        relative.parts[:len(prefix)] == prefix
+        for prefix in EXCLUDED_PATH_PREFIXES
+    ):
         continue
 
     text = path.read_text(encoding="utf-8")
