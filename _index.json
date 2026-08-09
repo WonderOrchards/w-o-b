@@ -188,7 +188,14 @@
     {
       "path": "versions/alpha-v2.3.md",
       "name": "alpha-v2.3.md",
-      "section": "versions"
+      "section": "versions",
+      "title": "Alpha v2.3",
+      "version": "alpha-v2.3",
+      "date": "2026-08-08",
+      "last\\_updated": "2026-08-08",
+      "status": "active",
+      "category": "versions",
+      "tags": "\\[github-pages, knowledge-index, automation, accessibility]"
     },
     {
       "path": "versions/history.md",
