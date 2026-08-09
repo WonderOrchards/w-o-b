@@ -4,7 +4,7 @@ version: alpha-v2.3
 status: active
 category: docs
 tags: [growth, backlog, questions, missing-info]
-last_updated: 2026-08-08
+last_updated: 2026-08-09
 ---
 
 # Database Growth & Content Backlog (alpha-v2.3)
@@ -103,6 +103,12 @@ Resolved knowledge should move into its appropriate permanent document rather th
 - **Status:** In Progress
 - **Current state:** GitHub-native generated knowledge index is operational.
 - **Next question:** Determine what additional machine-readable relationships or discovery capabilities become useful through actual use.
+
+### Stewardship Intelligence / Seed Steward
+- **Status:** Exploration
+- **Question:** What could a place-based “Seed Steward” mean for Wonder Orchards, and how—if at all—could it support the fruit-tree mission while preserving human authority, safety, privacy, and deliberate growth?
+- **Boundaries:** This is an exploratory question, not an established program, specification, capability, experiment, or organizational commitment. Any later step requires evidence, defined safety and governance boundaries, and a separate human decision.
+- **Provenance:** [INBOX-2026-08-09-002](../inbox/records/2026-08-09-stewardship-intelligence-seed-steward/record.md)
 
 ---
 
