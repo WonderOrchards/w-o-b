@@ -1,71 +1,203 @@
 {
   "database": "Wonder Orchards",
   "description": "Machine-readable map of Wonder Orchards knowledge documents.",
-  "knowledge": [
+  "documents": [
     {
       "path": "README.md",
       "name": "README.md",
-      "section": "root"
+      "section": "root",
+      "title": "Wonder Orchards Database",
+      "version": "alpha-v2.2",
+      "status": "active",
+      "created": "2025-09-02",
+      "last_updated": "2025-09-07",
+      "category": "docs"
     },
     {
       "path": "data/accounts.md",
       "name": "accounts.md",
-      "section": "data"
+      "section": "data",
+      "title": "Organizational Accounts",
+      "version": "alpha-v2.2",
+      "status": "active",
+      "category": "ops",
+      "tags": [
+        "accounts",
+        "operations",
+        "credentials"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "data/database-growth.md",
       "name": "database-growth.md",
-      "section": "data"
+      "section": "data",
+      "title": "Database Growth & Content Backlog",
+      "version": "alpha-v2.2",
+      "status": "active",
+      "category": "docs",
+      "tags": [
+        "growth",
+        "backlog",
+        "questions",
+        "missing-info"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "data/dna.md",
       "name": "dna.md",
-      "section": "data"
+      "section": "data",
+      "title": "DNA",
+      "version": "alpha-v2.2",
+      "status": "draft",
+      "category": "docs",
+      "tags": [
+        "dna",
+        "identity",
+        "core",
+        "principles"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "data/nursery/experiments/propagation-experiments-overview.md",
       "name": "propagation-experiments-overview.md",
-      "section": "data"
+      "section": "data",
+      "title": "The Wonder Nursery: Propagation Experiments",
+      "status": "active",
+      "category": "nursery",
+      "tags": [
+        "propagation",
+        "experiments",
+        "citrus",
+        "trees",
+        "nursery",
+        "research"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "data/vision.md",
       "name": "vision.md",
-      "section": "data"
+      "section": "data",
+      "title": "Vision",
+      "version": "alpha-v2.2",
+      "status": "draft",
+      "category": "docs",
+      "tags": [
+        "vision",
+        "direction",
+        "future"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "data/workflows.md",
       "name": "workflows.md",
-      "section": "data"
+      "section": "data",
+      "title": "Workflows",
+      "version": "alpha-v2.2",
+      "status": "draft",
+      "category": "docs",
+      "tags": [
+        "workflow",
+        "process",
+        "operations"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "dev/thread-header.md",
       "name": "thread-header.md",
-      "section": "dev"
+      "section": "dev",
+      "title": "Development Thread Header & Full Workflow Manual",
+      "version": "alpha-v2.2",
+      "status": "active",
+      "category": "dev",
+      "tags": [
+        "development",
+        "template",
+        "instructions",
+        "workflow",
+        "manual"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "tasks/backlog.md",
       "name": "backlog.md",
-      "section": "tasks"
+      "section": "tasks",
+      "title": "Backlog",
+      "version": "alpha-v2.2",
+      "status": "active",
+      "category": "tasks",
+      "tags": [
+        "backlog",
+        "pending",
+        "tasks"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "tasks/completed.md",
       "name": "completed.md",
-      "section": "tasks"
+      "section": "tasks",
+      "title": "Completed",
+      "version": "alpha-v2.2",
+      "status": "archived",
+      "category": "tasks",
+      "tags": [
+        "completed",
+        "done",
+        "archived"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "tasks/in-progress.md",
       "name": "in-progress.md",
-      "section": "tasks"
+      "section": "tasks",
+      "title": "In Progress",
+      "version": "alpha-v2.2",
+      "status": "active",
+      "category": "tasks",
+      "tags": [
+        "active",
+        "wip",
+        "tasks"
+      ],
+      "last_updated": "2025-09-07"
     },
     {
       "path": "versions/alpha-v2.2.md",
       "name": "alpha-v2.2.md",
-      "section": "versions"
+      "section": "versions",
+      "title": "Alpha v2.2",
+      "version": "alpha-v2.2",
+      "date": "2025-09-07",
+      "last_updated": "2025-09-07",
+      "status": "active",
+      "category": "versions",
+      "tags": [
+        "reorganization",
+        "metadata",
+        "standardization"
+      ]
     },
     {
       "path": "versions/history.md",
       "name": "history.md",
-      "section": "versions"
+      "section": "versions",
+      "title": "Version History",
+      "version": "alpha-v2.2",
+      "status": "active",
+      "category": "versions",
+      "tags": [
+        "history",
+        "changelog"
+      ],
+      "last_updated": "2025-09-07"
     }
   ]
 }

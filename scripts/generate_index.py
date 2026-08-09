@@ -1,4 +1,3 @@
-
 import json
 from pathlib import Path
 
@@ -13,7 +12,58 @@ EXCLUDED_DIRS = {
     "templates",
 }
 
-files = []
+
+def parse_value(value):
+    value = value.strip()
+
+    # Inline list: [vision, direction, future]
+    if value.startswith("[") and value.endswith("]"):
+        contents = value[1:-1].strip()
+
+        if not contents:
+            return []
+
+        return [
+            item.strip().strip('"').strip("'")
+            for item in contents.split(",")
+        ]
+
+    # Quoted string
+    if (
+        len(value) >= 2
+        and value[0] == value[-1]
+        and value[0] in ('"', "'")
+    ):
+        return value[1:-1]
+
+    return value
+
+
+def parse_frontmatter(text):
+    if not text.startswith("---"):
+        return {}
+
+    lines = text.splitlines()
+
+    if len(lines) < 3:
+        return {}
+
+    metadata = {}
+
+    for line in lines[1:]:
+        if line.strip() == "---":
+            break
+
+        if ":" not in line:
+            continue
+
+        key, value = line.split(":", 1)
+        metadata[key.strip()] = parse_value(value)
+
+    return metadata
+
+
+documents = []
 
 for path in ROOT.rglob("*.md"):
     relative = path.relative_to(ROOT)
@@ -21,23 +71,29 @@ for path in ROOT.rglob("*.md"):
     if any(part in EXCLUDED_DIRS for part in relative.parts):
         continue
 
-    files.append({
+    text = path.read_text(encoding="utf-8")
+    metadata = parse_frontmatter(text)
+
+    document = {
         "path": relative.as_posix(),
         "name": path.name,
-        "section": relative.parts[0] if len(relative.parts) > 1 else "root"
-    })
+        "section": relative.parts[0] if len(relative.parts) > 1 else "root",
+    }
 
-files.sort(key=lambda item: item["path"])
+    document.update(metadata)
+    documents.append(document)
+
+documents.sort(key=lambda item: item["path"])
 
 index = {
     "database": "Wonder Orchards",
     "description": "Machine-readable map of Wonder Orchards knowledge documents.",
-    "knowledge": files
+    "documents": documents,
 }
 
 OUTPUT.write_text(
     json.dumps(index, indent=2),
-    encoding="utf-8"
+    encoding="utf-8",
 )
 
-print(f"Generated {OUTPUT.name} with {len(files)} knowledge documents.")
+print(f"Generated {OUTPUT.name} with {len(documents)} knowledge documents.")
