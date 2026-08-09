@@ -109,6 +109,9 @@ Resolved knowledge should move into its appropriate permanent document rather th
 - **Question:** What could a place-based “Seed Steward” mean for Wonder Orchards, and how—if at all—could it support the fruit-tree mission while preserving human authority, safety, privacy, and deliberate growth?
 - **Boundaries:** This is an exploratory question, not an established program, specification, capability, experiment, or organizational commitment. Any later step requires evidence, defined safety and governance boundaries, and a separate human decision.
 - **Provenance:** [INBOX-2026-08-09-002](../inbox/records/2026-08-09-stewardship-intelligence-seed-steward/record.md)
+- **Speculative horizon:** Imagine a modular, land-scale steward that might one day learn acreage intimately and help cultivate food, sustainability, beauty, habitat, and human spaces. The source imagines movable gantries, interchangeable tools, wells, dwellings, infrastructure, and eventually city-building oriented toward the well-being of people, land, plants, and animals.
+- **Horizon boundaries:** This imagery is preserved for exploration only. It does not establish or authorize land development, construction, physical action, sensing, self-modification, autonomous expansion, resource acquisition, a program, a specification, or a commitment. Any movement toward those possibilities requires separate evidence, ecological and human governance, explicit limits, and human authorization.
+- **Additional provenance:** [INBOX-2026-08-09-003](../inbox/records/2026-08-09-extended-seed-steward-vision/record.md)
 
 ---
 
