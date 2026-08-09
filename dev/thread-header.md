@@ -1,138 +1,167 @@
 ---
-title: Development Thread Header & Full Workflow Manual
-version: alpha-v2.2
+title: Development & AI Collaboration Manual
+version: alpha-v2.3
 status: active
 category: dev
-tags: [development, template, instructions, workflow, manual]
-last_updated: 2025-09-07
+tags: [development, ai, instructions, workflow, collaboration]
+last_updated: 2026-08-08
 ---
 
-# Development Thread Header & Full Workflow Manual (alpha-v2.2)
+# Development & AI Collaboration Manual (alpha-v2.3)
 
-## Start of GPT Thread Paste
+## Purpose
 
-=== WONDER ORCHARDS DATABASE & WORKFLOW MANUAL ===
+This document explains how humans, AI systems, and development tools should work with the Wonder Orchards knowledge repository.
 
-## Wonder Orchards — Database Development Thread Header (v2.2)
+The repository itself is the source of truth.
 
----
+A complete database dump should not normally be required. The public repository, generated machine index, and individual Markdown documents provide direct access to the current state.
 
-### 1. Purpose of This Thread
-This text block is a complete snapshot of the Wonder Orchards project database and its development procedures.  
-It is designed to be pasted into a new AI thread to initiate a development session.
+## Entry Points
 
-This thread exists to:
-- Capture and update all project docs, tasks, workflows, and logs.
-- Maintain a dual output system when saving changes (GitHub repo + text-block for GPT continuity).
+Human frontend:
 
----
+https://wonderorchards.github.io/w-o-b/
 
-### 2. Roles & Expectations
-- **User Role:** Visionary, decision-maker, provides direction and priorities.
-- **AI Role:** Collaborative developer, responsible for implementation, checking consistency, and refining content.
-- **Repo Role:** Single source of truth, always synchronized with the text-block exports.
+Machine-readable knowledge index:
 
----
+https://wonderorchards.github.io/w-o-b/_index.json
 
-### 3. Core Principles
-- **Living system** — The database evolves continuously, refined with each update.
-- **Structured but flexible** — Use Markdown + YAML frontmatter for all files.
-- **Human-readable & machine-readable** — Markdown for readability, YAML for metadata.
-- **Living Index** — Always maintain clear navigation in `README.md`.
-- **Version control** — Use semantic versioning and capture changes in `/versions/`.
-- **Dual navigation** — GitHub repo for permanent storage + text-block for GPT continuation.
+GitHub repository:
 
----
+https://github.com/WonderOrchards/w-o-b
 
-### 4. How to Interpret This Dump
-- `=== FILE: path/to/file ===` — Denotes start of a file's content.
-- `dev/database-latest.txt` — Recursive export of this structure, omitted to avoid recursion.
-- Large or redundant files (like full HTML frontends) — replaced with placeholders.
-- The most current state is always what you are reading now.
+## Core Principles
 
----
+- **Living system:** The database evolves as Wonder Orchards evolves.
+- **Structured but flexible:** Use structure where it helps without prematurely restricting future forms.
+- **Human-readable:** Knowledge should remain understandable directly from Markdown.
+- **Machine-readable:** YAML frontmatter and generated indexes provide structured discovery.
+- **Repository as source of truth:** Frontends and indexes are views into the repository, not separate databases.
+- **Preserve evolution:** Git history and version documents record meaningful changes.
+- **Modular growth:** New documents, categories, relationships, and tools may emerge when useful.
+- **Low friction:** Automation should reduce repetitive maintenance.
 
-### 5. Workflow for Updates
+## Recommended AI Entry Process
 
-**Understand**
-- Review the request in the context of `/data`, `/tasks`, and `/guides`.
-- Check for related information in existing files.
+When an AI system begins working with Wonder Orchards:
 
-**Plan**
-- Check `/data/database-growth.md` for inspiration and related backlog items.
-- Ensure alignment with `/data/dna.md` and `/data/vision.md`.
-- Determine the correct file path and category for the new content.
+1. Read `_index.json` to discover the current knowledge landscape.
+2. Identify the documents relevant to the current task.
+3. Read those Markdown documents directly.
+4. Consult `data/dna.md` and `data/vision.md` when decisions involve identity or direction.
+5. Consult `data/database-growth.md` when exploring missing knowledge or future development.
+6. Consult task documents when work status or priorities matter.
+7. Avoid assuming that the current structure is exhaustive or permanent.
 
-**Execute**
-- Apply requested changes to the appropriate files.
-- Follow formatting and metadata standards (use templates).
-- Use consistent YAML frontmatter example (indented code block):
+## Knowledge Documents
 
-    title: [Descriptive Title]
-    version: [matches repo version]
-    status: [draft, active, in_progress, archived]
-    category: [docs, tasks, ops, dev, nursery, scripts, templates]
-    tags: [list,of, relevant, tags]
-    last_updated: [YYYY-MM-DD]
+Knowledge is generally stored as Markdown with YAML frontmatter.
 
-**Data Integrity Check**
-After making changes, confirm:
-- YAML frontmatter fields are present and consistent.
-- `README.md` index matches existing files.
-- `last_updated` fields are correct.
-- File paths are logical and consistent.
+Typical frontmatter:
 
-**Output — AI Confirmation Required**
-- Before returning any full-text export or zip file, always ask:
-  "Do you want me to return the full database export or a zip of the repo? Reply 'yes' to proceed."
-- Only after explicit user confirmation:
-  - Regenerate `_index.json` via `scripts/generate_index.py` (when implemented).
-  - Update `dev/database-latest.txt` with the latest export.
-  - Package the repo (omit recursive/placeholder files).
-  - Return both the zip file and the full-text export (if requested).
-- If user does not confirm — provide alternatives: summaries, diffs, or a list of changed files.
+    ---
+    title: Descriptive Title
+    version: alpha-v2.3
+    status: draft
+    category: docs
+    tags: [example, tags]
+    last_updated: YYYY-MM-DD
+    ---
 
----
+Metadata may evolve. New fields may be introduced when they provide useful information.
 
-### 6. Versioning Rules
-Follow semantic versioning:
-- Patch update — bugfixes or small edits — `vX.Y.Z` — increment Z.
-- Minor update — new docs, moderate changes — increment Y.
-- Major update — large structural/workflow changes — increment X.
+The generated index should preserve declared metadata rather than require every document to conform to a rigid universal schema.
 
-Always update:
-- Version in `README.md`.
-- Add a new entry in `/versions/`.
+## Development Workflow
 
----
+### Understand
 
-### 7. Temporary vs Permanent Files
-- `/frontend/index.html` — Temporary Vercel front-end (safe to regenerate).
-- `/root/index.html` — Synced placeholder, not permanent (do not overwrite unless directed).
-- Placeholders represent excluded/large files; never expand them unless explicitly requested.
+- Determine what the user or project is trying to accomplish.
+- Read the relevant existing documents before changing structure.
+- Look for existing concepts before creating duplicates.
 
----
+### Plan
 
-### 8. Quick Response Modes
-The AI can respond in different modes depending on context:
-- Diff Mode — Show only changed files.
-- Summary Mode — Bullet points of updates.
-- Full Export Mode — Entire repo dump (requires explicit confirmation).
+- Prefer the smallest useful change.
+- Preserve working architecture unless there is a reason to change it.
+- Consider whether new information belongs in an existing document or deserves a new modular document.
+- Maintain alignment with the vision and DNA when relevant.
 
----
+### Execute
 
-### 9. Standard Format for Full Database Text Block
-- Global Header — `# === DATABASE EXPORT ===`
-- File Sections — `# --- FILE: path/to/file.md ---`
-- Footer — `# === END OF DATABASE EXPORT ===`
+- Edit the appropriate source documents.
+- Preserve valid YAML frontmatter.
+- Use logical paths and descriptive filenames.
+- Update `last_updated` when a document materially changes.
 
----
+### Verify
 
-### 10. Usage Instructions
-- Use this header when starting new development threads.
-- Follow with the `dev/database-latest.txt` content.
-- Always ensure version consistency across the database.
+Before committing:
 
----
+- Confirm files contain valid intended content.
+- Confirm frontmatter begins at the first character when present.
+- Check internal paths and references.
+- Avoid committing secrets or private credentials.
+- Review `git status` before committing.
 
-## End of Thread Header (v2.2)
+### Publish
+
+Changes pushed to `main` trigger the GitHub Pages workflow.
+
+During deployment:
+
+1. The repository is checked out.
+2. `scripts/generate_index.py` generates a fresh `_index.json`.
+3. The repository and generated index are packaged for GitHub Pages.
+4. GitHub Pages publishes the result.
+
+The deployment-generated `_index.json` does not need to create an automated commit back into `main`.
+
+## Human and Machine Navigation
+
+`README.md` serves as a curated human doorway into the repository.
+
+`_index.json` serves as a generated machine map of the knowledge repository.
+
+These roles are complementary.
+
+The README does not need to enumerate every future knowledge object, while the generated index should discover the knowledge documents automatically.
+
+## Versioning
+
+Version documents preserve meaningful architectural and developmental checkpoints.
+
+Current version:
+
+`alpha-v2.3`
+
+Version history lives in:
+
+`versions/`
+
+Not every content edit requires a new project version. Create a new version when a meaningful structural, architectural, or conceptual checkpoint is reached.
+
+## Security
+
+This repository is public.
+
+Never store:
+
+- passwords
+- API keys
+- private keys
+- recovery codes
+- authentication tokens
+- private personal information
+- confidential organizational information
+
+Public service names and organizational account identifiers may be documented when useful, but secrets belong in the appropriate private credential system.
+
+## Evolution Principle
+
+Wonder Orchards should be allowed to discover what it needs to become.
+
+The current directory structure, metadata fields, frontend, workflows, and machine interfaces are tools rather than permanent constraints.
+
+When new conceptual fruit appears, the system should be able to incorporate it without requiring unnecessary reconstruction of what already works.
