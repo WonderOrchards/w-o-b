@@ -1,34 +1,39 @@
 ---
 title: Organizational Accounts
-version: alpha-v2.2
+version: alpha-v2.3
 status: active
 category: ops
-tags: [accounts, operations, credentials]
-last_updated: 2025-09-07
+tags: [accounts, operations, services]
+last_updated: 2026-08-08
 ---
 
-# Organizational Accounts (alpha-v2.2)
+# Organizational Accounts (alpha-v2.3)
 
 ## Overview
-This document serves as the central reference for organizational accounts used by Wonder Orchards.  
-It includes core services, login credentials (email-based), and notes on their role in operations and development.  
 
----
+This document is the public service and account directory for Wonder Orchards.
+
+It records which platforms are used and what role they serve. Passwords, API keys, recovery codes, private keys, and other secrets should never be stored in this repository.
 
 ## Accounts Directory
 
-| Service   | Account / Email              | Notes / Connection                           |
-|-----------|------------------------------|----------------------------------------------|
-| Gmail     | wonderorchards@gmail.com     | Main nonprofit email                         |
-| GitHub    | wonderorchards@gmail.com     | Repo: `wonder-orchards-beta`                 |
-| Bitwarden | wonderorchards@gmail.com     | Password management for organization         |
-| ChatGPT   | wonderorchards@gmail.com     | AI assistant for dev and planning            |
-| Vercel    | Linked through GitHub        | Hosting for website connected to GitHub      |
-| DeepSeek  | wonderorchards@gmail.com     | AI assistant for dev and planning            |
+| Service | Account / Connection | Role |
+|---|---|---|
+| Gmail | wonderorchards@gmail.com | Primary organizational email |
+| GitHub | WonderOrchards organization | Source repository, version history, automation, and GitHub Pages hosting |
+| Bitwarden | wonderorchards@gmail.com | Private password and credential management |
+| ChatGPT | wonderorchards@gmail.com | AI collaboration, planning, development, and research |
+| DeepSeek | wonderorchards@gmail.com | AI collaboration and research |
 
----
+## Current Repository
+
+- Repository: `WonderOrchards/w-o-b`
+- Public frontend: `https://wonderorchards.github.io/w-o-b/`
+- Machine index: `https://wonderorchards.github.io/w-o-b/_index.json`
 
 ## Notes
-- All credentials are stored and managed via **Bitwarden**.  
-- Access should be coordinated through the primary **Gmail account**.  
-- Updates to this list should include service role, connection details, and status.  
+
+- Secrets are managed outside this repository.
+- Bitwarden is the appropriate location for private credentials.
+- This document may list public account identifiers and service relationships only.
+- Update this directory when services are added, removed, or change purpose.
