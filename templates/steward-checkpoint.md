@@ -3,26 +3,30 @@ title: Steward Checkpoint NNNN
 version: alpha-v2.3
 artifact_type: steward-checkpoint
 checkpoint_id: STEWARD-CHECKPOINT-NNNN
-checkpoint_status: proposed
-steward_version: steward-vX.Y.Z
-steward_version_record: ../steward-vX.Y.Z.md
+checkpoint_status: draft
+purpose: TBD
+designation_kind: prospective
+steward_version: null
+steward_version_record: null
 parent_checkpoint: none
 parent_checkpoint_commit: null
 checkpoint_commit: null
 checkpoint_tree_scope: repository
 created_at: null
 created_by: TBD
-authorization_record: null
-authorization_status: pending
-validation_status: pending
+accepted_at: null
+accepted_by: null
+acceptance_record: null
+validation_summary: pending
 validation_record: null
 working_tree_clean: unknown
 frontend_included: true
 generated_artifacts_regenerated: [_index.json]
 generated_artifacts_committed: []
 known_good_status: unverified
-rollback_eligible: false
-rollback_target: null
+known_defects: []
+unknown_conditions: []
+restoration_method: new-human-authorized-git-history
 status: draft
 category: versions
 tags: [steward, checkpoint]
@@ -37,31 +41,27 @@ Describe the repository state represented by this checkpoint.
 
 This record is a semantic pointer to an exact Git commit. It is not a parallel snapshot and does not replace Git, the linked Steward version, or the human decision authorizing the evolution.
 
-Creating this proposed record does not create, authorize, seal, or activate a checkpoint. While `checkpoint_status` is `proposed`, `authorization_status: pending`, `validation_status: pending`, and `checkpoint_commit: null` are expected.
+Creating a draft record does not make a checkpoint available or authorize restoration. While `checkpoint_status` is `draft`, `accepted_at`, `accepted_by`, and `acceptance_record` remain null. A prospective draft may also retain `checkpoint_commit: null` until the intended commit exists.
 
 ## Checkpoint Lifecycle
 
-Use exactly this lifecycle sequence:
+Use exactly this lifecycle:
 
 ```text
-proposed → authorized → sealed → active → retired | suspended | rolled-back
+draft → available → retired
 ```
 
-- `proposed` — the checkpoint record may be drafted; the checkpoint is not authorized, sealed, or active.
-- `authorized` — a durable human authorization record exists; the checkpoint is not yet sealed.
-- `sealed` — the exact Git checkpoint commit SHA and required validation are recorded.
-- `active` — separate human authority has designated the checkpoint as the active Steward checkpoint.
-- `retired` — the checkpoint is no longer active but remains a valid historical state.
-- `suspended` — the checkpoint is temporarily ineligible for ordinary rollback or activation.
-- `rolled-back` — the checkpoint state was superseded through a later authorized rollback.
+- `draft` — a candidate checkpoint record; it is not yet accepted as a return point.
+- `available` — a human has explicitly accepted the exact Git commit as a usable return point.
+- `retired` — preserved historically but no longer recommended for ordinary restoration.
 
-Lifecycle status is distinct from `known_good_status`. Lifecycle describes where a checkpoint is in its institutional use; known-good status describes the evidence supporting its safety and suitability.
+Lifecycle status is distinct from `known_good_status`. A draft checkpoint remains `unverified`. An available checkpoint must be `provisional` or `verified`.
 
-A checkpoint cannot become `authorized` without a linked human authorization record. It cannot become `sealed` without the required validation and exact full Git commit SHA. It cannot become `active` without separate human authority.
+A checkpoint cannot become `available` without its exact full Git commit SHA and an explicit, durable human acceptance. Acceptance identifies a usable return point; it does not authorize the Steward to restore it.
 
 ## Steward Semantic Version
 
-Identify the linked Steward version, its version record, lifecycle state, and semantic purpose.
+If the checkpoint corresponds to a Steward version, identify it and its record. A repository checkpoint need not create or correspond to a new Steward semantic version.
 
 ## Parent Checkpoint
 
@@ -73,9 +73,11 @@ Link the intake records, source material, interpretations, proposals, decisions,
 
 ## Human Authorization
 
-Link the durable decision authorizing the evolution, implementation scope, checkpoint creation, and activation conditions. Record exclusions and unresolved authority. Do not infer or invent approval.
+## Human Acceptance
 
-A proposed record may retain `authorization_status: pending`. Change its lifecycle to `authorized` only after linking the human authorization record.
+For an available checkpoint, link the durable decision in which a human accepted the exact commit as a usable return point. Record who accepted it, when, its intended purpose, and the accepted defects and limitations. Do not infer or invent acceptance.
+
+A draft has no human known-good assessment. Acceptance of a checkpoint does not authorize a future restoration.
 
 ## Repository and Frontend Scope
 
@@ -88,7 +90,7 @@ Record:
 - full checkpoint commit SHA;
 - Git parent commit or commits;
 - branch or merge context;
-- whether the working tree and index were clean before sealing; and
+- whether the working tree and index were clean when a prospective checkpoint was created, if observed; and
 - the checkpoint commit trailers, if used.
 
 Git is the mechanical source of truth for the checkpoint state.
@@ -97,18 +99,17 @@ Git is the mechanical source of truth for the checkpoint state.
 
 Record validation performed, results, reviewer, date, failures, and unresolved limitations. A successful commit alone does not establish known-good status.
 
-A proposed or authorized record may retain `validation_status: pending`. The checkpoint cannot become `sealed` until required validation is complete and the exact checkpoint commit SHA is recorded.
+Validation should be proportionate to the checkpoint's intended use. The minimum mechanical checks are that the full SHA resolves to a Git commit and that the commit represents the intended repository state. Record additional checks, omissions, known defects, and unknown conditions honestly.
 
-At minimum, consider:
+As relevant, consider:
 
 - clean working-tree verification;
 - metadata and internal-link validation;
-- authorization-scope comparison;
 - Steward authority-boundary validation;
 - frontend and repository coherence;
 - generated artifact regeneration;
 - checkpoint ancestry; and
-- rollback-target reachability.
+- whether the commit remains reachable or can otherwise be recovered reliably.
 
 ## Known-Good Assessment
 
@@ -133,7 +134,7 @@ Classify validation evidence precisely:
 
 Record the human assessment, its durable decision record, the accepted defects and limitations, and the evidence supporting the selected value. Do not infer a known-good assessment from validation results or from an instruction that does not explicitly make that assessment.
 
-Known-good status is separate from checkpoint lifecycle. Only an eligible checkpoint may be selected as an ordinary rollback target.
+Known-good status is separate from checkpoint lifecycle. A checkpoint becomes an ordinary return point only when it is both `available` and identified by an exact commit SHA.
 
 ## Generated Artifacts
 
@@ -141,21 +142,21 @@ Identify generated artifacts that are regenerated from tracked source and any ge
 
 `_index.json` is normally regenerated and is not itself the checkpoint source of truth.
 
-## Rollback Target
+## Restoration
 
-Identify the preceding eligible checkpoint and exact Git commit. Explain compatibility risks and whether component or repository-wide restoration would be appropriate.
+Describe how this exact repository state could be restored, along with material compatibility risks. Restoration is a separate human-authorized event.
 
 ## Restoration Considerations
 
 Describe how the checkpoint could be restored through new, human-authorized Git history without reset, force-push, deletion of history, or silent retraction of later institutional knowledge.
 
-The Steward may recommend a restoration and prepare a comparison, but may not authorize or execute rollback under this schema.
+The Steward may inspect the difference, report likely impact, and recommend a restoration. It may not authorize or execute restoration automatically.
 
-## Activation
+Restoration should normally create new Git history rather than reset, force-push, delete, or rewrite shared history. When restoration occurs, record its reason, checkpoint used, affected scope, human authorizer, resulting commit, and validation.
 
-Record whether, when, and by what human authority the checkpoint became active. Checkpoint creation does not by itself prove semantic activation.
+## Registry Designation
 
-Sealing does not activate a checkpoint. Activation requires a separate human authority and must be recorded explicitly.
+Record whether this checkpoint is the registry's `preferred_return_checkpoint`. That designation means it is the checkpoint a human would ordinarily choose before experimentation. It does not identify the current repository state or Steward version and does not authorize automatic restoration.
 
 ## Limitations and Open Questions
 

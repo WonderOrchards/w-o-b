@@ -136,6 +136,22 @@ The preferred procedure is:
 
 Rollback of Steward behavior does not automatically retract organizational knowledge, inbox provenance, decisions, reports, or integration records. Those require a separate impact review and, when consequential, human decisions.
 
+## Repository Checkpoints and Experiment Restoration
+
+Repository checkpoints are a simpler mechanism for human-controlled experimentation. A checkpoint identifies one exact full Git commit that a human may accept as a usable return point before an experiment. It represents the complete tracked repository state and is governed by `versions/steward/checkpoints/history.md`.
+
+Checkpoint lifecycle is separate from Steward version lifecycle:
+
+```text
+draft → available → retired
+```
+
+The registry's `preferred_return_checkpoint` identifies the available checkpoint a human would ordinarily choose before experimentation. It does not identify the current repository state or Steward version and grants no automatic restoration authority.
+
+Restoring a repository checkpoint is a separate human-authorized event and should normally create new Git history rather than rewrite shared history. The Steward may compare the current repository with a checkpoint and report the likely impact, but it may not authorize or execute restoration automatically.
+
+A checkpoint restoration creates a new Steward semantic version only when it changes effective Steward behavior, capability, authority, inputs, outputs, triggers, safety behavior, or operating model. Ordinary repository restoration that does not change effective Steward behavior remains ordinary Git history and does not require a Steward version.
+
 ## Emergency Suspension
 
 If active behavior is unsafe, use the smallest reversible action that stops it, such as disabling its trigger or write path.
