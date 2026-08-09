@@ -186,6 +186,11 @@
       ]
     },
     {
+      "path": "versions/alpha-v2.3.md",
+      "name": "alpha-v2.3.md",
+      "section": "versions"
+    },
+    {
       "path": "versions/history.md",
       "name": "history.md",
       "section": "versions",
