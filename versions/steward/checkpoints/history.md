@@ -3,7 +3,7 @@ title: Steward Checkpoint History
 version: alpha-v2.3
 status: active
 category: versions
-preferred_return_checkpoint: none
+preferred_return_checkpoint: CHECKPOINT-0003
 tags: [steward, checkpoints, history, rollback]
 last_updated: 2026-08-09
 ---
@@ -20,15 +20,17 @@ Checkpoint records do not replace Git commits, Steward versions, or human decisi
 
 ## Current State
 
-`STEWARD-CHECKPOINT-0001` is the first formal checkpoint record. It is a draft, unverified anchor for repository commit `bf69e0617da13d2b13a2c9d715249b4fa130f58a`.
+`CHECKPOINT-0003` is the available, provisional checkpoint for repository commit `ad6cd07be7fc6a9da36336987a20134a3bab6968` and is the preferred return point before future experimentation.
 
-No checkpoint is available or designated as the preferred return checkpoint. `steward-v0.1.0` remains the same current provisional Steward baseline.
+This designation does not identify the current repository state or Steward version and does not authorize automatic restoration. `steward-v0.1.0` remains the same current provisional Steward baseline.
 
 ## Registry
 
 | Checkpoint | Steward version | Git commit | Parent checkpoint | Lifecycle | Known-good | Record |
 |---|---|---|---|---|---|---|
 | `STEWARD-CHECKPOINT-0001` | `steward-v0.1.0` | `bf69e0617da13d2b13a2c9d715249b4fa130f58a` | None | `draft` | `unverified` | [Checkpoint 0001](steward-checkpoint-0001.md) |
+| `CHECKPOINT-0002` | None | `8d28e0d2a55204bd771cc203e281315db0bd402f` | `STEWARD-CHECKPOINT-0001` | `draft` | `unverified` | [Checkpoint 0002](steward-checkpoint-0002.md) |
+| `CHECKPOINT-0003` | None | `ad6cd07be7fc6a9da36336987a20134a3bab6968` | `CHECKPOINT-0002` | `available` | `provisional` | [Checkpoint 0003](steward-checkpoint-0003.md) |
 
 ## Canonical Checkpoint Lifecycle
 
@@ -88,7 +90,7 @@ This field does not identify the current repository state or current Steward ver
 
 ## Registry Rules
 
-- Checkpoint IDs use the form `STEWARD-CHECKPOINT-NNNN` and are never reused.
+- Checkpoint IDs use the form `CHECKPOINT-NNNN` and are never reused. The first formal record retains its historical `STEWARD-CHECKPOINT-0001` identifier rather than being renamed retrospectively.
 - Every checkpoint identifies one full Git commit SHA.
 - A checkpoint links a Steward semantic version only when the repository state corresponds to meaningful Steward evolution.
 - Every checkpoint identifies its semantic parent checkpoint, when one exists.
