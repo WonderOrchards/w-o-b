@@ -1,82 +1,86 @@
 ---
 title: Wonder Orchards Database
-version: alpha-v2.2
+version: alpha-v2.3
 status: active
 created: 2025-09-02
-last_updated: 2025-09-07
+last_updated: 2026-08-08
 category: docs
 ---
 
-# Wonder Orchards Database (alpha-v2.2)
+# Wonder Orchards Database (alpha-v2.3)
 
-This repository is the **beta-phase database** for **Wonder Orchards**,  
-a nonprofit organization dedicated to planting fruit trees and orchards for everyone to enjoy and benefit from.
-
----
+This repository is the evolving knowledge base and organizational memory of **Wonder Orchards**, a nonprofit dedicated to planting fruit trees and orchards for everyone to enjoy and benefit from.
 
 ## Purpose
-To organize and store the early **structure, workflow, and planning documents** for Wonder Orchards in a simple, version-controlled format.
 
----
+Wonder Orchards uses simple, open, version-controlled files to preserve its ideas, decisions, experiments, workflows, and evolution.
 
-## Contents
----
+Markdown contains the knowledge.
+YAML describes the knowledge.
+Git preserves its history.
+GitHub Pages provides human access.
+A generated JSON index provides machine access.
 
-## Docs
+## Human Access
 
-- [data/vision.md](data/vision.md) → Vision & guiding direction  
-- [data/dna.md](data/dna.md) → Core essence & identity  
-- [data/workflows.md](data/workflows.md) → Tree-inspired workflows & processes  
-- [data/accounts.md](data/accounts.md) → Organizational accounts  
-- [data/database-growth.md](data/database-growth.md) → Content backlog, missing info, and future growth  
-- [data/nursery/experiments/](data/nursery/experiments/) → Nursery research & propagation logs  
-- [data/logs/](data/logs/) → Running log entries  
+The public frontend is available at:
 
----
+https://wonderorchards.github.io/w-o-b/
+
+The frontend reads and renders the Markdown knowledge contained in this repository.
+
+## Machine / GPT Access
+
+The generated machine-readable index is available at:
+
+https://wonderorchards.github.io/w-o-b/_index.json
+
+The index is generated automatically during every GitHub Pages deployment from the metadata contained in the Markdown documents.
+
+## Knowledge
+
+- data/vision.md - Vision and guiding direction
+- data/dna.md - Core essence and identity
+- data/workflows.md - Tree-inspired workflows and processes
+- data/accounts.md - Organizational accounts
+- data/database-growth.md - Missing knowledge, questions, and future growth
+- data/nursery/experiments/ - Nursery research and propagation experiments
 
 ## Tasks
 
-- [tasks/backlog.md](tasks/backlog.md) → Upcoming ideas & work (with priorities)  
-- [tasks/in-progress.md](tasks/in-progress.md) → Active work (with priorities)  
-- [tasks/completed.md](tasks/completed.md) → Finished tasks  
+- tasks/backlog.md - Upcoming ideas and work
+- tasks/in-progress.md - Active work
+- tasks/completed.md - Finished work
 
----
+## Development
 
-## Dev
+- dev/thread-header.md - Development workflow and operating instructions
 
-- [dev/thread-header.md](dev/thread-header.md) → Standard thread header & full workflow instructions  
+## Automation
 
----
-
-## Scripts
-
-- [scripts/dump_repo.sh](scripts/dump_repo.sh) → Utility to produce a repository text dump  
-- [scripts/README.md](scripts/README.md) → Automation & packaging notes  
-
----
+- scripts/generate_index.py - Generates the machine-readable knowledge index
+- scripts/dump_repo.sh - Utility for producing a repository text dump
+- scripts/README.md - Automation and scripting notes
+- .github/workflows/generate-index.yml - Builds the knowledge index and deploys GitHub Pages
 
 ## Templates
 
-- [templates/document.md](templates/document.md) → New document template (frontmatter + body)  
-- [templates/task.md](templates/task.md) → Task template (frontmatter + task fields)  
-
----
+- templates/document.md - Template for new knowledge documents
+- templates/task.md - Template for new tasks
 
 ## Versions
 
-- [versions/alpha-v2.2.md](versions/alpha-v2.2.md) → Current version notes  
-- [versions/history.md](versions/history.md) → Version history  
+- versions/alpha-v2.3.md - Current version notes
+- versions/history.md - Evolution and version history
 
----
+## Frontend
 
-## Frontend (temporary)
+- index.html - Human-facing browser for the Wonder Orchards knowledge base
 
-- [index.html](index.html) → Lightweight frontend (reads markdown files)  
+## Evolution
 
----
+Wonder Orchards is intentionally designed as a living system.
 
-## Next Steps
+Its structure may change as new needs, relationships, patterns, and conceptual fruit appear. New capability should be added without unnecessarily restricting future forms of organization.
 
-- Continue building content: **vision, workflows, DNA**.  
-- Track database growth in [data/database-growth.md](data/database-growth.md).  
-- Use [scripts/README.md](scripts/README.md) as a guide for eventual automation.  
+The repository remains the source of truth.
