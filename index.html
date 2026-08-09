@@ -484,8 +484,7 @@
       'tasks/backlog.md',
       'tasks/completed.md',
       'data/database-growth.md',
-      'README.md',
-      'data/accounts.md'
+      'README.md'
     ];
 
     const navigationGroups = [
@@ -503,7 +502,7 @@
       if (['data/now.md', 'data/vision.md', 'data/dna.md', 'README.md'].includes(path)) return 'start';
       if (path === 'data/observations.md' || path.startsWith('data/nursery/')) return 'orchard';
       if (path === 'data/decisions.md' || path === 'data/workflows.md' || path.startsWith('tasks/')) return 'work';
-      if (['data/accounts.md', 'data/database-growth.md'].includes(path)) return 'operations';
+      if (path === 'data/database-growth.md') return 'operations';
       if (path.startsWith('inbox/') || path === 'data/inbox-digestion-protocol.md' || path === 'dev/steward-cultivation-procedure.md') return 'stewardship';
       if (path.startsWith('versions/')) return 'history';
       if (path.startsWith('dev/') || path.startsWith('scripts/') || path.startsWith('templates/')) return 'development';

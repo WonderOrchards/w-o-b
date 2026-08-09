@@ -45,7 +45,6 @@ The index is generated automatically during every GitHub Pages deployment from t
 - data/vision.md - Vision and guiding direction
 - data/dna.md - Core essence and identity
 - data/workflows.md - Tree-inspired workflows and processes
-- data/accounts.md - Organizational accounts
 - data/database-growth.md - Missing knowledge, questions, and future growth
 - data/nursery/experiments/ - Nursery research and propagation experiments
 
