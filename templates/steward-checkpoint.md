@@ -112,7 +112,26 @@ At minimum, consider:
 
 ## Known-Good Assessment
 
-Record `unverified`, `provisional`, `verified`, `failed`, or `revoked` and the evidence supporting that state.
+Known-good means:
+
+> A human has determined that this exact repository state is sufficiently trustworthy and useful for its intended purpose, with all material known defects and limitations explicitly documented.
+
+Use these canonical values:
+
+- `unverified` — no human known-good assessment has been made.
+- `provisional` — a human has accepted the checkpoint as a usable baseline with its documented limitations and known defects.
+- `verified` — a human has accepted the checkpoint after the repository's defined verification requirements have been satisfied.
+
+Known-good does not mean perfect or defect-free. A known defect does not automatically prevent a checkpoint from being `provisional` or `verified` when the defect is documented and falls within the human acceptance boundary.
+
+Classify validation evidence precisely:
+
+- **Known defect** — a condition that has been observed and documented.
+- **Unknown condition** — a condition for which evidence is unavailable.
+- **Not applicable** — a validation that does not apply to that checkpoint.
+- **Not performed** — a validation that could have been performed but was not.
+
+Record the human assessment, its durable decision record, the accepted defects and limitations, and the evidence supporting the selected value. Do not infer a known-good assessment from validation results or from an instruction that does not explicitly make that assessment.
 
 Known-good status is separate from checkpoint lifecycle. Only an eligible checkpoint may be selected as an ordinary rollback target.
 
