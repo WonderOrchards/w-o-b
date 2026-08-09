@@ -85,13 +85,32 @@
 
     .nav-header { font-weight:bold; margin-bottom:12px; color:var(--h2-color); }
     .nav-list { list-style:none; padding:0; margin:0; }
-    .nav-list li { margin-bottom:6px; }
+    .nav-list > li { margin-bottom:7px; }
+    .nav-group { border-top:1px solid rgba(255,255,255,0.08); padding-top:7px; }
+    .nav-group:first-child { border-top:none; padding-top:0; }
+    .nav-group summary {
+      color:var(--h2-color);
+      cursor:pointer;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:0.09em;
+      list-style:none;
+      padding:5px 6px;
+      text-transform:uppercase;
+      user-select:none;
+    }
+    .nav-group summary::-webkit-details-marker { display:none; }
+    .nav-group summary::before { content:'▸'; display:inline-block; margin-right:6px; transition:transform 0.18s ease; }
+    .nav-group[open] summary::before { transform:rotate(90deg); }
+    .nav-group-list { list-style:none; margin:2px 0 3px; padding:0 0 0 8px; }
+    .nav-group-list li { margin-bottom:3px; }
     .nav-list a {
       color:var(--link-color);
       text-decoration:none;
       display:block;
-      padding:6px 8px;
+      padding:5px 8px;
       border-radius:6px;
+      font-size:13px;
       transition: background 0.2s ease;
     }
     .nav-list a:hover { color:var(--link-hover-color); background: rgba(255,255,255,0.05); }
@@ -448,6 +467,78 @@
     // ---------- Markdown navigation/parser ----------
     let fileStructure = [];
 
+    // Lead with the documents that help a person encounter Wonder Orchards:
+    // what is happening, why it exists, what is being noticed, and how to act.
+    const humanEncounterOrder = [
+      'data/now.md',
+      'data/vision.md',
+      'data/dna.md',
+      'data/observations.md',
+      'data/nursery/experiments/propagation-experiments-overview.md',
+      'data/nursery/experiments/propagation-tests/meyer-lemon-cuttings.md',
+      'data/nursery/experiments/propagation-tests/air-layering-experiments.md',
+      'data/nursery/experiments/propagation-tests/accidental-oak-cutting.md',
+      'data/decisions.md',
+      'data/workflows.md',
+      'tasks/in-progress.md',
+      'tasks/backlog.md',
+      'tasks/completed.md',
+      'data/database-growth.md',
+      'README.md',
+      'data/accounts.md'
+    ];
+
+    const navigationGroups = [
+      { id: 'start', label: 'Start Here', open: true },
+      { id: 'orchard', label: 'Living Orchard', open: true },
+      { id: 'work', label: 'Work & Decisions', open: true },
+      { id: 'operations', label: 'Operations & Growth', open: false },
+      { id: 'stewardship', label: 'Stewardship', open: false },
+      { id: 'history', label: 'History', open: false },
+      { id: 'development', label: 'Development', open: false },
+      { id: 'other', label: 'Other', open: false }
+    ];
+
+    function navigationGroup(path) {
+      if (['data/now.md', 'data/vision.md', 'data/dna.md', 'README.md'].includes(path)) return 'start';
+      if (path === 'data/observations.md' || path.startsWith('data/nursery/')) return 'orchard';
+      if (path === 'data/decisions.md' || path === 'data/workflows.md' || path.startsWith('tasks/')) return 'work';
+      if (['data/accounts.md', 'data/database-growth.md'].includes(path)) return 'operations';
+      if (path.startsWith('inbox/') || path === 'data/inbox-digestion-protocol.md' || path === 'dev/steward-cultivation-procedure.md') return 'stewardship';
+      if (path.startsWith('versions/')) return 'history';
+      if (path.startsWith('dev/') || path.startsWith('scripts/') || path.startsWith('templates/')) return 'development';
+      return 'other';
+    }
+
+    function formatNavigationLabel(value) {
+      return value
+        .replace(/\.md$/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
+    function navigationRank(path) {
+      const exactRank = humanEncounterOrder.indexOf(path);
+      if (exactRank !== -1) return exactRank;
+
+      const fallbackStart = humanEncounterOrder.length;
+      if (path.startsWith('data/nursery/')) return fallbackStart + 10;
+      if (path.startsWith('data/')) return fallbackStart + 20;
+      if (path.startsWith('tasks/')) return fallbackStart + 30;
+      if (path.startsWith('inbox/')) return fallbackStart + 40;
+      if (path.startsWith('dev/')) return fallbackStart + 50;
+      if (path.startsWith('scripts/')) return fallbackStart + 60;
+      if (path.startsWith('templates/')) return fallbackStart + 70;
+      if (path.startsWith('versions/')) return fallbackStart + 80;
+      return fallbackStart + 90;
+    }
+
+    function compareForHumanEncounter(a, b) {
+      const rankDifference = navigationRank(a.path) - navigationRank(b.path);
+      if (rankDifference !== 0) return rankDifference;
+      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    }
+
     function extractLinksFromReadme(content) {
       const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
       const links = [];
@@ -464,23 +555,43 @@
 
     function renderNavigation() {
       navList.innerHTML = '';
-      fileStructure.forEach(file => {
+      navigationGroups.forEach(group => {
+        const files = fileStructure.filter(file => file.group === group.id);
+        if (!files.length) return;
+
         const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = '#';
-        a.textContent = file.name;
-        a.dataset.path = file.path;
-        a.addEventListener('click', (e) => {
-          e.preventDefault();
-          document.querySelectorAll('#navList a').forEach(link => link.classList.remove('active'));
-          a.classList.add('active');
-          loadFile(file.path);
-          if (window.innerWidth <= 768) {
-            hamburger.classList.remove('active');
-            navContainer.classList.remove('active');
-          }
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        const nestedList = document.createElement('ul');
+
+        details.className = 'nav-group';
+        details.open = group.open;
+        summary.textContent = group.label;
+        nestedList.className = 'nav-group-list';
+
+        files.forEach(file => {
+          const item = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = '#';
+          a.textContent = file.name;
+          a.dataset.path = file.path;
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('#navList a').forEach(link => link.classList.remove('active'));
+            a.classList.add('active');
+            loadFile(file.path);
+            if (window.innerWidth <= 768) {
+              hamburger.classList.remove('active');
+              navContainer.classList.remove('active');
+            }
+          });
+          item.appendChild(a);
+          nestedList.appendChild(item);
         });
-        li.appendChild(a);
+
+        details.appendChild(summary);
+        details.appendChild(nestedList);
+        li.appendChild(details);
         navList.appendChild(li);
       });
     }
@@ -585,17 +696,21 @@
     const index = await res.json();
 
     fileStructure = index.documents
-      .filter(file => file.path !== 'README.md')
       .map(file => ({
-        name: file.name.replace(/\.md$/, ''),
-        path: file.path
-      }));
+        name: file.title || formatNavigationLabel(file.name),
+        path: file.path,
+        group: navigationGroup(file.path)
+      }))
+      .sort(compareForHumanEncounter);
 
-    fileStructure.unshift({ name: 'README', path: 'README.md' });
     renderNavigation();
 
-    document.querySelector('#navList a').classList.add('active');
-    await loadFile('README.md');
+    const firstFile = fileStructure[0];
+    const firstLink = document.querySelector('#navList a');
+    if (firstFile && firstLink) {
+      firstLink.classList.add('active');
+      await loadFile(firstFile.path);
+    }
   } catch (err) {
     fileContent.innerHTML = `<div class="error">Error loading knowledge index: ${err.message}</div>`;
     console.error(err);
