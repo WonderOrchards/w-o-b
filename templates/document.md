@@ -1,10 +1,18 @@
-title: [Filename]
-version: alpha-v2.2
+---
+title: [Descriptive Title]
+version: alpha-v2.3
 status: draft
 category: docs
 tags: []
-last_updated: 2025-09-07
+last_updated: YYYY-MM-DD
+---
 
-Title
+# [Descriptive Title]
 
-Describe the document purpose here.
+## Overview
+
+Describe the purpose of this document here.
+
+## Content
+
+Add knowledge here.
