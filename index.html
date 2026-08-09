@@ -497,14 +497,6 @@
         }
         renderFile(content, filePath);
 
-        if (filePath === 'README.md') {
-          const links = extractLinksFromReadme(content);
-          fileStructure = [{ name: "README", path: "README.md" }, ...links];
-          renderNavigation();
-          document.querySelectorAll('#navList a').forEach(link => {
-            if (link.dataset.path === 'README.md') link.classList.add('active');
-          });
-        }
       } catch (err) {
         fileContent.innerHTML = `<div class="error">Error loading file: ${err.message}</div>`;
         console.error(err);
@@ -586,7 +578,29 @@
       setTimeout(() => { lastScrollY = getScrollPos(); }, 60);
     }
 
-    function initNavigation() { loadFile('README.md'); }
+    async function initNavigation() {
+  try {
+    const res = await fetch('_index.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const index = await res.json();
+
+    fileStructure = index.documents
+      .filter(file => file.path !== 'README.md')
+      .map(file => ({
+        name: file.name.replace(/\.md$/, ''),
+        path: file.path
+      }));
+
+    fileStructure.unshift({ name: 'README', path: 'README.md' });
+    renderNavigation();
+
+    document.querySelector('#navList a').classList.add('active');
+    await loadFile('README.md');
+  } catch (err) {
+    fileContent.innerHTML = `<div class="error">Error loading knowledge index: ${err.message}</div>`;
+    console.error(err);
+  }
+}
 
     // ---------- Three.js ----------
     const canvas = document.getElementById('bg');
