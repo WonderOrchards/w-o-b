@@ -3,7 +3,7 @@ title: Steward Checkpoint History
 version: alpha-v2.3
 status: active
 category: versions
-preferred_return_checkpoint: CHECKPOINT-0003
+preferred_return_checkpoint: CHECKPOINT-0004
 tags: [steward, checkpoints, history, rollback]
 last_updated: 2026-08-09
 ---
@@ -20,7 +20,7 @@ Checkpoint records do not replace Git commits, Steward versions, or human decisi
 
 ## Current State
 
-`CHECKPOINT-0003` is the available, provisional checkpoint for repository commit `ad6cd07be7fc6a9da36336987a20134a3bab6968` and is the preferred return point before future experimentation.
+`CHECKPOINT-0004` is the available, provisional checkpoint for repository commit `616fb0ab2f1c4321447af5f3ec04786a31127418` and is the preferred return point before future experimentation.
 
 This designation does not identify the current repository state or Steward version and does not authorize automatic restoration. `steward-v0.1.0` remains the same current provisional Steward baseline.
 
@@ -31,6 +31,7 @@ This designation does not identify the current repository state or Steward versi
 | `STEWARD-CHECKPOINT-0001` | `steward-v0.1.0` | `bf69e0617da13d2b13a2c9d715249b4fa130f58a` | None | `draft` | `unverified` | [Checkpoint 0001](steward-checkpoint-0001.md) |
 | `CHECKPOINT-0002` | None | `8d28e0d2a55204bd771cc203e281315db0bd402f` | `STEWARD-CHECKPOINT-0001` | `draft` | `unverified` | [Checkpoint 0002](steward-checkpoint-0002.md) |
 | `CHECKPOINT-0003` | None | `ad6cd07be7fc6a9da36336987a20134a3bab6968` | `CHECKPOINT-0002` | `available` | `provisional` | [Checkpoint 0003](steward-checkpoint-0003.md) |
+| `CHECKPOINT-0004` | None | `616fb0ab2f1c4321447af5f3ec04786a31127418` | `CHECKPOINT-0003` | `available` | `provisional` | [Checkpoint 0004](steward-checkpoint-0004.md) |
 
 ## Canonical Checkpoint Lifecycle
 
