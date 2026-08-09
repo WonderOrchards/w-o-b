@@ -17,6 +17,10 @@ decided_by: TBD
 decision_date: null
 implementation_commits: []
 activation_commit: null
+checkpoint_id: null
+checkpoint_record: null
+checkpoint_commit: null
+parent_checkpoint: null
 known_good_status: unverified
 known_good_commit: null
 rollback_target: null
@@ -65,6 +69,12 @@ Explain the institutional need and connect it to provenance and the human decisi
 ## Component and Git Record
 
 List affected components, full implementation commit SHAs, activation commit, and any deployment reference. Link to Git rather than reproducing full diffs.
+
+## Repository Checkpoint
+
+Link the repository checkpoint ID, checkpoint record, exact checkpoint commit, and parent checkpoint when this version has been checkpointed.
+
+The checkpoint is subordinate to Git, this semantic version record, and the human authorization record. A missing checkpoint must remain `null`; do not invent or retrospectively imply one.
 
 ## Validation
 
